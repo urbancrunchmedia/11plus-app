@@ -35,10 +35,10 @@ export default function ResultScreen({ score, total, level, gameType, onPlayAgai
 
         <div className="result-buttons">
           <button className="play-btn" onClick={onPlayAgain}>
-            Play Again 🔄
+            Play Again
           </button>
           <button className="secondary-btn" onClick={onHome}>
-            Change Level 🏠
+            Change Level
           </button>
         </div>
       </div>

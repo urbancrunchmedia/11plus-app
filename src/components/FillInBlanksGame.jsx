@@ -1,5 +1,8 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { fillInBlanksData } from "../data/fillInBlanks";
+import { saveRun, saveIfBest } from "../utils/leaderboard";
+import { pushToCloud } from "../utils/cloudScores";
+import { useAuth } from "../contexts/AuthContext";
 
 function shuffle(arr) {
   const a = [...arr];
@@ -32,6 +35,7 @@ function buildQuestions(level, totalQuestions) {
 }
 
 export default function FillInBlanksGame({ level, totalQuestions, onHome }) {
+  const { user } = useAuth();
   const [questions, setQuestions]     = useState(() => buildQuestions(level, totalQuestions));
   const [current, setCurrent]         = useState(0);
   const [correct, setCorrect]         = useState(0);
@@ -41,6 +45,15 @@ export default function FillInBlanksGame({ level, totalQuestions, onHome }) {
   const [done, setDone]               = useState(false);
 
   const timerRef = useRef(null);
+
+  // Save the run to the leaderboard. Each correct answer = 3 stars (first-try
+  // perfect, no retry), matching the other games' stars-out-of-N*3 convention.
+  function recordScore(correctCount, wrongCount, time) {
+    const stars = correctCount * 3;
+    saveRun(level, "fillInBlanks", totalQuestions, stars, wrongCount, time, user?.displayName);
+    saveIfBest(level, "fillInBlanks", totalQuestions, stars, wrongCount, time);
+    if (user) pushToCloud(user.uid);
+  }
 
   // Start/restart timer
   useEffect(() => {
@@ -66,6 +79,7 @@ export default function FillInBlanksGame({ level, totalQuestions, onHome }) {
     const next = current + 1;
     if (next >= questions.length) {
       clearInterval(timerRef.current);
+      recordScore(correct, wrong, elapsed);
       setDone(true);
     } else {
       setCurrent(next);
@@ -136,10 +150,10 @@ export default function FillInBlanksGame({ level, totalQuestions, onHome }) {
 
           <div className="result-buttons">
             <button className="play-btn" onClick={handlePlayAgain}>
-              Play Again 🔄
+              Play Again
             </button>
             <button className="secondary-btn" onClick={onHome}>
-              ← Home
+              Home
             </button>
           </div>
         </div>
@@ -167,7 +181,7 @@ export default function FillInBlanksGame({ level, totalQuestions, onHome }) {
     <div className="game-screen">
       {/* Header */}
       <div className="game-header">
-        <button className="back-btn" onClick={onHome}>← Home</button>
+        <button className="back-btn" onClick={onHome}>Home</button>
         <span className="type-badge">🕵️ Word Detective</span>
         <span className="correct-badge">✓ {correct}</span>
         <span className="wrong-badge">✗ {wrong}</span>
@@ -224,7 +238,7 @@ export default function FillInBlanksGame({ level, totalQuestions, onHome }) {
             🔊
           </button>
           <button className="fib-next-btn" onClick={handleNext}>
-            {isLast ? "See Results ➜" : "Next ➜"}
+            {isLast ? "See Results" : "Next"}
           </button>
         </div>
       )}

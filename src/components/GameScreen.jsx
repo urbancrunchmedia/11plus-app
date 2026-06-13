@@ -182,7 +182,7 @@ export default function GameScreen({ level, gameType, totalQuestions = 20, onHom
   return (
     <div className="game-screen">
       <div className="game-header">
-        <button className="back-btn" onClick={onHome}>← Home</button>
+        <button className="back-btn" onClick={onHome}>Home</button>
         {level !== "all" && <span className="level-badge">Level {level}</span>}
         <span className="type-badge">{typeLabel}</span>
         {streak > 0 && <span className="streak-badge">🔥 {streak}</span>}

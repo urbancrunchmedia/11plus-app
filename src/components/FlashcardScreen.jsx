@@ -99,21 +99,21 @@ export default function FlashcardScreen({ onHome, onPlay }) {
             onClick={() => go(-1)}
             disabled={index === 0}
           >
-            ← Back
+            Back
           </button>
           {index < total - 1 ? (
             <button className="play-btn" onClick={() => go(1)}>
-              Next →
+              Next
             </button>
           ) : (
             <button className="play-btn" onClick={onPlay}>
-              Quiz Me! 🎮
+              Quiz Me!
             </button>
           )}
         </div>
 
         <button className="secondary-btn" onClick={onHome} style={{ marginTop: 4 }}>
-          ← Home
+          Home
         </button>
 
       </div>

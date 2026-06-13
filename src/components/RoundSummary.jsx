@@ -37,8 +37,8 @@ export default function RoundSummary({ roundNum, results, streak, onNext, onHome
         <div className="summary-score">{totalStars} / {maxStars} stars</div>
 
         <div className="summary-buttons">
-          <button className="play-btn" onClick={onNext}>Next Round →</button>
-          <button className="secondary-btn" onClick={onHome}>← Home</button>
+          <button className="play-btn" onClick={onNext}>Next Round</button>
+          <button className="secondary-btn" onClick={onHome}>Home</button>
         </div>
       </div>
     </div>

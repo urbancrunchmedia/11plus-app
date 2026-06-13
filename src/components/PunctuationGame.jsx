@@ -122,7 +122,7 @@ export default function PunctuationGame({ level, totalQuestions = 20, onHome, mu
   return (
     <div className="game-screen">
       <div className="game-header">
-        <button className="back-btn" onClick={onHome}>← Home</button>
+        <button className="back-btn" onClick={onHome}>Home</button>
         <span className="type-badge">✏️ Punctuation</span>
         <span className="correct-badge">✓ {results.length}</span>
         <span className="wrong-badge">✗ {totalWrong}</span>

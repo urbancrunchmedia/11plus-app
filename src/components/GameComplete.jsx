@@ -72,8 +72,8 @@ export default function GameComplete({ results, totalWrong, timeTaken, onPlayAga
         </div>
 
         <div className="summary-buttons">
-          <button className="play-btn" onClick={onPlayAgain}>Play Again 🔄</button>
-          <button className="secondary-btn" onClick={onHome}>← Home</button>
+          <button className="play-btn" onClick={onPlayAgain}>Play Again</button>
+          <button className="secondary-btn" onClick={onHome}>Home</button>
         </div>
       </div>
     </div>
