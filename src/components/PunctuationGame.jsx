@@ -13,7 +13,9 @@ function shuffle(arr) {
 }
 
 function prepareQuestions(level, count) {
-  const pool = [...punctuationData[level]];
+  const pool = level === "all"
+    ? [...punctuationData.A, ...punctuationData.B, ...punctuationData.C]
+    : [...punctuationData[level]];
   shuffle(pool);
   return Array.from({ length: count }, (_, i) => {
     const base = pool[i % pool.length];
@@ -121,7 +123,6 @@ export default function PunctuationGame({ level, totalQuestions = 20, onHome, mu
     <div className="game-screen">
       <div className="game-header">
         <button className="back-btn" onClick={onHome}>← Home</button>
-        <span className="level-badge">Level {level}</span>
         <span className="type-badge">✏️ Punctuation</span>
         <span className="correct-badge">✓ {results.length}</span>
         <span className="wrong-badge">✗ {totalWrong}</span>
@@ -133,7 +134,6 @@ export default function PunctuationGame({ level, totalQuestions = 20, onHome, mu
 
       <div className="progress-wrap">
         <div className="progress-fill" style={{ width: `${progress}%` }} />
-        <span className="progress-label">{results.length} / {totalQuestions}</span>
       </div>
 
       <div className="punct-game">

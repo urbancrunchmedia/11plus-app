@@ -1,5 +1,20 @@
 const BEST_KEY    = "11plus_personal_bests";
 const HISTORY_KEY = "11plus_history";
+const PREFS_KEY   = "11plus_prefs";
+
+// ── Quiz setup preferences (remember last choices across restarts) ──
+export function getPrefs(gameType) {
+  try { return (JSON.parse(localStorage.getItem(PREFS_KEY)) || {})[gameType] || null; }
+  catch { return null; }
+}
+
+export function savePrefs(gameType, prefs) {
+  try {
+    const all = JSON.parse(localStorage.getItem(PREFS_KEY)) || {};
+    all[gameType] = { ...all[gameType], ...prefs };
+    localStorage.setItem(PREFS_KEY, JSON.stringify(all));
+  } catch { /* storage unavailable — ignore */ }
+}
 
 export function formatTime(seconds) {
   const m = Math.floor(seconds / 60);

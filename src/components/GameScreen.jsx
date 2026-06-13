@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { wordData } from "../data/words";
+import { bookletWordData } from "../data/bookletWords";
 import GameComplete from "./GameComplete";
 import { playCorrect, playWrong } from "../utils/feedback";
 
@@ -34,7 +35,10 @@ function makeItem(pair) {
 }
 
 export default function GameScreen({ level, gameType, totalQuestions = 20, onHome }) {
-  const allPairs     = wordData[level][gameType];
+  const allPairs = [
+    ...(wordData[level]?.[gameType] ?? []),
+    ...(bookletWordData[level]?.[gameType] ?? []),
+  ];
   const performance  = useRef({});  // word → last stars, persists across replays
 
   function buildGame() {
@@ -179,7 +183,7 @@ export default function GameScreen({ level, gameType, totalQuestions = 20, onHom
     <div className="game-screen">
       <div className="game-header">
         <button className="back-btn" onClick={onHome}>← Home</button>
-        <span className="level-badge">Level {level}</span>
+        {level !== "all" && <span className="level-badge">Level {level}</span>}
         <span className="type-badge">{typeLabel}</span>
         {streak > 0 && <span className="streak-badge">🔥 {streak}</span>}
         <span className="correct-badge">✓ {results.length}</span>
@@ -193,7 +197,6 @@ export default function GameScreen({ level, gameType, totalQuestions = 20, onHom
       {/* Progress bar */}
       <div className="progress-wrap">
         <div className="progress-fill" style={{ width: `${progress}%` }} />
-        <span className="progress-label">{results.length} / {totalQuestions}</span>
       </div>
 
       <p className="game-instruction">
