@@ -759,7 +759,7 @@ body {
   border-bottom: 5px solid var(--purple-shadow);
   color: var(--on-brand);
   font-size: 1.1rem;
-  font-weight: 700;
+  font-weight: 800;
   letter-spacing: -0.01em;
   transition: transform 0.1s, border-bottom-width 0.1s;
 }
