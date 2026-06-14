@@ -93,7 +93,7 @@ export async function syncProfile(user) {
     const code = existing?.code || generateCode();
     const { total, byGame } = computeStats();
     await setDoc(doc(db, "profiles", uid), {
-      displayName: user.displayName || (user.email ? user.email.split("@")[0] : "Player"),
+      displayName: user.displayName || "Player",
       photoURL: user.photoURL || "",
       code,
       points: total,
