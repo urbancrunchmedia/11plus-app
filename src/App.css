@@ -513,7 +513,6 @@ body {
   }
   .main-content {
     overflow: visible;
-    align-items: stretch;
   }
 }
 
@@ -1598,4 +1597,62 @@ body {
   .flashcard { height: 320px; }
   .flashcard-word { font-size: 2rem; }
   .fib-lesson-term { font-size: 1.4rem; }
+}
+
+/* Drawer never covers the whole tiny screen */
+@media (max-width: 1023px) {
+  .sidebar { max-width: 86vw; }
+}
+
+/* ───── Small phones (≤480px) ───── */
+@media (max-width: 480px) {
+  .main-content { padding: 64px 12px 24px; }
+  .home-card { gap: 16px; }
+  .home-title h1 { font-size: 1.7rem; }
+  .home-emoji { font-size: 2.25rem; }
+  .game-type-desc { font-size: 0.85rem; padding: 10px 12px; }
+
+  /* Compact game header so the badges wrap tidily */
+  .game-header { gap: 5px; }
+  .back-btn { padding: 6px 11px; font-size: 0.8rem; }
+  .level-badge,
+  .type-badge,
+  .correct-badge,
+  .wrong-badge,
+  .timer-badge,
+  .streak-badge { padding: 4px 9px; font-size: 0.72rem; }
+  .mute-btn { padding: 4px 7px; }
+
+  .game-instruction { font-size: 0.8rem; }
+  .word-card { padding: 16px 8px; font-size: 0.92rem; }
+
+  .fib-sentence-card { padding: 20px 16px; }
+  .fib-sentence { font-size: 1rem; }
+  .fib-blank { min-width: 64px; }
+  .fib-option { font-size: 1rem; padding: 14px 10px; min-height: 64px; }
+  .fib-feedback-text { font-size: 0.98rem; }
+
+  /* Best Runs table fits a narrow column */
+  .lb-table { font-size: 0.74rem; }
+  .lb-table thead th,
+  .lb-row td { padding: 5px 5px; }
+  .home-best-score { font-size: 0.95rem; }
+  .home-best-detail { font-size: 0.72rem; }
+
+  .result-card,
+  .summary-card,
+  .coming-soon-card { padding: 28px 20px; }
+  .login-card { padding: 30px 22px; }
+  .result-title { font-size: 1.8rem; }
+  .result-emoji,
+  .cs-icon { font-size: 3rem; }
+}
+
+/* ───── Very small phones (≤360px, e.g. iPhone SE) ───── */
+@media (max-width: 360px) {
+  .main-content { padding: 62px 8px 20px; }
+  .home-title h1 { font-size: 1.55rem; }
+  .word-card { font-size: 0.85rem; padding: 14px 6px; }
+  .toggle-btn { font-size: 0.85rem; padding: 10px 6px; }
+  .q-segment { font-size: 0.85rem; padding: 10px 2px; }
 }
