@@ -16,6 +16,18 @@ import "./App.css";
 function AppInner() {
   const { user } = useAuth();
 
+  // All hooks must run on every render (before any early return) — otherwise
+  // the hook count changes when auth flips logged-out → logged-in and React
+  // crashes the tree to a blank screen (only a refresh recovered it).
+  const [selectedGame, setSelectedGame] = useState("wordMatch");
+  const [sidebarOpen, setSidebarOpen]   = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+
+  const [screen, setScreen] = useState("home");
+  const [config, setConfig] = useState(null);
+  const [playKey, setPlayKey] = useState(0);
+  const [lastPunctConfig, setLastPunctConfig] = useState(null);
+
   if (user === undefined) {
     return (
       <div className="app-loading">
@@ -26,15 +38,6 @@ function AppInner() {
   }
 
   if (user === null) return <LoginScreen />;
-
-  const [selectedGame, setSelectedGame] = useState("wordMatch");
-  const [sidebarOpen, setSidebarOpen]   = useState(false);
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-
-  const [screen, setScreen] = useState("home");
-  const [config, setConfig] = useState(null);
-  const [playKey, setPlayKey] = useState(0);
-  const [lastPunctConfig, setLastPunctConfig] = useState(null);
 
   function handleSelectGame(id) {
     setSelectedGame(id);
