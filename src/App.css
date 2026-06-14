@@ -495,6 +495,26 @@ body {
   .sidebar-close   { display: block; }
   .hamburger       { display: block; }
   .main-content    { padding-top: 68px; }
+
+  /* Let the whole page scroll naturally on phones/tablets instead of locking
+     it to a fixed 100vh app shell — restores scrolling + pull-to-refresh. */
+  html, body, #root {
+    height: auto;
+    min-height: 100%;
+    overflow: visible;
+    -webkit-overflow-scrolling: touch;
+  }
+  body { overflow-x: hidden; }
+  .app-layout,
+  .main-area {
+    height: auto;
+    min-height: 100dvh;
+    overflow: visible;
+  }
+  .main-content {
+    overflow: visible;
+    align-items: stretch;
+  }
 }
 
 @media (min-width: 1024px) { .sidebar-toggle { display: block; } }
