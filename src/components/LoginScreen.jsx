@@ -84,10 +84,10 @@ export default function LoginScreen() {
         <form className="login-form" onSubmit={handleSubmit}>
           {mode === "signup" && (
             <div className="login-field">
-              <label>Name</label>
+              <label>Child Name</label>
               <input
                 type="text"
-                placeholder="Your name"
+                placeholder="Child's name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 required
