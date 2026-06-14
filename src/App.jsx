@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Sidebar from "./components/Sidebar";
 import HomeScreen from "./components/HomeScreen";
 import GameScreen from "./components/GameScreen";
@@ -20,7 +20,18 @@ function AppInner() {
   // All hooks must run on every render (before any early return) — otherwise
   // the hook count changes when auth flips logged-out → logged-in and React
   // crashes the tree to a blank screen (only a refresh recovered it).
-  const [selectedGame, setSelectedGame] = useState("wordMatch");
+  const VALID_GAMES = ["wordMatch", "punctuation", "fillInBlanks", "wordList", "leaderboard"];
+  const [selectedGame, setSelectedGame] = useState(() => {
+    try {
+      const last = localStorage.getItem("11plus_last_screen");
+      return VALID_GAMES.includes(last) ? last : "wordMatch";
+    } catch { return "wordMatch"; }
+  });
+  // Remember the current section so a refresh stays on the same page
+  useEffect(() => {
+    try { localStorage.setItem("11plus_last_screen", selectedGame); } catch {}
+  }, [selectedGame]);
+
   const [sidebarOpen, setSidebarOpen]   = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
