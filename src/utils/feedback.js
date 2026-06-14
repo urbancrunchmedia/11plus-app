@@ -1,20 +1,49 @@
 let _ctx = null;
 
 function getCtx() {
-  if (!_ctx) _ctx = new (window.AudioContext || window.webkitAudioContext)();
+  if (!_ctx) {
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) return null;
+    _ctx = new AC();
+  }
   return _ctx;
 }
 
-// On iOS Safari, AudioContext starts suspended — resume it first, then schedule tones
+// iOS/Android lock audio until the first real user gesture. Unlock once on the
+// first interaction anywhere: resume the context and play a 1-sample silent
+// buffer (the trick that fully wakes Web Audio on iOS). After this, the tones
+// below play instantly from any tap.
+function unlock() {
+  const c = getCtx();
+  if (!c) return;
+  if (c.state === "suspended") c.resume().catch(() => {});
+  try {
+    const src = c.createBufferSource();
+    src.buffer = c.createBuffer(1, 1, 22050);
+    src.connect(c.destination);
+    src.start(0);
+  } catch (_) {}
+}
+
+if (typeof window !== "undefined") {
+  const onFirst = () => {
+    unlock();
+    ["pointerdown", "touchstart", "touchend", "click", "keydown"].forEach((e) =>
+      window.removeEventListener(e, onFirst)
+    );
+  };
+  ["pointerdown", "touchstart", "touchend", "click", "keydown"].forEach((e) =>
+    window.addEventListener(e, onFirst, { passive: true })
+  );
+}
+
 function playTones(schedule) {
   try {
     const c = getCtx();
-    const run = () => {
-      const now = c.currentTime;
-      schedule(c, now);
-    };
+    if (!c) return;
+    const run = () => schedule(c, c.currentTime);
     if (c.state === "suspended") {
-      c.resume().then(run);
+      c.resume().then(run).catch(() => {});
     } else {
       run();
     }

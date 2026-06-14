@@ -3,6 +3,7 @@ import { fillInBlanksData } from "../data/fillInBlanks";
 import { saveRun, saveIfBest } from "../utils/leaderboard";
 import { pushToCloud } from "../utils/cloudScores";
 import { useAuth } from "../contexts/AuthContext";
+import { playCorrect, playWrong } from "../utils/feedback";
 
 function shuffle(arr) {
   const a = [...arr];
@@ -69,8 +70,8 @@ export default function FillInBlanksGame({ level, totalQuestions, onHome }) {
       setChosen(word);
 
       const isCorrect = word === questions[current].word;
-      if (isCorrect) setCorrect((c) => c + 1);
-      else setWrong((w) => w + 1);
+      if (isCorrect) { setCorrect((c) => c + 1); playCorrect(); }
+      else { setWrong((w) => w + 1); playWrong(); }
     },
     [chosen, current, questions]
   );
