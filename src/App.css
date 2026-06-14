@@ -1799,3 +1799,19 @@ body {
 }
 .lb-refresh-btn:hover:not(:disabled) { background: #fff1d6; }
 .lb-refresh-btn:disabled { opacity: 0.5; cursor: default; }
+
+.lb-name-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  background: var(--surface);
+  border: 2px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: 12px 16px;
+}
+.lb-name-info { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; }
+.lb-name-value { font-size: 1.05rem; font-weight: 800; color: var(--text); }
+.lb-name-edit { display: flex; gap: 8px; width: 100%; flex-wrap: wrap; }
+.lb-name-edit .wl-search { flex: 1; min-width: 140px; }
+.lb-name-save, .lb-name-cancel { width: auto; padding: 10px 18px; flex-shrink: 0; }

@@ -76,10 +76,23 @@ export function AuthProvider({ children }) {
     await signOut(auth);
   }
 
+  // Set/change the child's display name (used on the leaderboard).
+  async function updateDisplayName(name) {
+    const u = auth.currentUser;
+    const clean = (name || "").trim();
+    if (!u || !clean) return;
+    await updateProfile(u, { displayName: clean });
+    await syncProfile(u);
+    // Re-render with the new name (Firebase mutates currentUser in place, so
+    // build a plain object the app's data-only reads can use).
+    setUser({ uid: u.uid, displayName: clean, photoURL: u.photoURL, email: u.email });
+  }
+
   return (
     <AuthContext.Provider value={{
       user,
       redirectError,
+      updateDisplayName,
       signInWithGoogle,
       signInWithEmail,
       signUpWithEmail,

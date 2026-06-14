@@ -94,7 +94,6 @@ export async function syncProfile(user) {
     const { total, byGame } = computeStats();
     await setDoc(doc(db, "profiles", uid), {
       displayName: user.displayName || "Player",
-      photoURL: user.photoURL || "",
       code,
       points: total,
       byGame,

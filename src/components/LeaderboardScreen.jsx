@@ -21,7 +21,7 @@ function initials(name) {
 }
 
 export default function LeaderboardScreen() {
-  const { user } = useAuth();
+  const { user, updateDisplayName } = useAuth();
   const [me, setMe]           = useState(null);
   const [people, setPeople]   = useState([]);   // unsorted profiles (me + friends)
   const [loading, setLoading] = useState(true);
@@ -30,6 +30,19 @@ export default function LeaderboardScreen() {
   const [adding, setAdding]   = useState(false);
   const [msg, setMsg]         = useState(null);
   const [copied, setCopied]   = useState(false);
+  const [editingName, setEditingName] = useState(false);
+  const [nameInput, setNameInput]     = useState("");
+
+  const myName = me?.displayName || user?.displayName || "Player";
+
+  async function saveName(e) {
+    e.preventDefault();
+    const n = nameInput.trim();
+    if (!n) return;
+    setEditingName(false);
+    await updateDisplayName(n);
+    load();
+  }
 
   const load = useCallback(async () => {
     if (!user) return;
@@ -87,6 +100,37 @@ export default function LeaderboardScreen() {
           <span className="home-emoji">🏆</span>
           <h1>Leaderboard</h1>
           <p className="home-subtitle">Add friends and race to the top!</p>
+        </div>
+
+        {/* Display name (the child name shown to friends) */}
+        <div className="lb-name-card">
+          {!editingName ? (
+            <>
+              <div className="lb-name-info">
+                <span className="lb-code-label">Playing as</span>
+                <span className="lb-name-value">{myName}</span>
+              </div>
+              <button
+                className="lb-copy-btn"
+                onClick={() => { setNameInput(myName); setEditingName(true); }}
+              >
+                Edit name
+              </button>
+            </>
+          ) : (
+            <form className="lb-name-edit" onSubmit={saveName}>
+              <input
+                className="wl-search"
+                value={nameInput}
+                onChange={(e) => setNameInput(e.target.value)}
+                placeholder="Child's name"
+                maxLength={20}
+                autoFocus
+              />
+              <button className="play-btn lb-name-save" type="submit">Save</button>
+              <button className="secondary-btn lb-name-cancel" type="button" onClick={() => setEditingName(false)}>Cancel</button>
+            </form>
+          )}
         </div>
 
         {/* My friend code */}
@@ -155,9 +199,7 @@ export default function LeaderboardScreen() {
             {rows.map((p, i) => (
               <div key={p.uid} className={`lb-board-row ${p.isMe ? "lb-board-row--me" : ""}`}>
                 <span className="lb-board-rank">{MEDALS[i] || i + 1}</span>
-                {p.photoURL
-                  ? <img className="lb-board-avatar" src={p.photoURL} alt="" referrerPolicy="no-referrer" />
-                  : <span className="lb-board-avatar lb-board-avatar--initial">{initials(p.displayName)}</span>}
+                <span className="lb-board-avatar lb-board-avatar--initial">{initials(p.displayName)}</span>
                 <span className="lb-board-name">
                   {p.displayName || "Player"}{p.isMe && <span className="lb-board-you"> (you)</span>}
                 </span>
