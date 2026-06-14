@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useAuth } from "../contexts/AuthContext";
 
 function GoogleIcon() {
@@ -15,6 +15,26 @@ function GoogleIcon() {
 export default function AuthButton() {
   const { user, signInWithGoogle, signOut } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
+  const wrapRef = useRef(null);
+
+  // Close the menu when clicking/tapping outside it, or pressing Escape
+  useEffect(() => {
+    if (!menuOpen) return;
+    function handlePointer(e) {
+      if (wrapRef.current && !wrapRef.current.contains(e.target)) setMenuOpen(false);
+    }
+    function handleKey(e) {
+      if (e.key === "Escape") setMenuOpen(false);
+    }
+    document.addEventListener("mousedown", handlePointer);
+    document.addEventListener("touchstart", handlePointer);
+    document.addEventListener("keydown", handleKey);
+    return () => {
+      document.removeEventListener("mousedown", handlePointer);
+      document.removeEventListener("touchstart", handlePointer);
+      document.removeEventListener("keydown", handleKey);
+    };
+  }, [menuOpen]);
 
   if (user === undefined) return null;
 
@@ -28,7 +48,7 @@ export default function AuthButton() {
   }
 
   return (
-    <div className="user-chip" onClick={() => setMenuOpen((o) => !o)}>
+    <div className="user-chip" ref={wrapRef} onClick={() => setMenuOpen((o) => !o)}>
       <img src={user.photoURL} alt={user.displayName} className="user-avatar" referrerPolicy="no-referrer" />
       <span className="user-name">{user.displayName?.split(" ")[0]}</span>
       {menuOpen && (
