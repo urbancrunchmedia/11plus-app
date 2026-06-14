@@ -1,8 +1,14 @@
 import {
-  doc, getDoc, setDoc,
-  collection, query, where, getDocs, limit, arrayUnion, arrayRemove,
+  doc, getDoc, setDoc, deleteDoc,
+  collection, query, where, getDocs, limit,
 } from "firebase/firestore";
 import { db } from "../firebase";
+
+// A friendship is one shared doc both people can read, so it's mutual.
+// ID is the two uids sorted + joined, so either party computes the same id.
+function pairId(a, b) {
+  return [a, b].sort().join("__");
+}
 
 const BEST_KEY    = "11plus_personal_bests";
 const HISTORY_KEY = "11plus_history";
@@ -128,7 +134,11 @@ export async function addFriendByCode(uid, codeRaw) {
     if (res.empty) return { ok: false, error: "No player found with that code." };
     const friendDoc = res.docs[0];
     if (friendDoc.id === uid) return { ok: false, error: "That's your own code!" };
-    await setDoc(doc(db, "users", uid), { friends: arrayUnion(friendDoc.id) }, { merge: true });
+    // One shared friendship doc → both sides see each other (mutual).
+    await setDoc(doc(db, "friendships", pairId(uid, friendDoc.id)), {
+      uids: [uid, friendDoc.id].sort(),
+      createdAt: new Date().toISOString(),
+    }, { merge: true });
     return { ok: true, friend: { uid: friendDoc.id, ...friendDoc.data() } };
   } catch (e) {
     console.error("addFriendByCode:", e);
@@ -136,10 +146,10 @@ export async function addFriendByCode(uid, codeRaw) {
   }
 }
 
-// Remove a friend from your list.
+// Remove a friend — deletes the shared friendship doc (affects both sides).
 export async function removeFriend(uid, friendUid) {
   try {
-    await setDoc(doc(db, "users", uid), { friends: arrayRemove(friendUid) }, { merge: true });
+    await deleteDoc(doc(db, "friendships", pairId(uid, friendUid)));
     return true;
   } catch (e) {
     console.error("removeFriend:", e);
@@ -147,12 +157,15 @@ export async function removeFriend(uid, friendUid) {
   }
 }
 
-// Leaderboard = me + my friends, sorted by points (total stars) descending.
+// Leaderboard = me + everyone I share a friendship with, ranked by points.
 export async function getLeaderboard(uid) {
   try {
-    const meSnap  = await getDoc(doc(db, "users", uid));
-    const friends = (meSnap.exists() && meSnap.data().friends) || [];
-    const uids    = [uid, ...friends.filter((f) => f !== uid)];
+    const edges = await getDocs(
+      query(collection(db, "friendships"), where("uids", "array-contains", uid))
+    );
+    const friendUids = new Set();
+    edges.forEach((d) => (d.data().uids || []).forEach((u) => { if (u !== uid) friendUids.add(u); }));
+    const uids = [uid, ...friendUids];
     const profiles = await Promise.all(uids.map((u) => getProfile(u)));
     return profiles
       .filter(Boolean)
