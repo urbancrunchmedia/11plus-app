@@ -1783,3 +1783,19 @@ body {
   transition: background 0.15s;
 }
 .lb-remove-btn:hover { background: #fee2e2; }
+
+.lb-board-head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; justify-content: space-between; }
+.lb-board-head .wl-filter-row { flex: 1; }
+.lb-refresh-btn {
+  flex-shrink: 0;
+  border: 2px solid var(--border-2);
+  background: white;
+  color: var(--brand-ink);
+  border-radius: var(--r-full);
+  padding: 6px 14px;
+  font-size: 0.8rem;
+  font-weight: 800;
+  transition: background 0.15s;
+}
+.lb-refresh-btn:hover:not(:disabled) { background: #fff1d6; }
+.lb-refresh-btn:disabled { opacity: 0.5; cursor: default; }

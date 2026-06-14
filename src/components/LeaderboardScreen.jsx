@@ -125,17 +125,22 @@ export default function LeaderboardScreen() {
           )}
         </form>
 
-        {/* Category filter */}
-        <div className="wl-filter-row lb-cat-row">
-          {CATEGORIES.map((c) => (
-            <button
-              key={c.id}
-              className={`wl-filter-btn ${cat === c.id ? "active" : ""}`}
-              onClick={() => setCat(c.id)}
-            >
-              {c.label}
-            </button>
-          ))}
+        {/* Category filter + refresh */}
+        <div className="lb-board-head">
+          <div className="wl-filter-row lb-cat-row">
+            {CATEGORIES.map((c) => (
+              <button
+                key={c.id}
+                className={`wl-filter-btn ${cat === c.id ? "active" : ""}`}
+                onClick={() => setCat(c.id)}
+              >
+                {c.label}
+              </button>
+            ))}
+          </div>
+          <button className="lb-refresh-btn" onClick={load} disabled={loading} title="Refresh">
+            {loading ? "…" : "↻ Refresh"}
+          </button>
         </div>
 
         {/* The board */}
