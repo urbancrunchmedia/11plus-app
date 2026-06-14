@@ -24,7 +24,7 @@ export default function GameComplete({ results, totalWrong, timeTaken, onPlayAga
   const [isNewBest] = useState(() => {
     saveRun(level, gameType, totalQuestions, totalStars, totalWrong, timeTaken, user?.displayName);
     const newBest = saveIfBest(level, gameType, totalQuestions, totalStars, totalWrong, timeTaken);
-    if (user) pushToCloud(user.uid);
+    if (user) pushToCloud(user);
     return newBest;
   });
 

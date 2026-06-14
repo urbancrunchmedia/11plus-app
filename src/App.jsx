@@ -8,6 +8,7 @@ import FillInBlanksGame from "./components/FillInBlanksGame";
 import FlashcardScreen from "./components/FlashcardScreen";
 import ComingSoon from "./components/ComingSoon";
 import WordListScreen from "./components/WordListScreen";
+import LeaderboardScreen from "./components/LeaderboardScreen";
 import AuthButton from "./components/AuthButton";
 import LoginScreen from "./components/LoginScreen";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
@@ -63,7 +64,8 @@ function AppInner() {
   const isPunctuation   = selectedGame === "punctuation";
   const isFillInBlanks  = selectedGame === "fillInBlanks";
   const isWordList      = selectedGame === "wordList";
-  const isKnownGame     = isWordMatch || isPunctuation || isFillInBlanks || isWordList;
+  const isLeaderboard   = selectedGame === "leaderboard";
+  const isKnownGame     = isWordMatch || isPunctuation || isFillInBlanks || isWordList || isLeaderboard;
 
   return (
     <div className="app-layout">
@@ -133,6 +135,8 @@ function AppInner() {
           )}
 
           {isWordList && <WordListScreen />}
+
+          {isLeaderboard && <LeaderboardScreen />}
 
           {!isKnownGame && (
             <ComingSoon gameId={selectedGame} />

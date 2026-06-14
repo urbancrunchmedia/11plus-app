@@ -11,7 +11,7 @@ import {
   updateProfile,
 } from "firebase/auth";
 import { auth } from "../firebase";
-import { mergeFromCloud } from "../utils/cloudScores";
+import { mergeFromCloud, syncProfile } from "../utils/cloudScores";
 
 const AuthContext = createContext(null);
 
@@ -38,7 +38,10 @@ export function AuthProvider({ children }) {
 
     const unsub = onAuthStateChanged(auth, (u) => {
       setUser(u ?? null);
-      if (u) mergeFromCloud(u.uid).catch(console.error);
+      if (u) {
+        // Merge cloud scores, then publish a profile (friend code + points)
+        mergeFromCloud(u.uid).then(() => syncProfile(u)).catch(console.error);
+      }
     });
     return unsub;
   }, []);

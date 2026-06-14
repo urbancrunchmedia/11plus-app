@@ -5,6 +5,7 @@ const ENGLISH_GAMES = [
   { id: "punctuation",     label: "Punctuation",       icon: "✏️" },
   { id: "fillInBlanks",    label: "Word Detective",     icon: "🕵️" },
   { id: "wordList",        label: "Word List",         icon: "📖" },
+  { id: "leaderboard",     label: "Leaderboard",        icon: "🏆" },
 ];
 
 const MATHS_GAMES = [

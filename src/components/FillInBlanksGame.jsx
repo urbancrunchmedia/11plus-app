@@ -53,7 +53,7 @@ export default function FillInBlanksGame({ level, totalQuestions, onHome }) {
     const stars = correctCount * 3;
     saveRun(level, "fillInBlanks", totalQuestions, stars, wrongCount, time, user?.displayName);
     saveIfBest(level, "fillInBlanks", totalQuestions, stars, wrongCount, time);
-    if (user) pushToCloud(user.uid);
+    if (user) pushToCloud(user);
   }
 
   // Start/restart timer
