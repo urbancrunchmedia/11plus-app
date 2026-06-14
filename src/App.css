@@ -1764,3 +1764,22 @@ body {
   color: var(--text);
   flex-shrink: 0;
 }
+
+.lb-cat-row { flex-wrap: wrap; }
+.lb-remove-btn {
+  flex-shrink: 0;
+  width: 26px;
+  height: 26px;
+  border-radius: var(--r-full);
+  border: none;
+  background: var(--wrong-bg);
+  color: var(--wrong);
+  font-size: 0.8rem;
+  font-weight: 800;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
+}
+.lb-remove-btn:hover { background: #fee2e2; }

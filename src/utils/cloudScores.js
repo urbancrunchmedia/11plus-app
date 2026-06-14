@@ -1,6 +1,6 @@
 import {
   doc, getDoc, setDoc,
-  collection, query, where, getDocs, limit, arrayUnion,
+  collection, query, where, getDocs, limit, arrayUnion, arrayRemove,
 } from "firebase/firestore";
 import { db } from "../firebase";
 
@@ -10,9 +10,20 @@ const HISTORY_KEY = "11plus_history";
 function localBests()   { try { return JSON.parse(localStorage.getItem(BEST_KEY))    || {}; } catch { return {}; } }
 function localHistory() { try { return JSON.parse(localStorage.getItem(HISTORY_KEY)) || {}; } catch { return {}; } }
 
-// Leaderboard metric: total stars across every saved personal best.
-function totalStars() {
-  return Object.values(localBests()).reduce((sum, b) => sum + (b && b.stars ? b.stars : 0), 0);
+// Leaderboard metrics: total stars + a per-game breakdown.
+// Keys are "level-gameType-totalQuestions" (gameType has no dashes).
+function computeStats() {
+  const byGame = { wordMatch: 0, fillInBlanks: 0, punctuation: 0 };
+  let total = 0;
+  for (const [key, b] of Object.entries(localBests())) {
+    const stars = (b && b.stars) || 0;
+    total += stars;
+    const gameType = key.split("-")[1];
+    if (gameType === "synonyms" || gameType === "antonyms") byGame.wordMatch += stars;
+    else if (gameType === "fillInBlanks") byGame.fillInBlanks += stars;
+    else if (gameType === "punctuation") byGame.punctuation += stars;
+  }
+  return { total, byGame };
 }
 
 function isBetter(a, b) {
@@ -74,11 +85,13 @@ export async function syncProfile(user) {
   try {
     const existing = await getProfile(uid);
     const code = existing?.code || generateCode();
+    const { total, byGame } = computeStats();
     await setDoc(doc(db, "profiles", uid), {
       displayName: user.displayName || (user.email ? user.email.split("@")[0] : "Player"),
       photoURL: user.photoURL || "",
       code,
-      points: totalStars(),
+      points: total,
+      byGame,
       updatedAt: new Date().toISOString(),
     }, { merge: true });
     return code;
@@ -120,6 +133,17 @@ export async function addFriendByCode(uid, codeRaw) {
   } catch (e) {
     console.error("addFriendByCode:", e);
     return { ok: false, error: "Couldn't add friend — please try again." };
+  }
+}
+
+// Remove a friend from your list.
+export async function removeFriend(uid, friendUid) {
+  try {
+    await setDoc(doc(db, "users", uid), { friends: arrayRemove(friendUid) }, { merge: true });
+    return true;
+  } catch (e) {
+    console.error("removeFriend:", e);
+    return false;
   }
 }
 

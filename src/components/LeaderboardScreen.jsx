@@ -1,8 +1,20 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useAuth } from "../contexts/AuthContext";
-import { getProfile, getLeaderboard, addFriendByCode, syncProfile } from "../utils/cloudScores";
+import { getProfile, getLeaderboard, addFriendByCode, removeFriend, syncProfile } from "../utils/cloudScores";
 
 const MEDALS = ["🥇", "🥈", "🥉"];
+
+const CATEGORIES = [
+  { id: "all",          label: "Overall" },
+  { id: "wordMatch",    label: "Word Match" },
+  { id: "fillInBlanks", label: "Word Detective" },
+  { id: "punctuation",  label: "Punctuation" },
+];
+
+function metricOf(p, cat) {
+  if (cat === "all") return p.points || 0;
+  return (p.byGame && p.byGame[cat]) || 0;
+}
 
 function initials(name) {
   return (name || "?").trim().slice(0, 1).toUpperCase();
@@ -11,11 +23,12 @@ function initials(name) {
 export default function LeaderboardScreen() {
   const { user } = useAuth();
   const [me, setMe]           = useState(null);
-  const [rows, setRows]       = useState([]);
+  const [people, setPeople]   = useState([]);   // unsorted profiles (me + friends)
   const [loading, setLoading] = useState(true);
+  const [cat, setCat]         = useState("all");
   const [code, setCode]       = useState("");
   const [adding, setAdding]   = useState(false);
-  const [msg, setMsg]         = useState(null);   // { type: "ok"|"err", text }
+  const [msg, setMsg]         = useState(null);
   const [copied, setCopied]   = useState(false);
 
   const load = useCallback(async () => {
@@ -27,11 +40,13 @@ export default function LeaderboardScreen() {
       getLeaderboard(user.uid),
     ]);
     setMe(profile);
-    setRows(board);
+    setPeople(board);
     setLoading(false);
   }, [user]);
 
   useEffect(() => { load(); }, [load]);
+
+  const rows = [...people].sort((a, b) => metricOf(b, cat) - metricOf(a, cat));
 
   async function handleAdd(e) {
     e.preventDefault();
@@ -47,6 +62,13 @@ export default function LeaderboardScreen() {
     } else {
       setMsg({ type: "err", text: res.error });
     }
+  }
+
+  async function handleRemove(friend) {
+    if (!user) return;
+    if (!window.confirm(`Remove ${friend.displayName || "this friend"} from your leaderboard?`)) return;
+    await removeFriend(user.uid, friend.uid);
+    load();
   }
 
   function copyCode() {
@@ -103,11 +125,23 @@ export default function LeaderboardScreen() {
           )}
         </form>
 
+        {/* Category filter */}
+        <div className="wl-filter-row lb-cat-row">
+          {CATEGORIES.map((c) => (
+            <button
+              key={c.id}
+              className={`wl-filter-btn ${cat === c.id ? "active" : ""}`}
+              onClick={() => setCat(c.id)}
+            >
+              {c.label}
+            </button>
+          ))}
+        </div>
+
         {/* The board */}
-        <div className="section-label">🏆 Top Players</div>
         {loading ? (
           <div className="home-best home-best--empty">Loading leaderboard…</div>
-        ) : rows.length <= 1 ? (
+        ) : people.length <= 1 ? (
           <div className="home-best home-best--empty">
             Add a friend with their code to start competing! 🎯
           </div>
@@ -122,7 +156,17 @@ export default function LeaderboardScreen() {
                 <span className="lb-board-name">
                   {p.displayName || "Player"}{p.isMe && <span className="lb-board-you"> (you)</span>}
                 </span>
-                <span className="lb-board-points">⭐ {p.points || 0}</span>
+                <span className="lb-board-points">⭐ {metricOf(p, cat)}</span>
+                {!p.isMe && (
+                  <button
+                    className="lb-remove-btn"
+                    onClick={() => handleRemove(p)}
+                    aria-label={`Remove ${p.displayName || "friend"}`}
+                    title="Remove friend"
+                  >
+                    ✕
+                  </button>
+                )}
               </div>
             ))}
           </div>
