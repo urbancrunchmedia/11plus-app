@@ -23,14 +23,26 @@ const TYPE_INFO = {
     label: "Word Detective",
     description: "Read the clues and work out the missing word — learn what each word means and how to use it!",
   },
+  compoundWords: {
+    emoji: "🧩",
+    label: "Compound Words",
+    description: "A compound word is two smaller words joined into one — e.g. Sun + Flower = Sunflower.",
+  },
 };
 
 const Q_OPTIONS = [5, 10, 20, 30];
 const NO_LEVEL_GAMES = ["fillInBlanks"];
+// Games that offer both a "Match" (tap the pairs) and a "Worksheet" (exam-style) format.
+const FORMAT_GAMES = ["wordMatch", "compoundWords"];
+const FORMAT_HINT = {
+  match:     "🎯 Tap the two words that go together.",
+  worksheet: "📝 Exam style — pick one word from each group, then check your answers.",
+};
 
 export default function HomeScreen({ gameType, onPlay, onLearn, initialConfig }) {
-  const isWordMatch = gameType === "wordMatch";
-  const noLevel     = NO_LEVEL_GAMES.includes(gameType);
+  const isWordMatch    = gameType === "wordMatch";
+  const noLevel        = NO_LEVEL_GAMES.includes(gameType);
+  const supportsFormat = FORMAT_GAMES.includes(gameType);
 
   // Restore the kid's last-used choices: saved prefs (survive restarts) first,
   // then the current session's config, then defaults.
@@ -38,7 +50,11 @@ export default function HomeScreen({ gameType, onPlay, onLearn, initialConfig })
 
   const [subType, setSubType] = useState(() => {
     if (saved.subType === "antonyms" || saved.subType === "synonyms") return saved.subType;
-    return initialConfig?.gameType === "antonyms" ? "antonyms" : "synonyms";
+    return initialConfig?.baseType === "antonyms" ? "antonyms" : "synonyms";
+  });
+  const [format, setFormat] = useState(() => {
+    if (saved.format === "match" || saved.format === "worksheet") return saved.format;
+    return "match";
   });
   const [level, setLevel] = useState(() => {
     if (["A", "B", "C"].includes(saved.level)) return saved.level;
@@ -53,18 +69,23 @@ export default function HomeScreen({ gameType, onPlay, onLearn, initialConfig })
 
   // Persist choices so they're remembered next time the app opens
   useEffect(() => {
-    savePrefs(gameType, { subType, level, totalQuestions });
-  }, [gameType, subType, level, totalQuestions]);
+    savePrefs(gameType, { subType, level, totalQuestions, format });
+  }, [gameType, subType, level, totalQuestions, format]);
 
-  const activeGameType  = isWordMatch ? subType : gameType;
-  const scoreLevel      = noLevel ? "all" : level;
-  const info            = TYPE_INFO[activeGameType];
-  const maxStars        = totalQuestions * 3;
-  const best            = getBest(scoreLevel, activeGameType, totalQuestions);
-  const topRuns         = getTopRuns(scoreLevel, activeGameType, totalQuestions, 5);
+  // baseType = the skill (synonyms/antonyms/compoundWords/fillInBlanks).
+  // scoreType adds a "Ws" suffix for the worksheet format so its leaderboard is
+  // kept separate from the tap-Match format (they score differently).
+  const baseType      = isWordMatch ? subType : gameType;
+  const isWorksheet   = supportsFormat && format === "worksheet";
+  const scoreType     = isWorksheet ? `${baseType}Ws` : baseType;
+  const scoreLevel    = noLevel ? "all" : level;
+  const info          = TYPE_INFO[baseType];
+  const maxStars      = totalQuestions * 3;
+  const best          = getBest(scoreLevel, scoreType, totalQuestions);
+  const topRuns       = getTopRuns(scoreLevel, scoreType, totalQuestions, 5);
 
   function handlePlay() {
-    onPlay({ level: scoreLevel, totalQuestions, gameType: activeGameType });
+    onPlay({ level: scoreLevel, totalQuestions, gameType: scoreType, baseType, format: isWorksheet ? "worksheet" : "match" });
   }
 
   return (
@@ -78,23 +99,48 @@ export default function HomeScreen({ gameType, onPlay, onLearn, initialConfig })
 
         {/* Synonyms / Antonyms toggle — wordMatch only */}
         {isWordMatch && (
-          <div className="toggle-group">
-            <button
-              className={`toggle-btn ${subType === "synonyms" ? "active" : ""}`}
-              onClick={() => setSubType("synonyms")}
-            >
-              Synonyms
-            </button>
-            <button
-              className={`toggle-btn ${subType === "antonyms" ? "active" : ""}`}
-              onClick={() => setSubType("antonyms")}
-            >
-              Antonyms
-            </button>
-          </div>
+          <>
+            <div className="toggle-label">Word type</div>
+            <div className="toggle-group">
+              <button
+                className={`toggle-btn ${subType === "synonyms" ? "active" : ""}`}
+                onClick={() => setSubType("synonyms")}
+              >
+                Synonyms
+              </button>
+              <button
+                className={`toggle-btn ${subType === "antonyms" ? "active" : ""}`}
+                onClick={() => setSubType("antonyms")}
+              >
+                Antonyms
+              </button>
+            </div>
+          </>
+        )}
+
+        {/* Play style (Match / Worksheet) — games that support both formats */}
+        {supportsFormat && (
+          <>
+            <div className="toggle-label">Play style</div>
+            <div className="toggle-group">
+              <button
+                className={`toggle-btn ${format === "match" ? "active" : ""}`}
+                onClick={() => setFormat("match")}
+              >
+                🎯 Match
+              </button>
+              <button
+                className={`toggle-btn ${format === "worksheet" ? "active" : ""}`}
+                onClick={() => setFormat("worksheet")}
+              >
+                📝 Worksheet
+              </button>
+            </div>
+          </>
         )}
 
         <p className="game-type-desc">{info.description}</p>
+        {supportsFormat && <p className="format-hint">{FORMAT_HINT[format]}</p>}
 
         <div className="home-columns">
 
@@ -105,7 +151,7 @@ export default function HomeScreen({ gameType, onPlay, onLearn, initialConfig })
                 <div className="section-label">Choose Level</div>
                 <div className="level-group">
                   {LEVELS.map((l) => {
-                    const lb = getBest(l.id, activeGameType, totalQuestions);
+                    const lb = getBest(l.id, scoreType, totalQuestions);
                     return (
                       <button
                         key={l.id}

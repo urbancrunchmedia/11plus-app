@@ -15,6 +15,19 @@ function shuffle(arr) {
   return a;
 }
 
+// Right-column ordering: a derangement of [0..n-1] (no value stays at its own
+// index) so a match is NEVER on the same row as its word. Sattolo's algorithm
+// produces a single-cycle permutation, which is guaranteed to have no fixed
+// points. With 0 or 1 items a derangement is impossible, so fall back to identity.
+function derange(n) {
+  const a = Array.from({ length: n }, (_, i) => i);
+  for (let i = n - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * i); // 0 <= j < i (strictly), gives a full cycle
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
 function getStars(wrongCount) {
   if (wrongCount === 0) return 3;
   if (wrongCount === 1) return 2;
@@ -34,8 +47,22 @@ function makeItem(pair) {
   return { uid: _uid++, word: pair.word, match: pair.match, wrongCount: 0 };
 }
 
-export default function GameScreen({ level, gameType, totalQuestions = 20, onHome }) {
-  const allPairs = [
+// Index of the first pair in `queue` that clashes with nothing already on the
+// board (same left word or same right match would create ambiguous duplicate
+// cards). Falls back to 0 if the pool is too small to avoid a clash.
+function pickNonColliding(queue, boardItems) {
+  const words   = new Set(boardItems.map((s) => s.word.toLowerCase()));
+  const matches = new Set(boardItems.map((s) => s.match.toLowerCase()));
+  const idx = queue.findIndex(
+    (p) => !words.has(p.word.toLowerCase()) && !matches.has(p.match.toLowerCase())
+  );
+  return idx === -1 ? 0 : idx;
+}
+
+export default function GameScreen({ level, gameType, totalQuestions = 20, onHome, pairs, instruction, typeLabel: typeLabelProp }) {
+  // A caller can pass an explicit `pairs` list (e.g. compound words); otherwise
+  // fall back to the synonyms/antonyms data keyed by level + gameType.
+  const allPairs = pairs ?? [
     ...(wordData[level]?.[gameType] ?? []),
     ...(bookletWordData[level]?.[gameType] ?? []),
   ];
@@ -45,11 +72,23 @@ export default function GameScreen({ level, gameType, totalQuestions = 20, onHom
     const list = buildPrioritisedList(allPairs, performance.current);
     // Cycle list if fewer words than totalQuestions
     const full = Array.from({ length: totalQuestions }, (_, i) => list[i % list.length]);
-    return {
-      board:      full.slice(0, BOARD_SIZE).map(makeItem),
-      queue:      full.slice(BOARD_SIZE),          // 14 pairs waiting
-      rightOrder: shuffle([0, 1, 2, 3, 4]),          // independent right-column order
-    };
+    // Greedily seat a starting board whose left words AND right matches are all
+    // distinct — otherwise two identical cards would make a match ambiguous
+    // (common with compound words that share a half, e.g. Back-drop / Rain-drop).
+    const board = [];
+    const queue = [];
+    const words = new Set(), matches = new Set();
+    for (const p of full) {
+      const w = p.word.toLowerCase(), m = p.match.toLowerCase();
+      if (board.length < BOARD_SIZE && !words.has(w) && !matches.has(m)) {
+        board.push(makeItem(p)); words.add(w); matches.add(m);
+      } else {
+        queue.push(p);
+      }
+    }
+    // Tiny pool: top up so the board is still full even if halves must repeat.
+    while (board.length < BOARD_SIZE && queue.length) board.push(makeItem(queue.shift()));
+    return { board, queue, rightOrder: derange(board.length) };
   }
 
   const [game, setGame]               = useState(() => buildGame());
@@ -111,19 +150,22 @@ export default function GameScreen({ level, gameType, totalQuestions = 20, onHom
         }
 
         if (queue.length > 0) {
-          // Replace matched slot with next from queue
-          const nextPair = queue[0];
+          // Replace matched slot with a queued pair that won't duplicate a word
+          // or match already visible on the other four cards.
+          const others   = board.filter((_, i) => i !== leftIdx);
+          const qi        = pickNonColliding(queue, others);
+          const nextPair  = queue[qi];
+          const newQueue  = queue.filter((_, i) => i !== qi);
           const newBoard = board.map((slot, i) =>
             i === leftIdx ? makeItem(nextPair) : slot
           );
-          setGame({ board: newBoard, queue: queue.slice(1), rightOrder });
+          // Re-shuffle the right column so the row-to-row mapping changes every
+          // turn — otherwise kids learn the fixed positions and match without reading.
+          setGame({ board: newBoard, queue: newQueue, rightOrder: derange(newBoard.length) });
         } else {
           // Queue exhausted — shrink the board for the final matches
-          const newBoard      = board.filter((_, i) => i !== leftIdx);
-          const newRightOrder = rightOrder
-            .filter((idx) => idx !== leftIdx)
-            .map((idx) => (idx > leftIdx ? idx - 1 : idx));
-          setGame({ board: newBoard, queue: [], rightOrder: newRightOrder });
+          const newBoard = board.filter((_, i) => i !== leftIdx);
+          setGame({ board: newBoard, queue: [], rightOrder: derange(newBoard.length) });
         }
 
         setJustMatched(null);
@@ -161,7 +203,7 @@ export default function GameScreen({ level, gameType, totalQuestions = 20, onHom
     setGameComplete(false);
   }
 
-  const typeLabel = gameType === "synonyms" ? "Synonyms" : "Antonyms";
+  const typeLabel = typeLabelProp ?? (gameType === "synonyms" ? "Synonyms" : "Antonyms");
   const progress  = (results.length / totalQuestions) * 100;
 
   if (gameComplete) {
@@ -200,9 +242,9 @@ export default function GameScreen({ level, gameType, totalQuestions = 20, onHom
       </div>
 
       <p className="game-instruction">
-        {gameType === "synonyms"
+        {instruction ?? (gameType === "synonyms"
           ? "Match each word with its synonym (same meaning)"
-          : "Match each word with its antonym (opposite meaning)"}
+          : "Match each word with its antonym (opposite meaning)")}
       </p>
 
       <div className="columns">

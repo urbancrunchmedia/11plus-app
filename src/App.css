@@ -237,7 +237,15 @@ body {
 }
 
 .sidebar-item-icon { font-size: 1.1rem; flex-shrink: 0; width: 22px; text-align: center; }
-.sidebar-item-label { flex: 1; line-height: 1.2; }
+.sidebar-item-text { flex: 1; display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.sidebar-item-label { line-height: 1.2; }
+.sidebar-item-sub {
+  font-size: 0.68rem;
+  font-weight: 500;
+  line-height: 1.15;
+  opacity: 0.62;
+}
+.sidebar-item.active .sidebar-item-sub { opacity: 0.75; }
 
 .coming-pill {
   font-size: 0.52rem;
@@ -592,7 +600,23 @@ body {
 }
 
 /* ───── Toggle group ───── */
+.toggle-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--brand-ink);
+  margin-bottom: -4px;
+}
 .toggle-group { display: flex; gap: 8px; }
+
+.format-hint {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-2, #6b7280);
+  text-align: center;
+  margin-top: -4px;
+}
 
 .toggle-btn {
   flex: 1;
@@ -1042,6 +1066,111 @@ body {
   border-bottom-color: #991b1b !important;
   color: var(--wrong) !important;
   animation: shake 0.5s ease;
+}
+
+/* ───── Worksheet games (two groups of three) ───── */
+.ws-example {
+  text-align: center;
+  font-size: 0.82rem;
+  color: var(--muted, #6b7280);
+  margin: -4px 0 10px;
+}
+.ws-example b { color: var(--brand-ink); }
+
+.ws-list { display: flex; flex-direction: column; gap: 10px; }
+
+.ws-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: var(--r-xl);
+  border: 2px solid var(--border);
+  background: white;
+  box-shadow: var(--shadow-xs);
+}
+.ws-row.correct   { border-color: var(--correct); background: #f0fdf4; }
+.ws-row.incorrect { border-color: var(--wrong);   background: var(--wrong-bg); }
+
+.ws-num {
+  flex-shrink: 0;
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #fff1d6;
+  color: var(--brand-ink);
+  font-weight: 800;
+  font-size: 0.85rem;
+}
+
+.ws-groups {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.ws-group { flex: 1; display: flex; gap: 6px; min-width: 0; }
+.ws-plus { font-weight: 800; color: var(--muted, #9ca3af); flex-shrink: 0; }
+
+.ws-word {
+  flex: 1;
+  min-width: 0;
+  padding: 10px 6px;
+  border-radius: var(--r-lg, 12px);
+  border: 2px solid var(--border);
+  border-bottom: 3px solid var(--border-2);
+  background: white;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text);
+  text-align: center;
+  transition: all 0.12s;
+  box-shadow: var(--shadow-xs);
+}
+.ws-word:hover:not(:disabled) {
+  border-color: var(--purple);
+  background: #fff1d6;
+  transform: translateY(-2px);
+  color: var(--brand-ink);
+}
+.ws-word.selected {
+  border-color: var(--selected);
+  border-bottom-color: var(--selected-ink);
+  background: var(--selected-bg);
+  color: var(--selected-ink);
+  box-shadow: 0 0 0 3px rgba(37,99,235,0.22);
+}
+.ws-word.correct {
+  border-color: var(--correct) !important;
+  border-bottom-color: var(--green-dark) !important;
+  background: #dcfce7 !important;
+  color: var(--correct) !important;
+}
+.ws-word.incorrect {
+  border-color: var(--wrong) !important;
+  border-bottom-color: #991b1b !important;
+  background: var(--wrong-bg) !important;
+  color: var(--wrong) !important;
+  text-decoration: line-through;
+}
+.ws-word:disabled { cursor: default; }
+
+.ws-mark { flex-shrink: 0; font-weight: 900; font-size: 1.1rem; }
+.ws-row.correct   .ws-mark { color: var(--correct); }
+.ws-row.incorrect .ws-mark { color: var(--wrong); }
+
+.ws-actions { margin-top: 16px; display: flex; justify-content: center; }
+.ws-actions .play-btn { max-width: 340px; }
+
+@media (max-width: 560px) {
+  .ws-groups { flex-direction: column; gap: 5px; }
+  .ws-plus { display: none; }
+  .ws-word { font-size: 0.8rem; padding: 9px 4px; }
+  .ws-row { gap: 7px; padding: 7px; }
 }
 
 /* ───── Round Summary / Game Complete ───── */

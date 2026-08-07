@@ -2,6 +2,9 @@ import React, { useState, useEffect } from "react";
 import Sidebar from "./components/Sidebar";
 import HomeScreen from "./components/HomeScreen";
 import GameScreen from "./components/GameScreen";
+import { compoundWords } from "./data/compoundWords";
+import WorksheetGame from "./components/WorksheetGame";
+import { makeCompoundQuestions, makeSynonymQuestions, makeAntonymQuestions } from "./utils/worksheet";
 import PunctuationScreen from "./components/PunctuationScreen";
 import PunctuationGame from "./components/PunctuationGame";
 import FillInBlanksGame from "./components/FillInBlanksGame";
@@ -14,13 +17,57 @@ import LoginScreen from "./components/LoginScreen";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import "./App.css";
 
+// Worksheet-format metadata per skill (baseType). Drives the exam-style
+// "two groups of three" screen for Word Match (synonyms/antonyms) and Compound Words.
+const WORKSHEET_META = {
+  synonyms: {
+    makeQuestions: makeSynonymQuestions,
+    instruction: "Pick the word on the left and the word on the right that have a similar meaning.",
+    example: <>Example: (<b>Happy</b> · Run · Cold) = (Big · <b>Joyful</b> · Jump) → <b>Happy</b> means <b>Joyful</b></>,
+    connector: "=",
+    typeLabel: "Synonyms",
+  },
+  antonyms: {
+    makeQuestions: makeAntonymQuestions,
+    instruction: "Pick the word on the left and the word on the right that have opposite meanings.",
+    example: <>Example: (<b>Happy</b> · Run · Cold) ↔ (Big · <b>Sad</b> · Jump) → <b>Happy</b> is the opposite of <b>Sad</b></>,
+    connector: "↔",
+    typeLabel: "Antonyms",
+  },
+  compoundWords: {
+    makeQuestions: makeCompoundQuestions,
+    instruction: "Pick one word from each group that join together to make a new word.",
+    example: <>Example: (<b>Water</b> · Suggest · Disc) + (<b>Fall</b> · Hard · Ton) → the word is <b>Waterfall</b></>,
+    connector: "+",
+    typeLabel: "Compound Words",
+  },
+};
+
+function WorksheetFor({ baseType, config, playKey, onHome }) {
+  const meta = WORKSHEET_META[baseType];
+  return (
+    <WorksheetGame
+      key={playKey}
+      level={config.level}
+      gameType={config.gameType}
+      totalQuestions={config.totalQuestions}
+      makeQuestions={(count) => meta.makeQuestions(config.level, count)}
+      instruction={meta.instruction}
+      example={meta.example}
+      typeLabel={meta.typeLabel}
+      connector={meta.connector}
+      onHome={onHome}
+    />
+  );
+}
+
 function AppInner() {
   const { user } = useAuth();
 
   // All hooks must run on every render (before any early return) — otherwise
   // the hook count changes when auth flips logged-out → logged-in and React
   // crashes the tree to a blank screen (only a refresh recovered it).
-  const VALID_GAMES = ["wordMatch", "punctuation", "fillInBlanks", "wordList", "leaderboard"];
+  const VALID_GAMES = ["wordMatch", "compoundWords", "punctuation", "fillInBlanks", "wordList", "leaderboard"];
   const [selectedGame, setSelectedGame] = useState(() => {
     try {
       const last = localStorage.getItem("11plus_last_screen");
@@ -71,12 +118,13 @@ function AppInner() {
     setScreen("learn");
   }
 
-  const isWordMatch     = selectedGame === "wordMatch";
-  const isPunctuation   = selectedGame === "punctuation";
-  const isFillInBlanks  = selectedGame === "fillInBlanks";
-  const isWordList      = selectedGame === "wordList";
-  const isLeaderboard   = selectedGame === "leaderboard";
-  const isKnownGame     = isWordMatch || isPunctuation || isFillInBlanks || isWordList || isLeaderboard;
+  const isWordMatch      = selectedGame === "wordMatch";
+  const isCompoundWords  = selectedGame === "compoundWords";
+  const isPunctuation    = selectedGame === "punctuation";
+  const isFillInBlanks   = selectedGame === "fillInBlanks";
+  const isWordList       = selectedGame === "wordList";
+  const isLeaderboard    = selectedGame === "leaderboard";
+  const isKnownGame      = isWordMatch || isCompoundWords || isPunctuation || isFillInBlanks || isWordList || isLeaderboard;
 
   return (
     <div className="app-layout">
@@ -99,18 +147,43 @@ function AppInner() {
         </button>
 
         <div className="main-content">
-          {/* Word Match (synonyms + antonyms combined) */}
+          {/* Word Match — synonyms/antonyms, in Match or Worksheet format */}
           {isWordMatch && screen === "home" && (
             <HomeScreen gameType="wordMatch" onPlay={handlePlay} initialConfig={config} />
           )}
           {isWordMatch && screen === "game" && config && (
-            <GameScreen
-              key={playKey}
-              level={config.level}
-              gameType={config.gameType}
-              totalQuestions={config.totalQuestions}
-              onHome={handleHome}
-            />
+            config.format === "worksheet" ? (
+              <WorksheetFor baseType={config.baseType} config={config} playKey={playKey} onHome={handleHome} />
+            ) : (
+              <GameScreen
+                key={playKey}
+                level={config.level}
+                gameType={config.gameType}
+                totalQuestions={config.totalQuestions}
+                onHome={handleHome}
+              />
+            )
+          )}
+
+          {/* Compound Words — join two words, in Match or Worksheet format */}
+          {isCompoundWords && screen === "home" && (
+            <HomeScreen gameType="compoundWords" onPlay={handlePlay} initialConfig={config} />
+          )}
+          {isCompoundWords && screen === "game" && config && (
+            config.format === "worksheet" ? (
+              <WorksheetFor baseType="compoundWords" config={config} playKey={playKey} onHome={handleHome} />
+            ) : (
+              <GameScreen
+                key={playKey}
+                level={config.level}
+                gameType={config.gameType}
+                pairs={(compoundWords[config.level] ?? []).map((c) => ({ word: c.first, match: c.second }))}
+                instruction="Match each word-part with the part that completes the compound word"
+                typeLabel="Compound Words"
+                totalQuestions={config.totalQuestions}
+                onHome={handleHome}
+              />
+            )
           )}
 
           {/* Punctuation */}

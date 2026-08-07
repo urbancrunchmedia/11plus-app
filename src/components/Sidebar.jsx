@@ -1,11 +1,12 @@
 import React from "react";
 
 const ENGLISH_GAMES = [
-  { id: "wordMatch",       label: "Word Match",        icon: "📚" },
-  { id: "punctuation",     label: "Punctuation",       icon: "✏️" },
-  { id: "fillInBlanks",    label: "Word Detective",     icon: "🕵️" },
-  { id: "wordList",        label: "Word List",         icon: "📖" },
-  { id: "leaderboard",     label: "Leaderboard",        icon: "🏆" },
+  { id: "wordMatch",       label: "Word Match",        icon: "📚", sub: "Same & opposite meanings" },
+  { id: "compoundWords",   label: "Compound Words",    icon: "🧩", sub: "Join two words into one" },
+  { id: "punctuation",     label: "Punctuation",       icon: "✏️", sub: "Add the right punctuation" },
+  { id: "fillInBlanks",    label: "Word Detective",    icon: "🕵️", sub: "Find the word from clues" },
+  { id: "wordList",        label: "Word List",         icon: "📖", sub: "Look up every word" },
+  { id: "leaderboard",     label: "Leaderboard",       icon: "🏆", sub: "See the top scores" },
 ];
 
 const MATHS_GAMES = [
@@ -80,7 +81,12 @@ export default function Sidebar({
               title={isCollapsed ? g.label : undefined}
             >
               <span className="sidebar-item-icon">{g.icon}</span>
-              {!isCollapsed && <span className="sidebar-item-label">{g.label}</span>}
+              {!isCollapsed && (
+                <span className="sidebar-item-text">
+                  <span className="sidebar-item-label">{g.label}</span>
+                  {g.sub && <span className="sidebar-item-sub">{g.sub}</span>}
+                </span>
+              )}
             </button>
           ))}
 
