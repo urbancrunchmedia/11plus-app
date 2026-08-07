@@ -65,7 +65,7 @@ export function saveIfBest(level, gameType, totalQuestions, stars, wrong, time) 
 }
 
 // ── Run history ───────────────────────────────────────────────────
-function getAllHistory() {
+export function getAllHistory() {
   try { return JSON.parse(localStorage.getItem(HISTORY_KEY)) || {}; }
   catch { return {}; }
 }

@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { saveIfBest, saveRun, getBest, formatTime } from "../utils/leaderboard";
+import { xpToRunReward, getLevelInfo, getStreak } from "../utils/gamify";
 import { pushToCloud } from "../utils/cloudScores";
 import { useAuth } from "../contexts/AuthContext";
 
@@ -27,6 +28,10 @@ export default function GameComplete({ results, totalWrong, timeTaken, onPlayAga
     if (user) pushToCloud(user);
     return newBest;
   });
+
+  // Payout — read AFTER the run is saved above so XP/level/streak reflect it.
+  const xpEarned = xpToRunReward(totalStars);
+  const [payout] = useState(() => ({ level: getLevelInfo(), streak: getStreak() }));
 
   return (
     <div className="summary-overlay">
@@ -59,6 +64,18 @@ export default function GameComplete({ results, totalWrong, timeTaken, onPlayAga
           <div className="gc-stat">
             <span className="gc-stat-value gc-time">⏱ {formatTime(timeTaken)}</span>
             <span className="gc-stat-label">Time</span>
+          </div>
+        </div>
+
+        <div className="gc-payout">
+          <div className="gc-payout-top">
+            <span className="gc-xp">+{xpEarned} XP</span>
+            <span className="gc-level">Level {payout.level.level} · {payout.level.title}</span>
+          </div>
+          <div className="gc-xpbar"><div className="gc-xpbar-fill" style={{ width: `${payout.level.pct}%` }} /></div>
+          <div className="gc-payout-bot">
+            <span>{payout.level.toNext} XP to Level {payout.level.level + 1}</span>
+            <span className="gc-streak">🔥 {payout.streak} day streak</span>
           </div>
         </div>
 

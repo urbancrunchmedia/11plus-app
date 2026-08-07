@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from "react";
-import Sidebar from "./components/Sidebar";
+import AppNav from "./components/AppNav";
+import HomeDashboard from "./components/HomeDashboard";
+import PlayGrid from "./components/PlayGrid";
+import MeScreen from "./components/MeScreen";
 import HomeScreen from "./components/HomeScreen";
 import GameScreen from "./components/GameScreen";
 import { compoundWords } from "./data/compoundWords";
@@ -12,7 +15,6 @@ import FlashcardScreen from "./components/FlashcardScreen";
 import ComingSoon from "./components/ComingSoon";
 import WordListScreen from "./components/WordListScreen";
 import LeaderboardScreen from "./components/LeaderboardScreen";
-import AuthButton from "./components/AuthButton";
 import LoginScreen from "./components/LoginScreen";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import "./App.css";
@@ -67,20 +69,20 @@ function AppInner() {
   // All hooks must run on every render (before any early return) — otherwise
   // the hook count changes when auth flips logged-out → logged-in and React
   // crashes the tree to a blank screen (only a refresh recovered it).
-  const VALID_GAMES = ["wordMatch", "compoundWords", "punctuation", "fillInBlanks", "wordList", "leaderboard"];
+  const VALID_SCREENS = [
+    "home", "play", "me", "wordMatch", "compoundWords",
+    "punctuation", "fillInBlanks", "wordList", "leaderboard",
+  ];
   const [selectedGame, setSelectedGame] = useState(() => {
     try {
       const last = localStorage.getItem("11plus_last_screen");
-      return VALID_GAMES.includes(last) ? last : "wordMatch";
-    } catch { return "wordMatch"; }
+      return VALID_SCREENS.includes(last) ? last : "home";
+    } catch { return "home"; }
   });
   // Remember the current section so a refresh stays on the same page
   useEffect(() => {
     try { localStorage.setItem("11plus_last_screen", selectedGame); } catch {}
   }, [selectedGame]);
-
-  const [sidebarOpen, setSidebarOpen]   = useState(false);
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   const [screen, setScreen] = useState("home");
   const [config, setConfig] = useState(null);
@@ -118,35 +120,40 @@ function AppInner() {
     setScreen("learn");
   }
 
+  const isDashboard      = selectedGame === "home";
+  const isPlayGrid       = selectedGame === "play";
+  const isMe             = selectedGame === "me";
   const isWordMatch      = selectedGame === "wordMatch";
   const isCompoundWords  = selectedGame === "compoundWords";
   const isPunctuation    = selectedGame === "punctuation";
   const isFillInBlanks   = selectedGame === "fillInBlanks";
   const isWordList       = selectedGame === "wordList";
   const isLeaderboard    = selectedGame === "leaderboard";
-  const isKnownGame      = isWordMatch || isCompoundWords || isPunctuation || isFillInBlanks || isWordList || isLeaderboard;
+  const isKnown =
+    isDashboard || isPlayGrid || isMe || isWordMatch || isCompoundWords ||
+    isPunctuation || isFillInBlanks || isWordList || isLeaderboard;
 
   return (
     <div className="app-layout">
-      <Sidebar
-        selectedGame={selectedGame}
-        onSelectGame={handleSelectGame}
-        isOpen={sidebarOpen}
-        onClose={() => setSidebarOpen(false)}
-        isCollapsed={sidebarCollapsed}
-        onToggleCollapse={() => setSidebarCollapsed((c) => !c)}
-      />
+      <AppNav active={selectedGame} onNavigate={handleSelectGame} />
 
       <div className="main-area">
-        <button
-          className="hamburger"
-          onClick={() => setSidebarOpen(true)}
-          aria-label="Open menu"
-        >
-          ☰
-        </button>
-
         <div className="main-content">
+          {/* Home dashboard */}
+          {isDashboard && (
+            <HomeDashboard
+              onQuickPlay={() => handleSelectGame("play")}
+              onPlaySkill={(id) => handleSelectGame(id)}
+              onOpenBoard={() => handleSelectGame("leaderboard")}
+            />
+          )}
+
+          {/* Play — game picker */}
+          {isPlayGrid && <PlayGrid onSelectGame={handleSelectGame} />}
+
+          {/* Me — profile */}
+          {isMe && <MeScreen />}
+
           {/* Word Match — synonyms/antonyms, in Match or Worksheet format */}
           {isWordMatch && screen === "home" && (
             <HomeScreen gameType="wordMatch" onPlay={handlePlay} initialConfig={config} />
@@ -199,7 +206,7 @@ function AppInner() {
             />
           )}
 
-          {/* Fill in the Blanks */}
+          {/* Word Detective (fill in the blanks) */}
           {isFillInBlanks && screen === "home" && (
             <HomeScreen gameType="fillInBlanks" onPlay={handlePlay} onLearn={handleLearn} initialConfig={config} />
           )}
@@ -222,13 +229,7 @@ function AppInner() {
 
           {isLeaderboard && <LeaderboardScreen />}
 
-          {!isKnownGame && (
-            <ComingSoon gameId={selectedGame} />
-          )}
-        </div>
-
-        <div className="auth-bar">
-          <AuthButton />
+          {!isKnown && <ComingSoon gameId={selectedGame} />}
         </div>
       </div>
     </div>
