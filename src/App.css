@@ -2112,3 +2112,24 @@ body {
 .landing-lenrow .q-bar { flex: 1; }
 
 .landing-best { background: #fff; border-radius: 22px; padding: 18px; box-shadow: var(--shadow-xs); display: flex; flex-direction: column; gap: 8px; }
+
+/* ── In-game HUD (light, prototype 2a) ── */
+.ig-top { display: flex; align-items: center; gap: 12px; }
+.ig-back, .ig-mute {
+  width: 40px; height: 40px; flex: none; border: none; border-radius: 13px;
+  background: #fff; color: var(--ink); font-size: 1.1rem; font-weight: 800;
+  box-shadow: var(--shadow-xs); display: grid; place-items: center;
+}
+.ig-pips { flex: 1; display: flex; gap: 4px; }
+.ig-pip { flex: 1; height: 8px; border-radius: var(--r-full); background: var(--border-2); transition: background 0.2s; }
+.ig-pip.done { background: var(--brand); }
+
+.ig-hud { display: flex; gap: 8px; }
+.ig-card { flex: 1; background: #fff; border-radius: 16px; padding: 10px 12px; box-shadow: var(--shadow-xs); }
+.ig-card--combo { background: var(--ink); }
+.ig-card-val { font-weight: 800; font-size: 1.2rem; line-height: 1; color: var(--ink); }
+.ig-card--combo .ig-card-val { color: var(--accent); }
+.ig-card-val--correct { color: var(--correct); }
+.ig-card-val--wrong { color: var(--wrong); }
+.ig-card-lbl { font-weight: 600; font-size: 0.66rem; color: var(--muted, #6b7a8c); margin-top: 4px; }
+.ig-card--combo .ig-card-lbl { color: rgba(255,255,255,0.6); }

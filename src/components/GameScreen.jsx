@@ -223,22 +223,37 @@ export default function GameScreen({ level, gameType, totalQuestions = 20, onHom
 
   return (
     <div className="game-screen">
-      <div className="game-header">
-        <button className="back-btn" onClick={onHome}>Home</button>
-        {level !== "all" && <span className="level-badge">Level {level}</span>}
-        <span className="type-badge">{typeLabel}</span>
-        {streak > 0 && <span className="streak-badge">🔥 {streak}</span>}
-        <span className="correct-badge">✓ {results.length}</span>
-        <span className="wrong-badge">✗ {totalWrong}</span>
-        <span className="timer-badge">⏱ {Math.floor(elapsed/60)}:{String(elapsed%60).padStart(2,"0")}</span>
-        <button className="mute-btn" onClick={() => setMuted((m) => !m)} aria-label={muted ? "Unmute" : "Mute"}>
+      {/* Top: back · progress pips · mute */}
+      <div className="ig-top">
+        <button className="ig-back" onClick={onHome} aria-label="Home">←</button>
+        <div className="ig-pips">
+          {Array.from({ length: totalQuestions }, (_, i) => (
+            <span key={i} className={`ig-pip ${i < results.length ? "done" : ""}`} />
+          ))}
+        </div>
+        <button className="ig-mute" onClick={() => setMuted((m) => !m)} aria-label={muted ? "Unmute" : "Mute"}>
           {muted ? "🔇" : "🔊"}
         </button>
       </div>
 
-      {/* Progress bar */}
-      <div className="progress-wrap">
-        <div className="progress-fill" style={{ width: `${progress}%` }} />
+      {/* HUD: combo · time · wrong */}
+      <div className="ig-hud">
+        <div className="ig-card ig-card--combo">
+          <div className="ig-card-val">×{streak}</div>
+          <div className="ig-card-lbl">combo</div>
+        </div>
+        <div className="ig-card">
+          <div className="ig-card-val">{Math.floor(elapsed / 60)}:{String(elapsed % 60).padStart(2, "0")}</div>
+          <div className="ig-card-lbl">time</div>
+        </div>
+        <div className="ig-card">
+          <div className="ig-card-val ig-card-val--correct">✓ {results.length}</div>
+          <div className="ig-card-lbl">correct</div>
+        </div>
+        <div className="ig-card">
+          <div className="ig-card-val ig-card-val--wrong">{totalWrong}</div>
+          <div className="ig-card-lbl">wrong</div>
+        </div>
       </div>
 
       <p className="game-instruction">
