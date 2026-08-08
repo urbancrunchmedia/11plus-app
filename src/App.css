@@ -2133,3 +2133,46 @@ body {
 .ig-card-val--wrong { color: var(--wrong); }
 .ig-card-lbl { font-weight: 600; font-size: 0.66rem; color: var(--muted, #6b7a8c); margin-top: 4px; }
 .ig-card--combo .ig-card-lbl { color: rgba(255,255,255,0.6); }
+
+/* ── Worksheet header ── */
+.ws-head-title { display: flex; align-items: baseline; gap: 8px; flex: 1; min-width: 0; }
+.ws-head-name { font-weight: 800; font-size: 1.05rem; color: var(--ink); }
+.ws-head-level { font-weight: 700; font-size: 0.72rem; color: var(--muted, #6b7a8c); }
+.ws-head-stat { font-weight: 800; font-size: 0.9rem; }
+.ws-head-time { font-weight: 700; font-size: 0.85rem; color: var(--muted, #6b7a8c); }
+
+/* ── Word List (two-pane) ── */
+.wordlist { width: 100%; max-width: 960px; display: flex; flex-direction: column; gap: 16px; }
+.wordlist-head { display: flex; align-items: center; gap: 14px; }
+.wordlist-controls { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+.wl2-search { flex: 1; min-width: 160px; background: #fff; border: 2px solid var(--border); border-radius: 16px; padding: 14px 18px; font: inherit; font-size: 0.95rem; font-weight: 500; color: var(--ink); }
+.wl2-search:focus { outline: none; border-color: var(--brand); box-shadow: 0 0 0 4px rgba(18,165,255,0.15); }
+.wl2-filters { display: flex; gap: 7px; }
+.wl2-filter { border: none; border-radius: var(--r-full); padding: 11px 16px; font-weight: 700; font-size: 0.8rem; background: #fff; color: var(--muted, #6b7a8c); box-shadow: var(--shadow-xs); }
+.wl2-filter.active { background: var(--ink); color: #fff; }
+
+.wl2-panes { display: grid; grid-template-columns: 1.4fr 1fr; gap: 16px; align-items: start; }
+.wl2-list { background: #fff; border-radius: 22px; padding: 8px; box-shadow: var(--shadow-xs); max-height: 62vh; overflow-y: auto; }
+.wl2-row { width: 100%; display: flex; align-items: center; gap: 12px; padding: 13px 16px; border: none; background: transparent; border-radius: 14px; text-align: left; transition: background 0.12s; }
+.wl2-row:hover { background: var(--surface-2, #f4f9ff); }
+.wl2-row.active { background: var(--brand); }
+.wl2-word { flex: 1; font-weight: 600; font-size: 0.98rem; color: var(--ink); }
+.wl2-row.active .wl2-word { color: #fff; }
+.wl2-levels { font-weight: 700; font-size: 0.72rem; color: var(--muted, #6b7a8c); }
+.wl2-row.active .wl2-levels { color: rgba(255,255,255,0.85); }
+.wl2-empty { padding: 40px 16px; text-align: center; font-weight: 600; color: var(--muted, #6b7a8c); }
+
+.wl2-detail { background: #fff; border-radius: 22px; padding: 24px; box-shadow: var(--shadow-xs); position: sticky; top: 0; }
+.wl2-detail-word { font-weight: 800; font-size: 1.7rem; color: var(--ink); letter-spacing: -0.02em; }
+.wl2-detail-levels { font-weight: 600; font-size: 0.8rem; color: var(--muted, #6b7a8c); margin-top: 6px; }
+.wl2-defn { font-weight: 500; font-size: 1rem; line-height: 1.55; color: var(--ink); margin-top: 18px; }
+.wl2-defn--muted { color: var(--muted, #6b7a8c); }
+.wl2-rel { display: flex; gap: 28px; margin-top: 20px; }
+.wl2-rel-lbl { font-weight: 800; font-size: 0.66rem; letter-spacing: 0.09em; color: var(--muted, #9aa8b6); }
+.wl2-rel-val { font-weight: 700; font-size: 0.95rem; color: var(--ink); margin-top: 7px; }
+
+@media (max-width: 760px) {
+  .wl2-panes { grid-template-columns: 1fr; }
+  .wl2-list { max-height: none; }
+  .wl2-detail { position: static; }
+}

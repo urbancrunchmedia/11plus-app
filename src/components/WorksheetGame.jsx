@@ -90,14 +90,16 @@ export default function WorksheetGame({
 
   return (
     <div className="game-screen">
-      <div className="game-header">
-        <button className="back-btn" onClick={onHome}>Home</button>
-        {level !== "all" && <span className="level-badge">Level {level}</span>}
-        <span className="type-badge">{typeLabel}</span>
-        {checked && <span className="correct-badge">✓ {correctCount}</span>}
-        {checked && <span className="wrong-badge">✗ {wrongCount}</span>}
-        <span className="timer-badge">⏱ {Math.floor(elapsed / 60)}:{String(elapsed % 60).padStart(2, "0")}</span>
-        <button className="mute-btn" onClick={() => setMuted((m) => !m)} aria-label={muted ? "Unmute" : "Mute"}>
+      <div className="ig-top">
+        <button className="ig-back" onClick={onHome} aria-label="Home">←</button>
+        <div className="ws-head-title">
+          <span className="ws-head-name">{typeLabel}</span>
+          {level !== "all" && <span className="ws-head-level">Level {level}</span>}
+        </div>
+        {checked && <span className="ig-card-val--correct ws-head-stat">✓ {correctCount}</span>}
+        {checked && <span className="ig-card-val--wrong ws-head-stat">✗ {wrongCount}</span>}
+        <span className="ws-head-time">⏱ {Math.floor(elapsed / 60)}:{String(elapsed % 60).padStart(2, "0")}</span>
+        <button className="ig-mute" onClick={() => setMuted((m) => !m)} aria-label={muted ? "Unmute" : "Mute"}>
           {muted ? "🔇" : "🔊"}
         </button>
       </div>
