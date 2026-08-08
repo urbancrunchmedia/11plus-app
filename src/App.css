@@ -2081,3 +2081,34 @@ body {
   .dash-jump { grid-template-columns: 1fr 1fr; }
   .main-content { padding: 18px 14px 84px; }
 }
+
+/* ── Game landing (picked-for-you) ── */
+.landing { width: 100%; max-width: 720px; display: flex; flex-direction: column; gap: 16px; }
+.landing-head { display: flex; align-items: center; gap: 14px; }
+.landing-icon { width: 52px; height: 52px; border-radius: 17px; display: grid; place-items: center; font-size: 1.5rem; flex: none; }
+.landing-h1 { font-weight: 800; font-size: 1.7rem; color: var(--ink); letter-spacing: -0.02em; }
+.landing-sub { font-weight: 600; font-size: 0.85rem; color: var(--muted, #6b7a8c); margin-top: 3px; }
+
+.landing-chips { display: flex; gap: 8px; }
+.chip { flex: 1; border: none; border-radius: var(--r-full); padding: 12px 0; font-weight: 700; font-size: 0.9rem; background: #fff; color: var(--muted, #6b7a8c); box-shadow: var(--shadow-xs); transition: all 0.15s; }
+.chip.active { background: var(--ink); color: #fff; }
+
+.landing-hero { background: var(--brand); color: #fff; border-radius: 28px; padding: 26px; position: relative; overflow: hidden; }
+.landing-hero-title { font-weight: 800; font-size: 1.7rem; letter-spacing: -0.02em; margin: 14px 0 8px; }
+.landing-hero-blurb { font-weight: 500; font-size: 0.92rem; line-height: 1.5; color: rgba(255,255,255,0.85); max-width: 440px; }
+.landing-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+.landing-tag { background: rgba(255,255,255,0.18); border-radius: var(--r-full); padding: 7px 12px; font-weight: 700; font-size: 0.72rem; }
+.landing-hero-actions { display: flex; align-items: center; gap: 12px; margin-top: 20px; }
+.landing-start { display: inline-flex; align-items: center; gap: 12px; background: var(--accent); color: var(--ink); border: none; border-radius: var(--r-full); padding: 14px 16px 14px 24px; font-weight: 800; font-size: 1.05rem; transition: transform 0.1s; }
+.landing-start:hover { transform: translateY(-2px); }
+.landing-learn { background: rgba(255,255,255,0.16); color: #fff; border: none; border-radius: var(--r-full); padding: 14px 20px; font-weight: 700; font-size: 0.9rem; }
+
+.landing-or { display: flex; align-items: center; gap: 14px; margin-top: 4px; }
+.landing-or span { font-weight: 700; font-size: 0.8rem; color: var(--muted, #6b7a8c); flex: none; }
+.landing-or::after { content: ""; flex: 1; height: 1px; background: var(--border-2); }
+
+.landing-lenrow { display: flex; align-items: center; gap: 14px; }
+.landing-lenlabel { font-weight: 700; font-size: 0.8rem; color: var(--muted, #6b7a8c); flex: none; }
+.landing-lenrow .q-bar { flex: 1; }
+
+.landing-best { background: #fff; border-radius: 22px; padding: 18px; box-shadow: var(--shadow-xs); display: flex; flex-direction: column; gap: 8px; }

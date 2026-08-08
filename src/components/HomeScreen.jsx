@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { getBest, getTopRuns, formatTime, formatDate, getPrefs, savePrefs } from "../utils/leaderboard";
+import { getSkillMastery } from "../utils/gamify";
 
 const LEVELS = [
   { id: "A", label: "Level A", desc: "Easiest",      emoji: "🌱" },
@@ -8,44 +9,29 @@ const LEVELS = [
 ];
 
 const TYPE_INFO = {
-  synonyms: {
-    emoji: "🟣",
-    label: "Synonyms",
-    description: "Synonyms are words that have the same or very similar meaning — e.g. Happy and Joyful.",
-  },
-  antonyms: {
-    emoji: "🟠",
-    label: "Antonyms",
-    description: "Antonyms are words that have opposite meanings — e.g. Happy and Sad.",
-  },
-  fillInBlanks: {
-    emoji: "🕵️",
-    label: "Word Detective",
-    description: "Read the clues and work out the missing word — learn what each word means and how to use it!",
-  },
-  compoundWords: {
-    emoji: "🧩",
-    label: "Compound Words",
-    description: "A compound word is two smaller words joined into one — e.g. Sun + Flower = Sunflower.",
-  },
+  synonyms:      { description: "Words that mean the same. Match each word with its synonym." },
+  antonyms:      { description: "Words that mean the opposite. Match each word with its antonym." },
+  fillInBlanks:  { description: "Read the clue and work out the missing word — learn what each word means." },
+  compoundWords: { description: "Two small words joined into one — e.g. Sun + Flower = Sunflower." },
+};
+
+// Header identity per game (the landing is shared by Word Match / Compound / Detective).
+const SKILL_META = {
+  wordMatch:     { title: "Word Match",     sub: "Synonyms & antonyms",     icon: "🔤",  bg: "#e4f6ff" },
+  compoundWords: { title: "Compound Words", sub: "Join two words into one", icon: "🧩",  bg: "#f3fbd4" },
+  fillInBlanks:  { title: "Word Detective", sub: "Find the word from clues", icon: "🕵️", bg: "#eaf4fc" },
 };
 
 const Q_OPTIONS = [5, 10, 20, 30];
 const NO_LEVEL_GAMES = ["fillInBlanks"];
-// Games that offer both a "Match" (tap the pairs) and a "Worksheet" (exam-style) format.
 const FORMAT_GAMES = ["wordMatch", "compoundWords"];
-const FORMAT_HINT = {
-  match:     "🎯 Tap the two words that go together.",
-  worksheet: "📝 Exam style — pick one word from each group, then check your answers.",
-};
 
 export default function HomeScreen({ gameType, onPlay, onLearn, initialConfig }) {
   const isWordMatch    = gameType === "wordMatch";
   const noLevel        = NO_LEVEL_GAMES.includes(gameType);
   const supportsFormat = FORMAT_GAMES.includes(gameType);
+  const meta           = SKILL_META[gameType] || SKILL_META.wordMatch;
 
-  // Restore the kid's last-used choices: saved prefs (survive restarts) first,
-  // then the current session's config, then defaults.
   const [saved] = useState(() => getPrefs(gameType) || {});
 
   const [subType, setSubType] = useState(() => {
@@ -64,172 +50,149 @@ export default function HomeScreen({ gameType, onPlay, onLearn, initialConfig })
   const [totalQuestions, setTotal] = useState(() => {
     if (Q_OPTIONS.includes(saved.totalQuestions)) return saved.totalQuestions;
     if (Q_OPTIONS.includes(initialConfig?.totalQuestions)) return initialConfig.totalQuestions;
-    return 20;
+    return 10;
   });
 
-  // Persist choices so they're remembered next time the app opens
   useEffect(() => {
     savePrefs(gameType, { subType, level, totalQuestions, format });
   }, [gameType, subType, level, totalQuestions, format]);
 
-  // baseType = the skill (synonyms/antonyms/compoundWords/fillInBlanks).
-  // scoreType adds a "Ws" suffix for the worksheet format so its leaderboard is
-  // kept separate from the tap-Match format (they score differently).
-  const baseType      = isWordMatch ? subType : gameType;
-  const isWorksheet   = supportsFormat && format === "worksheet";
-  const scoreType     = isWorksheet ? `${baseType}Ws` : baseType;
-  const scoreLevel    = noLevel ? "all" : level;
-  const info          = TYPE_INFO[baseType];
-  const maxStars      = totalQuestions * 3;
-  const best          = getBest(scoreLevel, scoreType, totalQuestions);
-  const topRuns       = getTopRuns(scoreLevel, scoreType, totalQuestions, 5);
+  const baseType    = isWordMatch ? subType : gameType;
+  const isWorksheet = supportsFormat && format === "worksheet";
+  const scoreType   = isWorksheet ? `${baseType}Ws` : baseType;
+  const scoreLevel  = noLevel ? "all" : level;
+  const info        = TYPE_INFO[baseType] || {};
+  const maxStars    = totalQuestions * 3;
+  const best        = getBest(scoreLevel, scoreType, totalQuestions);
+  const topRuns     = getTopRuns(scoreLevel, scoreType, totalQuestions, 5);
+  const masteryPct  = (getSkillMastery().find((m) => m.id === gameType) || {}).pct ?? 0;
+  const estMin      = Math.max(1, Math.round(totalQuestions * 0.3));
 
   function handlePlay() {
     onPlay({ level: scoreLevel, totalQuestions, gameType: scoreType, baseType, format: isWorksheet ? "worksheet" : "match" });
   }
 
   return (
-    <div className="home-screen">
-      <div className="home-card">
-
-        <div className="home-title">
-          <span className="home-emoji">{isWordMatch ? "📚" : info.emoji}</span>
-          <h1>{isWordMatch ? "Word Match" : info.label}</h1>
+    <div className="landing">
+      {/* Header */}
+      <div className="landing-head">
+        <div className="landing-icon" style={{ background: meta.bg }}>{meta.icon}</div>
+        <div className="landing-head-txt">
+          <h1 className="landing-h1">{meta.title}</h1>
+          <div className="landing-sub">{meta.sub} · {masteryPct}% mastered</div>
         </div>
+      </div>
 
-        {/* Synonyms / Antonyms toggle — wordMatch only */}
-        {isWordMatch && (
-          <>
-            <div className="toggle-label">Word type</div>
-            <div className="toggle-group">
+      {/* Synonyms / Antonyms — Word Match only */}
+      {isWordMatch && (
+        <div className="landing-chips">
+          <button className={`chip ${subType === "synonyms" ? "active" : ""}`} onClick={() => setSubType("synonyms")}>Synonyms</button>
+          <button className={`chip ${subType === "antonyms" ? "active" : ""}`} onClick={() => setSubType("antonyms")}>Antonyms</button>
+        </div>
+      )}
+
+      {/* Picked-for-you hero */}
+      <div className="landing-hero">
+        <span className="dash-chip">PICKED FOR YOU</span>
+        <div className="landing-hero-title">
+          {noLevel ? `All words · ${totalQuestions}` : `Level ${level} · ${totalQuestions} words`}
+        </div>
+        <div className="landing-hero-blurb">{info.description}</div>
+        <div className="landing-tags">
+          <span className="landing-tag">⏱ ~{estMin} min</span>
+          {supportsFormat && <span className="landing-tag">{isWorksheet ? "📝 Worksheet" : "🎯 Match"}</span>}
+          <span className="landing-tag">🔥 keeps streak</span>
+        </div>
+        <div className="landing-hero-actions">
+          <button className="landing-start" onClick={handlePlay}>
+            <span>Start round</span><span className="dash-hero-arrow">→</span>
+          </button>
+          {onLearn && <button className="landing-learn" onClick={onLearn}>Learn first</button>}
+        </div>
+      </div>
+
+      {/* Choose your own */}
+      <div className="landing-or"><span>Or choose your own</span></div>
+
+      {supportsFormat && (
+        <div className="toggle-group">
+          <button className={`toggle-btn ${format === "match" ? "active" : ""}`} onClick={() => setFormat("match")}>🎯 Match</button>
+          <button className={`toggle-btn ${format === "worksheet" ? "active" : ""}`} onClick={() => setFormat("worksheet")}>📝 Worksheet</button>
+        </div>
+      )}
+
+      {!noLevel && (
+        <div className="level-group">
+          {LEVELS.map((l) => {
+            const lb = getBest(l.id, scoreType, totalQuestions);
+            return (
               <button
-                className={`toggle-btn ${subType === "synonyms" ? "active" : ""}`}
-                onClick={() => setSubType("synonyms")}
+                key={l.id}
+                className={`level-btn ${level === l.id ? "active" : ""}`}
+                onClick={() => setLevel(l.id)}
               >
-                Synonyms
+                <span className="level-emoji">{l.emoji}</span>
+                <span className="level-label">{l.label}</span>
+                <span className="level-desc">{l.desc}</span>
+                {lb && <span className="level-best">⭐ {lb.stars}/{maxStars}</span>}
               </button>
+            );
+          })}
+        </div>
+      )}
+
+      <div className="landing-lenrow">
+        <span className="landing-lenlabel">Length</span>
+        <div className="q-bar">
+          {Q_OPTIONS.map((q, i) => {
+            const activeIdx  = Q_OPTIONS.indexOf(totalQuestions);
+            const isFilled   = i <= activeIdx;
+            const isSelected = q === totalQuestions;
+            return (
               <button
-                className={`toggle-btn ${subType === "antonyms" ? "active" : ""}`}
-                onClick={() => setSubType("antonyms")}
+                key={q}
+                className={`q-segment ${isFilled ? "filled" : ""} ${isSelected ? "selected" : ""}`}
+                onClick={() => setTotal(q)}
               >
-                Antonyms
+                {q}
               </button>
-            </div>
-          </>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Best runs */}
+      <div className="landing-best">
+        <div className="section-label">🏆 Personal best</div>
+        {best ? (
+          <div className="home-best">
+            <span className="home-best-score">⭐ {best.stars}/{maxStars}</span>
+            <span className="home-best-detail">{best.wrong} wrong · ⏱ {formatTime(best.time ?? 0)} · {formatDate(best.date)}</span>
+          </div>
+        ) : (
+          <div className="home-best home-best--empty">No score yet — be the first! 🎯</div>
         )}
 
-        {/* Play style (Match / Worksheet) — games that support both formats */}
-        {supportsFormat && (
+        {topRuns.length > 0 && (
           <>
-            <div className="toggle-label">Play style</div>
-            <div className="toggle-group">
-              <button
-                className={`toggle-btn ${format === "match" ? "active" : ""}`}
-                onClick={() => setFormat("match")}
-              >
-                🎯 Match
-              </button>
-              <button
-                className={`toggle-btn ${format === "worksheet" ? "active" : ""}`}
-                onClick={() => setFormat("worksheet")}
-              >
-                📝 Worksheet
-              </button>
-            </div>
+            <div className="section-label">Your best runs</div>
+            <table className="lb-table">
+              <thead>
+                <tr><th>#</th><th>Stars</th><th>Time</th><th>Date</th></tr>
+              </thead>
+              <tbody>
+                {topRuns.map((r, i) => (
+                  <tr key={i} className={i === 0 ? "lb-row lb-top" : "lb-row"}>
+                    <td className="lb-rank">{i + 1}</td>
+                    <td>⭐ {r.stars}/{maxStars}</td>
+                    <td>{formatTime(r.time ?? 0)}</td>
+                    <td className="lb-date">{formatDate(r.date)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </>
         )}
-
-        <p className="game-type-desc">{info.description}</p>
-        {supportsFormat && <p className="format-hint">{FORMAT_HINT[format]}</p>}
-
-        <div className="home-columns">
-
-          {/* ── Left: controls ── */}
-          <div className="home-col home-col-controls">
-            {!noLevel && (
-              <>
-                <div className="section-label">Choose Level</div>
-                <div className="level-group">
-                  {LEVELS.map((l) => {
-                    const lb = getBest(l.id, scoreType, totalQuestions);
-                    return (
-                      <button
-                        key={l.id}
-                        className={`level-btn ${level === l.id ? "active" : ""}`}
-                        onClick={() => setLevel(l.id)}
-                      >
-                        <span className="level-emoji">{l.emoji}</span>
-                        <span className="level-label">{l.label}</span>
-                        <span className="level-desc">{l.desc}</span>
-                        {lb && <span className="level-best">⭐ {lb.stars}/{maxStars}</span>}
-                      </button>
-                    );
-                  })}
-                </div>
-              </>
-            )}
-
-            <div className="section-label">Number of Questions</div>
-            <div className="q-bar">
-              {Q_OPTIONS.map((q, i) => {
-                const activeIdx  = Q_OPTIONS.indexOf(totalQuestions);
-                const isFilled   = i <= activeIdx;
-                const isSelected = q === totalQuestions;
-                return (
-                  <button
-                    key={q}
-                    className={`q-segment ${isFilled ? "filled" : ""} ${isSelected ? "selected" : ""}`}
-                    onClick={() => setTotal(q)}
-                  >
-                    {q}
-                  </button>
-                );
-              })}
-            </div>
-
-            {onLearn && (
-              <button className="secondary-btn" onClick={onLearn}>
-                Learn the Words First
-              </button>
-            )}
-            <button className="play-btn" onClick={handlePlay}>Play!</button>
-          </div>
-
-          {/* ── Right: personal best + runs ── */}
-          <div className="home-col home-col-scores">
-            <div className="section-label">🏆 Personal Best</div>
-            {best ? (
-              <div className="home-best">
-                <span className="home-best-score">⭐ {best.stars}/{maxStars}</span>
-                <span className="home-best-detail">{best.wrong} wrong · ⏱ {formatTime(best.time ?? 0)} · {formatDate(best.date)}</span>
-              </div>
-            ) : (
-              <div className="home-best home-best--empty">No score yet — be the first! 🎯</div>
-            )}
-
-            <div className="section-label">Your Best Runs</div>
-            {topRuns.length > 0 ? (
-              <table className="lb-table">
-                <thead>
-                  <tr><th>#</th><th>Stars</th><th>Time</th><th>Date</th></tr>
-                </thead>
-                <tbody>
-                  {topRuns.map((r, i) => (
-                    <tr key={i} className={i === 0 ? "lb-row lb-top" : "lb-row"}>
-                      <td className="lb-rank">{i + 1}</td>
-                      <td>⭐ {r.stars}/{maxStars}</td>
-                      <td>{formatTime(r.time ?? 0)}</td>
-                      <td className="lb-date">{formatDate(r.date)}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            ) : (
-              <div className="home-best home-best--empty">Play a game to see your best runs here! 🎯</div>
-            )}
-          </div>
-
-        </div>
       </div>
     </div>
   );
