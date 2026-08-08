@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import AppNav from "./components/AppNav";
 import HomeDashboard from "./components/HomeDashboard";
-import PlayGrid from "./components/PlayGrid";
 import MeScreen from "./components/MeScreen";
 import HomeScreen from "./components/HomeScreen";
 import GameScreen from "./components/GameScreen";
@@ -70,7 +69,7 @@ function AppInner() {
   // the hook count changes when auth flips logged-out → logged-in and React
   // crashes the tree to a blank screen (only a refresh recovered it).
   const VALID_SCREENS = [
-    "home", "play", "me", "wordMatch", "compoundWords",
+    "home", "me", "wordMatch", "compoundWords",
     "punctuation", "fillInBlanks", "wordList", "leaderboard",
   ];
   const [selectedGame, setSelectedGame] = useState(() => {
@@ -121,7 +120,6 @@ function AppInner() {
   }
 
   const isDashboard      = selectedGame === "home";
-  const isPlayGrid       = selectedGame === "play";
   const isMe             = selectedGame === "me";
   const isWordMatch      = selectedGame === "wordMatch";
   const isCompoundWords  = selectedGame === "compoundWords";
@@ -130,7 +128,7 @@ function AppInner() {
   const isWordList       = selectedGame === "wordList";
   const isLeaderboard    = selectedGame === "leaderboard";
   const isKnown =
-    isDashboard || isPlayGrid || isMe || isWordMatch || isCompoundWords ||
+    isDashboard || isMe || isWordMatch || isCompoundWords ||
     isPunctuation || isFillInBlanks || isWordList || isLeaderboard;
 
   return (
@@ -142,14 +140,10 @@ function AppInner() {
           {/* Home dashboard */}
           {isDashboard && (
             <HomeDashboard
-              onQuickPlay={() => handleSelectGame("play")}
               onPlaySkill={(id) => handleSelectGame(id)}
               onOpenBoard={() => handleSelectGame("leaderboard")}
             />
           )}
-
-          {/* Play — game picker */}
-          {isPlayGrid && <PlayGrid onSelectGame={handleSelectGame} />}
 
           {/* Me — profile */}
           {isMe && <MeScreen />}

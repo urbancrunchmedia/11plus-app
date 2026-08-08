@@ -1,35 +1,52 @@
 import React from "react";
+import { getStreak } from "../utils/gamify";
+import { useAuth } from "../contexts/AuthContext";
 
-// Primary navigation. Renders as a slim dark icon-rail on desktop and a bottom
-// tab bar (with a raised centre Play button) on mobile — driven by CSS.
+// Primary navigation, matching the design prototype: a dark icon-rail on desktop
+// (logo top, games listed directly, streak + avatar at the bottom) and a bottom
+// tab bar on mobile.
 const ITEMS = [
-  { id: "home",        label: "Home",  icon: "🏠" },
-  { id: "wordList",    label: "Words", icon: "📖" },
-  { id: "play",        label: "Play",  icon: "▶️", fab: true },
-  { id: "leaderboard", label: "Board", icon: "🏆" },
-  { id: "me",          label: "Me",    icon: "🙂" },
+  { id: "home",         label: "Home",   icon: "⌂" },
+  { id: "wordMatch",    label: "Match",  icon: "🔤" },
+  { id: "fillInBlanks", label: "Detect", icon: "🕵️" },
+  { id: "punctuation",  label: "Punct",  icon: "✏️" },
+  { id: "wordList",     label: "Words",  icon: "📖" },
+  { id: "leaderboard",  label: "Board",  icon: "🏆" },
 ];
 
-// Any specific game screen counts as being on the "Play" tab.
-const PLAY_TAB = new Set(["play", "wordMatch", "compoundWords", "punctuation", "fillInBlanks"]);
-
 export default function AppNav({ active, onNavigate }) {
-  const activeTab = PLAY_TAB.has(active) ? "play" : active;
+  const { user } = useAuth();
+  const streak = getStreak();
+  const initial = user?.displayName ? user.displayName.trim().charAt(0).toUpperCase() : "A";
 
   return (
     <nav className="appnav">
       <div className="appnav-logo" aria-hidden>11</div>
-      {ITEMS.map((it) => (
+
+      <div className="appnav-items">
+        {ITEMS.map((it) => (
+          <button
+            key={it.id}
+            className={`appnav-item ${active === it.id ? "active" : ""}`}
+            onClick={() => onNavigate(it.id)}
+            aria-label={it.label}
+          >
+            <span className="appnav-icon">{it.icon}</span>
+            <span className="appnav-label">{it.label}</span>
+          </button>
+        ))}
+      </div>
+
+      <div className="appnav-foot">
+        <div className="appnav-streak">🔥 {streak}</div>
         <button
-          key={it.id}
-          className={`appnav-item ${it.fab ? "fab" : ""} ${activeTab === it.id ? "active" : ""}`}
-          onClick={() => onNavigate(it.id)}
-          aria-label={it.label}
+          className={`appnav-avatar ${active === "me" ? "active" : ""}`}
+          onClick={() => onNavigate("me")}
+          aria-label="Me"
         >
-          <span className="appnav-icon">{it.icon}</span>
-          <span className="appnav-label">{it.label}</span>
+          {initial}
         </button>
-      ))}
+      </div>
     </nav>
   );
 }
