@@ -2345,3 +2345,19 @@ body {
   .samp-options { grid-template-columns: 1fr 1fr; }
   .samp-sentence { font-size: 1.1rem; }
 }
+
+/* ── Compound Words build puzzle (in-game) ── */
+.cg-stem { display: flex; align-items: center; justify-content: center; gap: 14px; margin: 10px 0 22px; }
+.cg-stem-word { font-weight: 800; font-size: 1.9rem; color: var(--ink); letter-spacing: -0.02em; }
+.cg-plus { font-weight: 800; font-size: 1.4rem; color: var(--muted); }
+.cg-blank { min-width: 90px; height: 52px; display: grid; place-items: center; background: var(--accent); border-radius: 14px; font-weight: 800; font-size: 1.5rem; color: var(--ink); }
+.cg-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; max-width: 520px; width: 100%; margin: 0 auto; }
+.cg-opt {
+  background: #fff; border: 2.5px solid var(--border); border-bottom: 4px solid var(--border-2);
+  border-radius: var(--r-xl); padding: 20px 12px; font-weight: 700; font-size: 1.05rem; color: var(--ink);
+  box-shadow: var(--shadow-xs); transition: all 0.12s; min-height: 64px;
+}
+.cg-opt:hover:not(:disabled) { border-color: var(--brand); background: #e4f6ff; transform: translateY(-2px); }
+.cg-opt.correct { background: var(--accent) !important; border-color: var(--accent-dark) !important; border-bottom-color: var(--accent-dark) !important; color: var(--ink) !important; animation: pop 0.35s ease; }
+.cg-opt.wrong { background: var(--wrong-bg) !important; border-color: var(--wrong) !important; color: var(--wrong) !important; animation: shake 0.4s ease; }
+.cg-opt:disabled { cursor: default; }

@@ -4,7 +4,7 @@ import HomeDashboard from "./components/HomeDashboard";
 import MeScreen from "./components/MeScreen";
 import HomeScreen from "./components/HomeScreen";
 import GameScreen from "./components/GameScreen";
-import { compoundWords } from "./data/compoundWords";
+import CompoundGame from "./components/CompoundGame";
 import WorksheetGame from "./components/WorksheetGame";
 import { makeCompoundQuestions, makeSynonymQuestions, makeAntonymQuestions } from "./utils/worksheet";
 import PunctuationScreen from "./components/PunctuationScreen";
@@ -172,20 +172,12 @@ function AppInner() {
             <HomeScreen gameType="compoundWords" onPlay={handlePlay} initialConfig={config} />
           )}
           {isCompoundWords && screen === "game" && config && (
-            config.format === "worksheet" ? (
-              <WorksheetFor baseType="compoundWords" config={config} playKey={playKey} onHome={handleHome} />
-            ) : (
-              <GameScreen
-                key={playKey}
-                level={config.level}
-                gameType={config.gameType}
-                pairs={(compoundWords[config.level] ?? []).map((c) => ({ word: c.first, match: c.second }))}
-                instruction="Match each word-part with the part that completes the compound word"
-                typeLabel="Compound Words"
-                totalQuestions={config.totalQuestions}
-                onHome={handleHome}
-              />
-            )
+            <CompoundGame
+              key={playKey}
+              level={config.level}
+              totalQuestions={config.totalQuestions}
+              onHome={handleHome}
+            />
           )}
 
           {/* Punctuation */}

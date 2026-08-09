@@ -43,6 +43,26 @@ function pickTargets(pool, count) {
   return targets;
 }
 
+// ── Compound Words · Build format (stem + pick the completing word) ──
+// Shows a first-half and 4 options for the second-half; only one forms a real
+// compound (decoys never combine with the stem). Matches the prototype puzzle.
+export function makeCompoundBuildQuestions(level, count = 20) {
+  const pool    = compoundWords[level] ?? [];
+  const seconds = [...new Set(pool.map((c) => c.second))];
+  const valid   = new Set(pool.map((c) => (c.first + c.second).toLowerCase()));
+  const combines = (l, r) => valid.has((l + r).toLowerCase());
+
+  return pickTargets(pool, count).map(({ first, second }) => {
+    const decoys = sampleDistinct(
+      seconds.filter((s) => s !== second && !combines(first, s)),
+      3,
+      [second]
+    );
+    const options = shuffle([second, ...decoys]);
+    return { first, second, word: first + second, options, answer: options.indexOf(second) };
+  });
+}
+
 // ── Compound Words · Worksheet format (join two halves) ──────────────
 // Left = a first-half + 2 decoys; right = a second-half + 2 decoys. Decoys are
 // chosen so the ONLY left×right combination that forms a real compound (per our
