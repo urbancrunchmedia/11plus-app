@@ -49,7 +49,7 @@
   --yellow-light: #fef9c3;
 
   /* Surface */
-  --bg: #dceefb;
+  --bg: #f4f9ff;   /* app background — matches the prototype's #F4F9FF (was the darker canvas #dceefb) */
   --surface: #ffffff;
   --surface-2: #f4f9ff;
   --border: #e3edf5;
