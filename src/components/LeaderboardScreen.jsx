@@ -4,28 +4,16 @@ import { getProfile, getLeaderboard, addFriendByCode, removeFriend, syncProfile 
 
 const MEDALS = ["🥇", "🥈", "🥉"];
 
-const CATEGORIES = [
-  { id: "all",          label: "Overall" },
-  { id: "wordMatch",    label: "Word Match" },
-  { id: "fillInBlanks", label: "Word Detective" },
-  { id: "punctuation",  label: "Punctuation" },
-];
-
-function metricOf(p, cat) {
-  if (cat === "all") return p.points || 0;
-  return (p.byGame && p.byGame[cat]) || 0;
-}
-
 function initials(name) {
   return (name || "?").trim().slice(0, 1).toUpperCase();
 }
 
-export default function LeaderboardScreen() {
+export default function LeaderboardScreen({ onPlay }) {
   const { user, updateDisplayName } = useAuth();
   const [me, setMe]           = useState(null);
-  const [people, setPeople]   = useState([]);   // unsorted profiles (me + friends)
+  const [people, setPeople]   = useState([]);
   const [loading, setLoading] = useState(true);
-  const [cat, setCat]         = useState("all");
+  const [showAdd, setShowAdd] = useState(false);
   const [code, setCode]       = useState("");
   const [adding, setAdding]   = useState(false);
   const [msg, setMsg]         = useState(null);
@@ -34,6 +22,42 @@ export default function LeaderboardScreen() {
   const [nameInput, setNameInput]     = useState("");
 
   const myName = me?.displayName || user?.displayName || "Player";
+
+  const load = useCallback(async () => {
+    if (!user) return;
+    setLoading(true);
+    await syncProfile(user);
+    const [profile, board] = await Promise.all([getProfile(user.uid), getLeaderboard(user.uid)]);
+    setMe(profile);
+    setPeople(board);
+    setLoading(false);
+  }, [user]);
+
+  useEffect(() => { load(); }, [load]);
+
+  const rows = [...people].sort((a, b) => (b.points || 0) - (a.points || 0));
+  const myIdx = rows.findIndex((p) => p.isMe);
+  const gapLine =
+    myIdx <= 0
+      ? "You're top of the board — hold it! 🏆"
+      : `${((rows[myIdx - 1].points || 0) - (rows[myIdx].points || 0)).toLocaleString()} points behind ${rows[myIdx - 1].displayName || "them"}`;
+
+  async function handleAdd(e) {
+    e.preventDefault();
+    if (!user || adding) return;
+    setMsg(null); setAdding(true);
+    const res = await addFriendByCode(user.uid, code);
+    setAdding(false);
+    if (res.ok) { setMsg({ type: "ok", text: `Added ${res.friend.displayName}! 🎉` }); setCode(""); load(); }
+    else setMsg({ type: "err", text: res.error });
+  }
+
+  async function handleRemove(friend) {
+    if (!user) return;
+    if (!window.confirm(`Remove ${friend.displayName || "this friend"}?`)) return;
+    await removeFriend(user.uid, friend.uid);
+    load();
+  }
 
   async function saveName(e) {
     e.preventDefault();
@@ -44,182 +68,88 @@ export default function LeaderboardScreen() {
     load();
   }
 
-  const load = useCallback(async () => {
-    if (!user) return;
-    setLoading(true);
-    await syncProfile(user);
-    const [profile, board] = await Promise.all([
-      getProfile(user.uid),
-      getLeaderboard(user.uid),
-    ]);
-    setMe(profile);
-    setPeople(board);
-    setLoading(false);
-  }, [user]);
-
-  useEffect(() => { load(); }, [load]);
-
-  const rows = [...people].sort((a, b) => metricOf(b, cat) - metricOf(a, cat));
-
-  async function handleAdd(e) {
-    e.preventDefault();
-    if (!user || adding) return;
-    setMsg(null);
-    setAdding(true);
-    const res = await addFriendByCode(user.uid, code);
-    setAdding(false);
-    if (res.ok) {
-      setMsg({ type: "ok", text: `Added ${res.friend.displayName}! 🎉` });
-      setCode("");
-      load();
-    } else {
-      setMsg({ type: "err", text: res.error });
-    }
-  }
-
-  async function handleRemove(friend) {
-    if (!user) return;
-    if (!window.confirm(`Remove ${friend.displayName || "this friend"} from your leaderboard?`)) return;
-    await removeFriend(user.uid, friend.uid);
-    load();
-  }
-
   function copyCode() {
     if (!me?.code || !navigator.clipboard) return;
-    navigator.clipboard.writeText(me.code).then(() => {
-      setCopied(true);
-      setTimeout(() => setCopied(false), 1500);
-    });
+    navigator.clipboard.writeText(me.code).then(() => { setCopied(true); setTimeout(() => setCopied(false), 1500); });
   }
 
   return (
-    <div className="home-screen">
-      <div className="home-card">
-
-        <div className="home-title">
-          <span className="home-emoji">🏆</span>
-          <h1>Leaderboard</h1>
-          <p className="home-subtitle">Add friends and race to the top!</p>
+    <div className="board">
+      <div className="board-head">
+        <div className="board-head-left">
+          <div className="board-icon">🏆</div>
+          <div>
+            <h1 className="board-title">Leaderboard</h1>
+            <div className="board-sub">Friends · compete with your friends</div>
+          </div>
         </div>
+        <button className="board-add" onClick={() => setShowAdd((s) => !s)}>+ Add friend</button>
+      </div>
 
-        {/* Display name (the child name shown to friends) */}
-        <div className="lb-name-card">
+      {showAdd && (
+        <div className="board-addpanel">
+          <div className="board-addrow">
+            <span className="board-code-lbl">Your code</span>
+            <span className="board-code">{me?.code || "…"}</span>
+            <button className="board-mini-btn" onClick={copyCode} disabled={!me?.code}>{copied ? "Copied!" : "Copy"}</button>
+          </div>
+          <form className="board-addrow" onSubmit={handleAdd}>
+            <input
+              className="board-input"
+              placeholder="Friend code e.g. WM-7H2K9"
+              value={code}
+              onChange={(e) => setCode(e.target.value)}
+              autoCapitalize="characters" autoCorrect="off" spellCheck={false}
+            />
+            <button className="board-mini-btn board-mini-btn--go" type="submit" disabled={adding}>{adding ? "…" : "Add"}</button>
+          </form>
+          {msg && <div className={msg.type === "ok" ? "board-msg ok" : "board-msg err"}>{msg.text}</div>}
           {!editingName ? (
-            <>
-              <div className="lb-name-info">
-                <span className="lb-code-label">Playing as</span>
-                <span className="lb-name-value">{myName}</span>
-              </div>
-              <button
-                className="lb-copy-btn"
-                onClick={() => { setNameInput(myName); setEditingName(true); }}
-              >
-                Edit name
-              </button>
-            </>
+            <button className="board-editname" onClick={() => { setNameInput(myName); setEditingName(true); }}>
+              Playing as <b>{myName}</b> — edit
+            </button>
           ) : (
-            <form className="lb-name-edit" onSubmit={saveName}>
-              <input
-                className="wl-search"
-                value={nameInput}
-                onChange={(e) => setNameInput(e.target.value)}
-                placeholder="Child's name"
-                maxLength={20}
-                autoFocus
-              />
-              <button className="play-btn lb-name-save" type="submit">Save</button>
-              <button className="secondary-btn lb-name-cancel" type="button" onClick={() => setEditingName(false)}>Cancel</button>
+            <form className="board-addrow" onSubmit={saveName}>
+              <input className="board-input" value={nameInput} onChange={(e) => setNameInput(e.target.value)} maxLength={20} placeholder="Child's name" autoFocus />
+              <button className="board-mini-btn board-mini-btn--go" type="submit">Save</button>
             </form>
           )}
         </div>
+      )}
 
-        {/* My friend code */}
-        <div className="lb-code-card">
-          <span className="lb-code-label">Your friend code</span>
-          <div className="lb-code-row">
-            <span className="lb-code">{me?.code || "…"}</span>
-            <button className="lb-copy-btn" onClick={copyCode} disabled={!me?.code}>
-              {copied ? "Copied!" : "Copy"}
-            </button>
-          </div>
-          <span className="lb-code-hint">Share this with a friend so they can add you.</span>
-        </div>
-
-        {/* Add a friend */}
-        <form className="lb-add-form" onSubmit={handleAdd}>
-          <div className="section-label">Add a friend by code</div>
-          <div className="lb-add-row">
-            <input
-              className="wl-search lb-add-input"
-              placeholder="e.g. WM-7H2K9"
-              value={code}
-              onChange={(e) => setCode(e.target.value)}
-              autoCapitalize="characters"
-              autoCorrect="off"
-              spellCheck={false}
-            />
-            <button className="play-btn lb-add-btn" type="submit" disabled={adding}>
-              {adding ? "Adding…" : "Add"}
-            </button>
-          </div>
-          {msg && (
-            <div className={msg.type === "ok" ? "lb-msg lb-msg--ok" : "lb-msg lb-msg--err"}>
-              {msg.text}
+      {loading ? (
+        <div className="board-empty">Loading leaderboard…</div>
+      ) : (
+        <div className="board-rows">
+          {rows.map((p, i) => (
+            <div key={p.uid} className={`board-row ${p.isMe ? "me" : ""}`}>
+              <span className="board-rank">{MEDALS[i] || i + 1}</span>
+              <span className={`board-avatar ${p.isMe ? "me" : ""}`}>{initials(p.displayName)}</span>
+              <span className="board-name">
+                {p.displayName || "Player"}{p.isMe && <span className="board-you"> (you)</span>}
+              </span>
+              <span className="board-pts">{(p.points || 0).toLocaleString()}</span>
+              {!p.isMe && showAdd && (
+                <button className="board-remove" onClick={() => handleRemove(p)} aria-label="Remove friend">✕</button>
+              )}
             </div>
-          )}
-        </form>
-
-        {/* Category filter + refresh */}
-        <div className="lb-board-head">
-          <div className="wl-filter-row lb-cat-row">
-            {CATEGORIES.map((c) => (
-              <button
-                key={c.id}
-                className={`wl-filter-btn ${cat === c.id ? "active" : ""}`}
-                onClick={() => setCat(c.id)}
-              >
-                {c.label}
-              </button>
-            ))}
-          </div>
-          <button className="lb-refresh-btn" onClick={load} disabled={loading} title="Refresh">
-            {loading ? "…" : "↻ Refresh"}
-          </button>
+          ))}
         </div>
+      )}
 
-        {/* The board */}
-        {loading ? (
-          <div className="home-best home-best--empty">Loading leaderboard…</div>
-        ) : people.length <= 1 ? (
-          <div className="home-best home-best--empty">
-            Add a friend with their code to start competing! 🎯
-          </div>
-        ) : (
-          <div className="lb-board">
-            {rows.map((p, i) => (
-              <div key={p.uid} className={`lb-board-row ${p.isMe ? "lb-board-row--me" : ""}`}>
-                <span className="lb-board-rank">{MEDALS[i] || i + 1}</span>
-                <span className="lb-board-avatar lb-board-avatar--initial">{initials(p.displayName)}</span>
-                <span className="lb-board-name">
-                  {p.displayName || "Player"}{p.isMe && <span className="lb-board-you"> (you)</span>}
-                </span>
-                <span className="lb-board-points">⭐ {metricOf(p, cat)}</span>
-                {!p.isMe && (
-                  <button
-                    className="lb-remove-btn"
-                    onClick={() => handleRemove(p)}
-                    aria-label={`Remove ${p.displayName || "friend"}`}
-                    title="Remove friend"
-                  >
-                    ✕
-                  </button>
-                )}
-              </div>
-            ))}
-          </div>
-        )}
+      {!loading && rows.length <= 1 && (
+        <div className="board-empty">Add a friend with their code to start competing! 🎯</div>
+      )}
 
-      </div>
+      {!loading && rows.length > 1 && (
+        <div className="board-foot">
+          <div>
+            <div className="board-foot-title">{gapLine}</div>
+            <div className="board-foot-sub">Every round you play counts towards this week</div>
+          </div>
+          {onPlay && <button className="board-foot-cta" onClick={onPlay}>Play a round</button>}
+        </div>
+      )}
     </div>
   );
 }

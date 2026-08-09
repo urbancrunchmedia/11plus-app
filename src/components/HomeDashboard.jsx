@@ -1,14 +1,17 @@
-import React from "react";
-import { getStats, SKILLS } from "../utils/gamify";
+import React, { useState, useEffect } from "react";
+import { getStats } from "../utils/gamify";
+import { getLeaderboard } from "../utils/cloudScores";
 import { useAuth } from "../contexts/AuthContext";
 
-// Icon + card colour per skill, matching the prototype's "Jump back in" cards.
 const SKILL_CARD = {
-  wordMatch:     { bg: "#E4F6FF", bar: "var(--brand)" },
-  fillInBlanks:  { bg: "#F3FBD4", bar: "var(--accent)" },
-  punctuation:   { bg: "#F0F2F5", bar: "var(--ink)" },
+  wordMatch:     { bar: "var(--brand)" },
+  fillInBlanks:  { bar: "var(--accent)" },
+  punctuation:   { bar: "var(--ink)" },
 };
-const WORDLIST_CARD = { id: "wordList", label: "Word List", icon: "📖", bg: "#EAF4FC" };
+
+function initial(name) {
+  return name ? name.trim().charAt(0).toUpperCase() : "?";
+}
 
 export default function HomeDashboard({ onPlaySkill, onOpenBoard }) {
   const { user } = useAuth();
@@ -16,6 +19,20 @@ export default function HomeDashboard({ onPlaySkill, onOpenBoard }) {
   const name  = user?.displayName || "there";
   const daily = stats.daily;
   const ringPct = Math.round((daily.done / daily.target) * 100);
+
+  const [friends, setFriends] = useState(null); // null = loading
+  useEffect(() => {
+    let ok = true;
+    if (user) {
+      getLeaderboard(user.uid).then((b) => ok && setFriends(b)).catch(() => ok && setFriends([]));
+    } else {
+      setFriends([]);
+    }
+    return () => { ok = false; };
+  }, [user]);
+
+  const topFriends = (friends || []).slice(0, 4);
+  const hasFriends = (friends || []).length > 1;
 
   return (
     <div className="dash">
@@ -31,7 +48,7 @@ export default function HomeDashboard({ onPlaySkill, onOpenBoard }) {
         </div>
       </div>
 
-      {/* Hero + progress */}
+      {/* Hero + friends */}
       <div className="dash-grid">
         <div className="dash-hero">
           <div className="dash-hero-body">
@@ -43,7 +60,7 @@ export default function HomeDashboard({ onPlaySkill, onOpenBoard }) {
                 : `One more keeps your ${stats.streak}-day streak alive.`}
             </div>
             <button className="dash-hero-cta" onClick={() => onPlaySkill("wordMatch")}>
-              <span>{daily.complete ? "Play more" : "Play a round"}</span>
+              <span>Play a round</span>
               <span className="dash-hero-arrow">→</span>
             </button>
           </div>
@@ -53,12 +70,20 @@ export default function HomeDashboard({ onPlaySkill, onOpenBoard }) {
         </div>
 
         <div className="dash-side">
-          <div className="dash-side-title">Your progress</div>
-          <div className="dash-side-rows">
-            <div className="dash-side-row"><span>XP total</span><b>{stats.xp.toLocaleString()}</b></div>
-            <div className="dash-side-row"><span>Day streak</span><b>🔥 {stats.streak}</b></div>
-            <div className="dash-side-row"><span>Stars won</span><b>⭐ {stats.stars}</b></div>
-            <div className="dash-side-row"><span>Rounds played</span><b>{stats.rounds}</b></div>
+          <div className="dash-side-title">Friends this week</div>
+          <div className="dash-friends">
+            {friends === null && <div className="dash-friend-empty">Loading…</div>}
+            {friends !== null && !hasFriends && (
+              <div className="dash-friend-empty">Add friends to compete — tap below.</div>
+            )}
+            {friends !== null && hasFriends && topFriends.map((f, i) => (
+              <div key={f.uid} className={`dash-friend ${f.isMe ? "me" : ""}`}>
+                <span className="dash-friend-rank">{i + 1}</span>
+                <span className={`dash-friend-av ${i === 0 ? "gold" : ""} ${f.isMe ? "me" : ""}`}>{initial(f.displayName)}</span>
+                <span className="dash-friend-name">{f.displayName || "Player"}{f.isMe ? " (you)" : ""}</span>
+                <span className="dash-friend-pts">{(f.points || 0).toLocaleString()}</span>
+              </div>
+            ))}
           </div>
           <button className="dash-side-cta" onClick={onOpenBoard}>Open leaderboard</button>
         </div>
@@ -68,19 +93,19 @@ export default function HomeDashboard({ onPlaySkill, onOpenBoard }) {
       <div className="dash-jump-head">Jump back in</div>
       <div className="dash-jump">
         {stats.mastery.map((s) => {
-          const c = SKILL_CARD[s.id] || { bg: "#E4F6FF", bar: "var(--brand)" };
+          const c = SKILL_CARD[s.id] || { bar: "var(--brand)" };
           return (
             <button key={s.id} className="jumpcard" onClick={() => onPlaySkill(s.id)}>
-              <div className="jumpcard-icon" style={{ background: c.bg }}>{s.icon}</div>
+              <div className="jumpcard-icon" style={{ background: s.id === "fillInBlanks" ? "#f3fbd4" : s.id === "punctuation" ? "#f0f2f5" : "#e4f6ff" }}>{s.icon}</div>
               <div className="jumpcard-title">{s.label}</div>
               <div className="jumpcard-sub">{s.pct}% mastered</div>
               <div className="dash-bar"><div className="dash-bar-fill" style={{ width: `${s.pct}%`, background: c.bar }} /></div>
             </button>
           );
         })}
-        <button className="jumpcard jumpcard--dashed" onClick={() => onPlaySkill("wordList")}>
-          <div className="jumpcard-icon" style={{ background: WORDLIST_CARD.bg }}>{WORDLIST_CARD.icon}</div>
-          <div className="jumpcard-title">{WORDLIST_CARD.label}</div>
+        <button className="jumpcard" onClick={() => onPlaySkill("wordList")}>
+          <div className="jumpcard-icon" style={{ background: "#eaf4fc" }}>📖</div>
+          <div className="jumpcard-title">Word List</div>
           <div className="jumpcard-sub">Look up every word</div>
           <div className="jumpcard-link">Browse words →</div>
         </button>

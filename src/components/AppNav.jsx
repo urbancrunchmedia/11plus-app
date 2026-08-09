@@ -6,8 +6,8 @@ import { useAuth } from "../contexts/AuthContext";
 // (logo top, games listed directly, streak + avatar at the bottom) and a bottom
 // tab bar on mobile.
 const ITEMS = [
-  { id: "home",         label: "Home",   icon: "⌂" },
-  { id: "wordMatch",    label: "Match",  icon: "🔤" },
+  { id: "home",         label: "Home",   icon: "🏠" },
+  { id: "wordMatch",    label: "Match",  icon: "📚" },
   { id: "fillInBlanks", label: "Detect", icon: "🕵️" },
   { id: "punctuation",  label: "Punct",  icon: "✏️" },
   { id: "wordList",     label: "Words",  icon: "📖" },

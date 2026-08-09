@@ -17,7 +17,7 @@ const TYPE_INFO = {
 
 // Header identity per game (the landing is shared by Word Match / Compound / Detective).
 const SKILL_META = {
-  wordMatch:     { title: "Word Match",     sub: "Synonyms & antonyms",     icon: "🔤",  bg: "#e4f6ff" },
+  wordMatch:     { title: "Word Match",     sub: "Synonyms & antonyms",     icon: "📚",  bg: "#e4f6ff" },
   compoundWords: { title: "Compound Words", sub: "Join two words into one", icon: "🧩",  bg: "#f3fbd4" },
   fillInBlanks:  { title: "Word Detective", sub: "Find the word from clues", icon: "🕵️", bg: "#eaf4fc" },
 };
