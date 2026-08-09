@@ -1,6 +1,20 @@
 import React, { useState, useEffect } from "react";
 import { getBest, getTopRuns, formatTime, formatDate, getPrefs, savePrefs } from "../utils/leaderboard";
 import { getSkillMastery, getXp } from "../utils/gamify";
+import { compoundWords } from "../data/compoundWords";
+import SampleQuiz from "./SampleQuiz";
+
+function shuffle(a) { return [...a].sort(() => Math.random() - 0.5); }
+
+// Free sample puzzles for the Compound Words landing (real compound data).
+function buildCompoundSamples() {
+  const all = [...(compoundWords.A || []), ...(compoundWords.B || []), ...(compoundWords.C || [])];
+  return shuffle(all).slice(0, 5).map((c) => {
+    const decoys = shuffle(all.filter((x) => x.second !== c.second)).slice(0, 3).map((x) => x.second);
+    const options = shuffle([c.second, ...decoys]);
+    return { sentence: `${c.first} + _____`, options, answer: options.indexOf(c.second), teach: `Makes "${c.first}${c.second}".` };
+  });
+}
 
 const LEVELS = [
   { id: "A", label: "Level A", desc: "Easiest",      emoji: "🌱" },
@@ -53,6 +67,8 @@ export default function HomeScreen({ gameType, onPlay, onLearn, initialConfig })
     return 10;
   });
 
+  const [compSamples] = useState(() => (gameType === "compoundWords" ? buildCompoundSamples() : []));
+
   useEffect(() => {
     savePrefs(gameType, { subType, level, totalQuestions, format });
   }, [gameType, subType, level, totalQuestions, format]);
@@ -83,6 +99,19 @@ export default function HomeScreen({ gameType, onPlay, onLearn, initialConfig })
         </div>
         <span className="landing-xp">{getXp().toLocaleString()} XP</span>
       </div>
+
+      {/* Free sample puzzle — Compound Words only */}
+      {gameType === "compoundWords" && (
+        <div className="samp-card">
+          <SampleQuiz
+            label="TRY A PUZZLE — FREE"
+            items={compSamples}
+            blank="_____"
+            hint="Pick the word that joins on to make a real compound word."
+            nextLabel="Next puzzle"
+          />
+        </div>
+      )}
 
       {/* Picked-for-you hero */}
       <div className="landing-hero">
