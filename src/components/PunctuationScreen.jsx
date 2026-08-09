@@ -51,7 +51,7 @@ export default function PunctuationScreen({ onPlay }) {
       </div>
 
       <div className="samp-card">
-        <SampleQuiz label="TRY A QUESTION — FREE" items={samples} blank="___" hint="Pick the punctuation that makes the sentence correct." />
+        <SampleQuiz label="TRY A QUESTION — FREE" items={samples} blank="___" hint="Pick the punctuation that makes the sentence correct." nextLabel="Next question" />
       </div>
 
       <div className="landing-hero landing-hero--row">
