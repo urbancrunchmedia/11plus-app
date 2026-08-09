@@ -26,6 +26,8 @@ export default function SettingsScreen({ onHome }) {
   const stats = getStats();
   const [s, setS] = useState(getSettings);
   const [sheet, setSheet] = useState(false);
+  const [editingPin, setEditingPin] = useState(false);
+  const [pinInput, setPinInput] = useState("");
 
   function update(key, value) {
     setSetting(key, value);
@@ -93,6 +95,29 @@ export default function SettingsScreen({ onHome }) {
             </div>
           </React.Fragment>
         ))}
+        <div className="set-divider" />
+        <div className="set-row">
+          <div className="set-row-txt"><div className="set-row-label">Child PIN</div><div className="set-row-sub">A 4-digit PIN to start a session (soft lock)</div></div>
+          {!editingPin ? (
+            <div className="set-pin-actions">
+              {s.childPin ? (
+                <>
+                  <button className="set-ghost" onClick={() => { setPinInput(""); setEditingPin(true); }}>Change</button>
+                  <button className="set-ghost" onClick={() => update("childPin", "")}>Turn off</button>
+                </>
+              ) : (
+                <button className="set-ghost" onClick={() => { setPinInput(""); setEditingPin(true); }}>Set PIN</button>
+              )}
+            </div>
+          ) : (
+            <div className="set-pin-actions">
+              <input className="set-pin-input" inputMode="numeric" maxLength={4} value={pinInput}
+                onChange={(e) => setPinInput(e.target.value.replace(/\D/g, "").slice(0, 4))} placeholder="0000" autoFocus />
+              <button className="set-ghost" disabled={pinInput.length !== 4} onClick={() => { update("childPin", pinInput); setEditingPin(false); }}>Save</button>
+              <button className="set-ghost" onClick={() => setEditingPin(false)}>Cancel</button>
+            </div>
+          )}
+        </div>
         <div className="set-divider" />
         <div className="set-row">
           <div className="set-row-txt"><div className="set-row-label">Weekly progress report</div><div className="set-row-sub">Emailed summary of what was learned</div></div>

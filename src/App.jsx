@@ -16,6 +16,8 @@ import ComingSoon from "./components/ComingSoon";
 import WordListScreen from "./components/WordListScreen";
 import LeaderboardScreen from "./components/LeaderboardScreen";
 import LoginScreen from "./components/LoginScreen";
+import ChildGate from "./components/ChildGate";
+import { getSetting, setSetting } from "./utils/leaderboard";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import "./App.css";
 
@@ -88,6 +90,7 @@ function AppInner() {
   const [config, setConfig] = useState(null);
   const [playKey, setPlayKey] = useState(0);
   const [lastPunctConfig, setLastPunctConfig] = useState(null);
+  const [childUnlocked, setChildUnlocked] = useState(false);
 
   if (user === undefined) {
     return (
@@ -99,6 +102,19 @@ function AppInner() {
   }
 
   if (user === null) return <LoginScreen />;
+
+  // Soft child-PIN gate (opt-in via Settings; a grown-up reset avoids lockouts).
+  const childPin = getSetting("childPin", "");
+  if (childPin && !childUnlocked) {
+    return (
+      <ChildGate
+        name={user.displayName}
+        pin={childPin}
+        onUnlock={() => setChildUnlocked(true)}
+        onReset={() => { setSetting("childPin", ""); setChildUnlocked(true); }}
+      />
+    );
+  }
 
   function handleSelectGame(id) {
     setSelectedGame(id);

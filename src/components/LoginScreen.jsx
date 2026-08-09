@@ -20,12 +20,12 @@ function friendlyError(code, message) {
     case "auth/email-already-in-use":  return "An account with this email already exists.";
     case "auth/weak-password":         return "Password must be at least 6 characters.";
     case "auth/invalid-email":         return "Please enter a valid email address.";
-    case "auth/too-many-requests":      return "Too many attempts. Please try again later.";
-    case "auth/operation-not-allowed":  return "Email/Password sign-in is not enabled. Please enable it in Firebase Console → Authentication → Sign-in method.";
+    case "auth/too-many-requests":     return "Too many attempts. Please try again later.";
+    case "auth/operation-not-allowed": return "Email/Password sign-in is not enabled in Firebase.";
     case "auth/popup-blocked":         return "Popup was blocked — please allow popups for this site.";
     case "auth/popup-closed-by-user":  return "Sign-in window was closed. Please try again.";
-    case "auth/unauthorized-domain":   return "This domain isn't authorised in Firebase. Add it in Firebase Console → Authentication → Settings → Authorised domains.";
-    case "auth/cancelled-popup-request": return null; // user opened another popup, ignore
+    case "auth/unauthorized-domain":   return "This domain isn't authorised in Firebase.";
+    case "auth/cancelled-popup-request": return null;
     default:                           return message || "Something went wrong. Please try again.";
   }
 }
@@ -33,7 +33,8 @@ function friendlyError(code, message) {
 export default function LoginScreen() {
   const { signInWithEmail, signUpWithEmail, signInWithGoogle, redirectError } = useAuth();
 
-  const [mode, setMode]         = useState("signin"); // "signin" | "signup"
+  const [tab, setTab]           = useState("parent"); // "child" | "parent"
+  const [mode, setMode]         = useState("signin");  // "signin" | "signup"
   const [name, setName]         = useState("");
   const [email, setEmail]       = useState("");
   const [password, setPassword] = useState("");
@@ -42,16 +43,11 @@ export default function LoginScreen() {
 
   async function handleSubmit(e) {
     e.preventDefault();
-    setError("");
-    setLoading(true);
+    setError(""); setLoading(true);
     try {
-      if (mode === "signup") {
-        await signUpWithEmail(email, password, name);
-      } else {
-        await signInWithEmail(email, password);
-      }
+      if (mode === "signup") await signUpWithEmail(email, password, name);
+      else await signInWithEmail(email, password);
     } catch (err) {
-      console.error("Auth error:", err.code, err.message);
       const msg = friendlyError(err.code, err.message);
       if (msg) setError(msg);
     }
@@ -60,94 +56,86 @@ export default function LoginScreen() {
 
   async function handleGoogle() {
     setError("");
-    try {
-      await signInWithGoogle();
-    } catch (err) {
-      console.error("Google sign-in error:", err.code, err.message);
-      const msg = friendlyError(err.code, err.message);
-      if (msg) setError(msg);
-    }
+    try { await signInWithGoogle(); }
+    catch (err) { const msg = friendlyError(err.code, err.message); if (msg) setError(msg); }
   }
 
   return (
-    <div className="login-screen">
-      <div className="login-card">
-
-        <div className="login-header">
-          <span className="login-logo">🎓</span>
-          <h1 className="login-title">11+ Prep</h1>
-          <p className="login-subtitle">
-            {mode === "signin" ? "Welcome back! Sign in to continue." : "Create your account to get started."}
-          </p>
+    <div className="login2">
+      {/* Left: brand hero */}
+      <div className="login2-hero">
+        <div className="login2-hero-bg1" />
+        <div className="login2-hero-bg2" />
+        <div className="login2-logo">11</div>
+        <div className="login2-hero-mid">
+          <div className="login2-tagline">Ten minutes a day beats an hour on Sunday.</div>
+          <div className="login2-blurb">Vocabulary, punctuation and compound words for the 11+ — as short daily rounds you'll actually want to finish.</div>
         </div>
+        <div className="login2-stats">
+          <div className="login2-stat">🔥 Build a daily streak</div>
+          <div className="login2-stat">📚 700+ words to master</div>
+        </div>
+      </div>
 
-        <form className="login-form" onSubmit={handleSubmit}>
-          {mode === "signup" && (
-            <div className="login-field">
-              <label>Child Name</label>
-              <input
-                type="text"
-                placeholder="Child's name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                required
-                autoComplete="name"
-              />
-            </div>
-          )}
-
-          <div className="login-field">
-            <label>Email</label>
-            <input
-              type="email"
-              placeholder="you@example.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              autoComplete="email"
-            />
+      {/* Right: sign-in */}
+      <div className="login2-panel">
+        <div className="login2-card">
+          <div className="login2-tabs">
+            <button className={`login2-tab ${tab === "child" ? "active" : ""}`} onClick={() => setTab("child")}>I'm learning</button>
+            <button className={`login2-tab ${tab === "parent" ? "active" : ""}`} onClick={() => setTab("parent")}>Grown-up</button>
           </div>
 
-          <div className="login-field">
-            <label>Password</label>
-            <input
-              type="password"
-              placeholder="••••••••"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              autoComplete={mode === "signup" ? "new-password" : "current-password"}
-            />
-          </div>
-
-          {(error || redirectError) && (
-            <div className="login-error">
-              {error || friendlyError(redirectError) || `Sign-in error: ${redirectError}`}
+          {tab === "child" ? (
+            <div className="login2-child">
+              <div className="login2-child-emoji">👋</div>
+              <div className="login2-h">Welcome!</div>
+              <div className="login2-p">A grown-up needs to sign in once to set things up. After that, you'll pick your name and PIN right here.</div>
+              <button className="login2-submit" onClick={() => setTab("parent")}>Grown-up sign in →</button>
             </div>
+          ) : (
+            <>
+              <div className="login2-h">{mode === "signin" ? "Grown-up sign in" : "Create a family account"}</div>
+              <div className="login2-p">See progress, set daily goals and manage profiles.</div>
+
+              <form className="login2-form" onSubmit={handleSubmit}>
+                {mode === "signup" && (
+                  <label className="login2-field">
+                    <span>CHILD NAME</span>
+                    <input type="text" placeholder="Your child's name" value={name} onChange={(e) => setName(e.target.value)} required autoComplete="name" />
+                  </label>
+                )}
+                <label className="login2-field">
+                  <span>EMAIL</span>
+                  <input type="email" placeholder="you@email.com" value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="email" />
+                </label>
+                <label className="login2-field">
+                  <span>PASSWORD</span>
+                  <input type="password" placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} required autoComplete={mode === "signup" ? "new-password" : "current-password"} />
+                </label>
+
+                {(error || redirectError) && (
+                  <div className="login2-error">{error || friendlyError(redirectError) || "Sign-in error"}</div>
+                )}
+
+                <button className="login2-submit" type="submit" disabled={loading}>
+                  {loading ? "Please wait…" : mode === "signin" ? "Log in" : "Create account"}
+                </button>
+              </form>
+
+              <div className="login2-divider"><span>or</span></div>
+              <button className="login2-google" onClick={handleGoogle} disabled={loading}>
+                <GoogleIcon /> Continue with Google
+              </button>
+
+              <div className="login2-toggle">
+                {mode === "signin" ? "New here? " : "Already have an account? "}
+                <button onClick={() => { setMode(mode === "signin" ? "signup" : "signin"); setError(""); }}>
+                  {mode === "signin" ? "Create a family account" : "Log in"}
+                </button>
+              </div>
+            </>
           )}
-
-          <button className="login-submit-btn" type="submit" disabled={loading}>
-            {loading ? "Please wait…" : mode === "signin" ? "Sign In" : "Create Account"}
-          </button>
-        </form>
-
-        <div className="login-divider"><span>or</span></div>
-
-        <button className="google-signin-btn google-signin-full" onClick={handleGoogle} disabled={loading}>
-          <GoogleIcon />
-          Continue with Google
-        </button>
-
-        <p className="login-toggle">
-          {mode === "signin" ? "Don't have an account? " : "Already have an account? "}
-          <button
-            className="login-toggle-btn"
-            onClick={() => { setMode(mode === "signin" ? "signup" : "signin"); setError(""); }}
-          >
-            {mode === "signin" ? "Create one" : "Sign in"}
-          </button>
-        </p>
-
+        </div>
       </div>
     </div>
   );
