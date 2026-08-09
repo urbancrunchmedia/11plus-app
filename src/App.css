@@ -496,7 +496,7 @@ body {
   display: flex;
   align-items: flex-start;
   justify-content: center;
-  padding: 28px 24px;
+  padding: 32px 40px;
   overflow-y: auto;
 }
 
@@ -2003,7 +2003,7 @@ body {
 .appnav-avatar.active { box-shadow: 0 0 0 3px rgba(18,165,255,0.45); }
 
 /* ── Dashboard ── */
-.dash { width: 100%; max-width: 1080px; display: flex; flex-direction: column; gap: 22px; }
+.dash { width: 100%; max-width: 1280px; display: flex; flex-direction: column; gap: 22px; }
 .dash-head { display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; }
 .dash-name { font-weight: 800; font-size: 1.8rem; color: var(--ink); letter-spacing: -0.02em; }
 .dash-sub  { font-weight: 600; font-size: 0.9rem; color: var(--muted, #6b7a8c); margin-top: 4px; }
@@ -2013,6 +2013,8 @@ body {
 
 .dash-grid { display: grid; grid-template-columns: 1.35fr 1fr; gap: 18px; }
 .dash-hero { background: var(--brand); border-radius: 30px; padding: 28px; color: #fff; position: relative; overflow: hidden; display: flex; justify-content: space-between; gap: 20px; }
+.dash-hero::after { content: ""; position: absolute; right: -60px; bottom: -70px; width: 220px; height: 220px; border-radius: 50%; background: rgba(255,255,255,0.09); pointer-events: none; }
+.dash-hero-body, .dash-ring { position: relative; z-index: 1; }
 .dash-hero-body { flex: 1; min-width: 0; }
 .dash-chip { display: inline-block; background: var(--accent); color: var(--ink); font-weight: 800; font-size: 0.66rem; letter-spacing: 0.08em; padding: 6px 11px; border-radius: var(--r-full); }
 .dash-hero-title { font-weight: 800; font-size: 2rem; line-height: 1.1; margin: 14px 0 8px; letter-spacing: -0.02em; }
@@ -2031,7 +2033,7 @@ body {
 .dash-side-cta { background: var(--accent); color: var(--ink); border: none; border-radius: var(--r-full); padding: 13px; text-align: center; font-weight: 800; font-size: 0.9rem; margin-top: 16px; }
 
 .dash-jump-head { font-weight: 800; font-size: 1.15rem; color: var(--ink); }
-.dash-jump { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 16px; }
+.dash-jump { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; }
 .jumpcard { text-align: left; background: #fff; border: none; border-radius: 26px; padding: 22px; box-shadow: var(--shadow-xs); transition: transform 0.12s; display: flex; flex-direction: column; }
 .jumpcard:hover { transform: translateY(-3px); box-shadow: var(--shadow-sm); }
 .jumpcard--dashed { border: 2px dashed #c7d9e8; box-shadow: none; }
