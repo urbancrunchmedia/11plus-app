@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import AppNav from "./components/AppNav";
 import HomeDashboard from "./components/HomeDashboard";
-import MeScreen from "./components/MeScreen";
+import SettingsScreen from "./components/SettingsScreen";
 import HomeScreen from "./components/HomeScreen";
 import GameScreen from "./components/GameScreen";
 import CompoundGame from "./components/CompoundGame";
@@ -146,8 +146,8 @@ function AppInner() {
             />
           )}
 
-          {/* Me — profile */}
-          {isMe && <MeScreen />}
+          {/* Me — profile & settings */}
+          {isMe && <SettingsScreen onHome={() => handleSelectGame("home")} />}
 
           {/* Word Match — synonyms/antonyms, in Match or Worksheet format */}
           {isWordMatch && screen === "home" && (

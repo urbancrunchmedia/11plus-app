@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { getBest, getTopRuns, formatTime, formatDate, getPrefs, savePrefs } from "../utils/leaderboard";
+import { getBest, getTopRuns, formatTime, formatDate, getPrefs, savePrefs, getSetting } from "../utils/leaderboard";
 import { getSkillMastery, getXp } from "../utils/gamify";
 import { compoundWords } from "../data/compoundWords";
 import SampleQuiz from "./SampleQuiz";
@@ -61,7 +61,7 @@ export default function HomeScreen({ gameType, onPlay, onLearn, initialConfig })
   const [level, setLevel] = useState(() => {
     if (["A", "B", "C"].includes(saved.level)) return saved.level;
     if (["A", "B", "C"].includes(initialConfig?.level)) return initialConfig.level;
-    return "A";
+    return getSetting("defaultDifficulty", "A");
   });
   const [totalQuestions, setTotal] = useState(() => {
     if (Q_OPTIONS.includes(saved.totalQuestions)) return saved.totalQuestions;

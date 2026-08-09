@@ -1,7 +1,7 @@
 // Gamification metrics DERIVED from the scores/history the app already saves in
 // localStorage (see leaderboard.js). Nothing here needs a backend — XP, level,
 // streak, per-skill mastery and badges are all computed from real play data.
-import { getAllBests, getAllHistory } from "./leaderboard";
+import { getAllBests, getAllHistory, getSetting } from "./leaderboard";
 
 // Skills shown on the dashboard, each mapping to the score gameTypes it covers.
 export const SKILLS = [
@@ -99,8 +99,8 @@ export function getSkillMastery() {
   });
 }
 
-// "Play N rounds today" — progress from today's runs.
-export function getDailyChallenge(target = 3) {
+// "Play N rounds today" — progress from today's runs. Target = the daily goal.
+export function getDailyChallenge(target = getSetting("dailyGoal", 3)) {
   const todayKey = dayKey(new Date());
   const done = allRuns().filter((r) => {
     const d = parseDate(r.date);

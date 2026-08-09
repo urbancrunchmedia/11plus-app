@@ -63,7 +63,15 @@ function tone(c, freq, start, duration, vol = 0.28) {
   osc.stop(start + duration);
 }
 
+// Global sound switch (Settings → Sounds and cheers). Read from localStorage
+// directly to avoid an import cycle with leaderboard.js.
+function soundOn() {
+  try { return (JSON.parse(localStorage.getItem("11plus_settings")) || {}).sound !== false; }
+  catch { return true; }
+}
+
 export function playCorrect() {
+  if (!soundOn()) return;
   try { if (navigator.vibrate) navigator.vibrate(40); } catch (_) {}
 
   playTones((c, now) => {
@@ -74,6 +82,7 @@ export function playCorrect() {
 }
 
 export function playWrong() {
+  if (!soundOn()) return;
   try { if (navigator.vibrate) navigator.vibrate([40, 60, 40]); } catch (_) {}
 
   playTones((c, now) => {

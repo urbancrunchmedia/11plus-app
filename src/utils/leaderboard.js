@@ -1,6 +1,33 @@
 const BEST_KEY    = "11plus_personal_bests";
 const HISTORY_KEY = "11plus_history";
 const PREFS_KEY   = "11plus_prefs";
+const SETTINGS_KEY = "11plus_settings";
+
+// ── Global app settings (daily goal, default difficulty, sound, toggles) ──
+const SETTING_DEFAULTS = {
+  dailyGoal: 3,
+  defaultDifficulty: "A",
+  sound: true,
+  showTimer: true,
+  revisitMisses: true,
+  parentPinLock: false,
+  weeklyEmail: false,
+};
+export function getSettings() {
+  try { return { ...SETTING_DEFAULTS, ...(JSON.parse(localStorage.getItem(SETTINGS_KEY)) || {}) }; }
+  catch { return { ...SETTING_DEFAULTS }; }
+}
+export function getSetting(key, fallback) {
+  const v = getSettings()[key];
+  return v === undefined ? (fallback ?? SETTING_DEFAULTS[key]) : v;
+}
+export function setSetting(key, value) {
+  try {
+    const all = getSettings();
+    all[key] = value;
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify(all));
+  } catch { /* storage unavailable */ }
+}
 
 // ── Quiz setup preferences (remember last choices across restarts) ──
 export function getPrefs(gameType) {
