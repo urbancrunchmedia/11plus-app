@@ -38,7 +38,9 @@ const SKILL_META = {
 
 const Q_OPTIONS = [5, 10, 20, 30];
 const NO_LEVEL_GAMES = ["fillInBlanks"];
-const FORMAT_GAMES = ["wordMatch", "compoundWords"];
+// Games that expose the Match/Worksheet play-style toggle.
+// Word Match's Worksheet mode is hidden for now (Compound Words keeps it).
+const FORMAT_GAMES = ["compoundWords"];
 
 export default function HomeScreen({ gameType, onPlay, onLearn, initialConfig }) {
   const isWordMatch    = gameType === "wordMatch";
