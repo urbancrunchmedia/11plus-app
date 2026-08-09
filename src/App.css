@@ -27,6 +27,13 @@
   --on-accent: #5c7000;   /* muted text on lime */
   --ink: #0e1116;
 
+  /* Aliases used by the redesigned screens (dashboard/nav/landing/board). */
+  --brand: #12a5ff;
+  --brand-dark: #0b7fc7;
+  --track: #e7eef5;
+  --muted: #6b7a8c;
+  --line: #dde7f0;
+
   --selected: #12a5ff;    /* blue — distinct from green(correct)/red(wrong) */
   --selected-bg: #e4f6ff;
   --selected-ink: #0a6db2;
