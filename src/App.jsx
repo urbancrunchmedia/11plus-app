@@ -9,6 +9,7 @@ import WorksheetGame from "./components/WorksheetGame";
 import { makeCompoundQuestions, makeSynonymQuestions, makeAntonymQuestions } from "./utils/worksheet";
 import PunctuationScreen from "./components/PunctuationScreen";
 import PunctuationGame from "./components/PunctuationGame";
+import DetectiveScreen from "./components/DetectiveScreen";
 import FillInBlanksGame from "./components/FillInBlanksGame";
 import FlashcardScreen from "./components/FlashcardScreen";
 import ComingSoon from "./components/ComingSoon";
@@ -202,7 +203,7 @@ function AppInner() {
 
           {/* Word Detective (fill in the blanks) */}
           {isFillInBlanks && screen === "home" && (
-            <HomeScreen gameType="fillInBlanks" onPlay={handlePlay} onLearn={handleLearn} initialConfig={config} />
+            <DetectiveScreen onPlay={handlePlay} onLearn={handleLearn} />
           )}
           {isFillInBlanks && screen === "learn" && (
             <FlashcardScreen

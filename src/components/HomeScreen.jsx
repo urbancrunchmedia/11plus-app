@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { getBest, getTopRuns, formatTime, formatDate, getPrefs, savePrefs } from "../utils/leaderboard";
-import { getSkillMastery } from "../utils/gamify";
+import { getSkillMastery, getXp } from "../utils/gamify";
 
 const LEVELS = [
   { id: "A", label: "Level A", desc: "Easiest",      emoji: "🌱" },
@@ -81,18 +81,17 @@ export default function HomeScreen({ gameType, onPlay, onLearn, initialConfig })
           <h1 className="landing-h1">{meta.title}</h1>
           <div className="landing-sub">{meta.sub} · {masteryPct}% mastered</div>
         </div>
+        <span className="landing-xp">{getXp().toLocaleString()} XP</span>
       </div>
-
-      {/* Synonyms / Antonyms — Word Match only */}
-      {isWordMatch && (
-        <div className="landing-chips">
-          <button className={`chip ${subType === "synonyms" ? "active" : ""}`} onClick={() => setSubType("synonyms")}>Synonyms</button>
-          <button className={`chip ${subType === "antonyms" ? "active" : ""}`} onClick={() => setSubType("antonyms")}>Antonyms</button>
-        </div>
-      )}
 
       {/* Picked-for-you hero */}
       <div className="landing-hero">
+        {isWordMatch && (
+          <div className="hero-chips">
+            <button className={`hero-chip ${subType === "synonyms" ? "active" : ""}`} onClick={() => setSubType("synonyms")}>Synonyms</button>
+            <button className={`hero-chip ${subType === "antonyms" ? "active" : ""}`} onClick={() => setSubType("antonyms")}>Antonyms</button>
+          </div>
+        )}
         <span className="dash-chip">PICKED FOR YOU</span>
         <div className="landing-hero-title">
           {noLevel ? `All words · ${totalQuestions}` : `Level ${level} · ${totalQuestions} words`}
