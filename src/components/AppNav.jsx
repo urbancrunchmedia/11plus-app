@@ -5,11 +5,9 @@ import { useAuth } from "../contexts/AuthContext";
 // Primary navigation, matching the design prototype: a dark icon-rail on desktop
 // (logo top, games listed directly, streak + avatar at the bottom) and a bottom
 // tab bar on mobile.
+// Slim rail per the design: games are reached from the Home dashboard cards.
 const ITEMS = [
   { id: "home",         label: "Home",   icon: "◉" },
-  { id: "wordMatch",    label: "Match",  icon: "📚" },
-  { id: "fillInBlanks", label: "Detect", icon: "🕵️" },
-  { id: "punctuation",  label: "Punct",  icon: "✏️" },
   { id: "wordList",     label: "Words",  icon: "📖" },
   { id: "leaderboard",  label: "Board",  icon: "🏆" },
 ];
