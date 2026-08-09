@@ -4,24 +4,14 @@ import { xpToRunReward, getLevelInfo, getStreak } from "../utils/gamify";
 import { pushToCloud } from "../utils/cloudScores";
 import { useAuth } from "../contexts/AuthContext";
 
-function Stars({ count }) {
-  return (
-    <span className="stars-row">
-      {[1, 2, 3].map((i) => (
-        <span key={i} className={`star-icon ${i <= count ? "lit" : "dim"}`}>★</span>
-      ))}
-    </span>
-  );
-}
-
 export default function GameComplete({ results, totalWrong, timeTaken, onPlayAgain, onHome, level, gameType, totalQuestions }) {
   const totalStars = results.reduce((sum, r) => sum + r.stars, 0);
   const maxStars   = totalQuestions * 3;
-  const pct        = Math.round((totalStars / maxStars) * 100);
-  const title      = pct === 100 ? "🌟 Perfect!" : pct >= 70 ? "🎉 Great job!" : "✅ Done!";
+  const pct        = maxStars ? Math.round((totalStars / maxStars) * 100) : 0;
 
   const { user } = useAuth();
-  const [prevBest]  = useState(() => getBest(level, gameType, totalQuestions));
+  const firstName = (user?.displayName || "").trim().split(/\s+/)[0] || "you";
+
   const [isNewBest] = useState(() => {
     saveRun(level, gameType, totalQuestions, totalStars, totalWrong, timeTaken, user?.displayName);
     const newBest = saveIfBest(level, gameType, totalQuestions, totalStars, totalWrong, timeTaken);
@@ -29,68 +19,57 @@ export default function GameComplete({ results, totalWrong, timeTaken, onPlayAga
     return newBest;
   });
 
-  // Payout — read AFTER the run is saved above so XP/level/streak reflect it.
+  // Read AFTER the run is saved so XP/level/streak reflect it.
   const xpEarned = xpToRunReward(totalStars);
   const [payout] = useState(() => ({ level: getLevelInfo(), streak: getStreak() }));
 
+  const emoji  = pct === 100 ? "🌟" : pct >= 70 ? "🎉" : "💪";
+  const title  = pct === 100 ? `Flawless, ${firstName}!` : pct >= 70 ? `Nice one, ${firstName}!` : `Good effort, ${firstName}`;
+  const badge  = isNewBest ? "NEW PERSONAL BEST" : pct >= 70 ? "GREAT ROUND" : "KEEP GOING";
+
+  // Words they didn't get first-time (stars < 3) are worth a second look.
+  const watch = results.filter((r) => r.stars < 3).map((r) => r.word);
+
   return (
-    <div className="summary-overlay">
-      <div className="summary-card">
-        <h2 className="summary-title">{title}</h2>
+    <div className="gc-screen">
+      <div className="gc-inner">
+        <div className="gc-emoji">{emoji}</div>
+        <div className="gc-title">{title}</div>
+        <div className="gc-badge">{badge}</div>
 
-        {isNewBest && (
-          <div className="new-best-banner">🏆 New Personal Best!</div>
-        )}
-
-        {!isNewBest && prevBest && (
-          <div className="prev-best-banner">
-            Previous best: ⭐ {prevBest.stars}/{maxStars} · {prevBest.wrong} wrong · ⏱ {formatTime(prevBest.time)} · {prevBest.date}
-          </div>
-        )}
-
-        <div className="gc-stats">
-          <div className="gc-stat">
-            <span className="gc-stat-value gc-correct">{results.length}</span>
-            <span className="gc-stat-label">Correct</span>
-          </div>
-          <div className="gc-stat">
-            <span className="gc-stat-value gc-wrong">{totalWrong}</span>
-            <span className="gc-stat-label">Wrong</span>
-          </div>
-          <div className="gc-stat">
-            <span className="gc-stat-value gc-stars">{totalStars}/{maxStars}</span>
-            <span className="gc-stat-label">Stars</span>
-          </div>
-          <div className="gc-stat">
-            <span className="gc-stat-value gc-time">⏱ {formatTime(timeTaken)}</span>
-            <span className="gc-stat-label">Time</span>
-          </div>
+        <div className="gc-tiles">
+          <div className="gc-tile"><div className="gc-tile-val">{results.length}<span className="gc-tile-of">/{totalQuestions}</span></div><div className="gc-tile-lbl">correct</div></div>
+          <div className="gc-tile"><div className="gc-tile-val">{totalWrong}</div><div className="gc-tile-lbl">wrong</div></div>
+          <div className="gc-tile"><div className="gc-tile-val">{formatTime(timeTaken)}</div><div className="gc-tile-lbl">time</div></div>
+          <div className="gc-tile gc-tile--lime"><div className="gc-tile-val">⭐ {totalStars}</div><div className="gc-tile-lbl">stars</div></div>
         </div>
 
-        <div className="gc-payout">
-          <div className="gc-payout-top">
-            <span className="gc-xp">+{xpEarned} XP</span>
-            <span className="gc-level">Level {payout.level.level} · {payout.level.title}</span>
+        <div className="gc-xpcard">
+          <div className="gc-xpcard-top">
+            <span className="gc-xpcard-xp">+{xpEarned} XP</span>
+            <span className="gc-xpcard-lvl">Level {payout.level.level} · {payout.level.title}</span>
           </div>
-          <div className="gc-xpbar"><div className="gc-xpbar-fill" style={{ width: `${payout.level.pct}%` }} /></div>
-          <div className="gc-payout-bot">
-            <span>{payout.level.toNext} XP to Level {payout.level.level + 1}</span>
-            <span className="gc-streak">🔥 {payout.streak} day streak</span>
-          </div>
-        </div>
-
-        <div className="summary-results">
-          {results.map((r, i) => (
-            <div key={i} className="summary-row">
-              <span className="summary-pair">{r.word} → {r.match}</span>
-              <Stars count={r.stars} />
+          <div className="gc-xpbar2"><div className="gc-xpbar2-fill" style={{ width: `${payout.level.pct}%` }} /></div>
+          <div className="gc-xpcard-note">{payout.level.toNext} XP to Level {payout.level.level + 1}</div>
+          <div className="gc-streakrow">
+            <div className="gc-streak-ic">🔥</div>
+            <div>
+              <div className="gc-streak-title">Day {payout.streak} streak</div>
+              <div className="gc-streak-sub">Play again tomorrow to keep it going</div>
             </div>
-          ))}
+          </div>
         </div>
 
-        <div className="summary-buttons">
-          <button className="play-btn" onClick={onPlayAgain}>Play Again</button>
-          <button className="secondary-btn" onClick={onHome}>Home</button>
+        {watch.length > 0 && (
+          <div className="gc-watch">
+            <span className="gc-watch-ic">🎯</span>
+            <span>Worth another look: <strong>{watch.slice(0, 4).join(", ")}</strong>{watch.length > 4 ? "…" : ""}</span>
+          </div>
+        )}
+
+        <div className="gc-actions">
+          <button className="gc-again" onClick={onPlayAgain}>Play again</button>
+          <button className="gc-back" onClick={onHome}>Back home</button>
         </div>
       </div>
     </div>
