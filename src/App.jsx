@@ -95,7 +95,7 @@ function AppInner() {
   if (user === undefined) {
     return (
       <div className="app-loading">
-        <span className="app-loading-logo">🎓</span>
+        <div className="app-loading-mark">11</div>
         <p>Loading…</p>
       </div>
     );
