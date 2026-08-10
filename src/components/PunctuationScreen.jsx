@@ -65,35 +65,21 @@ export default function PunctuationScreen({ onPlay }) {
           <button className="landing-start" onClick={() => onPlay({ level, totalQuestions })}>
             <span>Start round</span><span className="dash-hero-arrow">→</span>
           </button>
-        </div>
-      </div>
-
-      <div className="landing-or"><span>Choose a set</span></div>
-      <div className="punct-sets">
-        {SETS.map((s) => {
-          const b = getBest(s.id, "punctuation", totalQuestions);
-          return (
-            <button key={s.id} className={`punct-set ${level === s.id ? "active" : ""}`} onClick={() => setLevel(s.id)}>
-              <div className="punct-set-top">
-                <span className="punct-set-emoji">{s.emoji}</span>
-                {b ? <span className="punct-set-best">⭐ {b.stars}/{maxStars}</span> : <span className="punct-set-new">Not tried</span>}
-              </div>
-              <div className="punct-set-label">{s.label}</div>
-              <div className="punct-set-topics">{s.topics}</div>
-            </button>
-          );
-        })}
-      </div>
-
-      <div className="landing-lenrow">
-        <span className="landing-lenlabel">Length</span>
-        <div className="q-bar">
-          {Q_OPTIONS.map((q, i) => {
-            const activeIdx = Q_OPTIONS.indexOf(totalQuestions);
-            return (
-              <button key={q} className={`q-segment ${i <= activeIdx ? "filled" : ""} ${q === totalQuestions ? "selected" : ""}`} onClick={() => setTotal(q)}>{q}</button>
-            );
-          })}
+          <div className="hero-select-wrap">
+            <select className="hero-select" value={level} onChange={(e) => setLevel(e.target.value)} aria-label="Set">
+              <option value="A">Level A · easiest</option>
+              <option value="B">Level B · intermediate</option>
+              <option value="C">Level C · hardest</option>
+              <option value="all">All levels · mixed</option>
+            </select>
+            <span className="hero-select-chev">▾</span>
+          </div>
+          <div className="hero-select-wrap">
+            <select className="hero-select" value={totalQuestions} onChange={(e) => setTotal(Number(e.target.value))} aria-label="Length">
+              {Q_OPTIONS.map((q) => <option key={q} value={q}>{q} questions</option>)}
+            </select>
+            <span className="hero-select-chev">▾</span>
+          </div>
         </div>
       </div>
 
