@@ -67,32 +67,6 @@ export default function DetectiveScreen({ onPlay, onLearn }) {
         </div>
       </div>
 
-      <div className="landing-best">
-        <div className="section-label">🏆 Personal best</div>
-        {best ? (
-          <div className="home-best">
-            <span className="home-best-score">⭐ {best.stars}/{maxStars}</span>
-            <span className="home-best-detail">{best.wrong} wrong · ⏱ {formatTime(best.time ?? 0)} · {formatDate(best.date)}</span>
-          </div>
-        ) : (
-          <div className="home-best home-best--empty">No score yet — be the first! 🎯</div>
-        )}
-        {topRuns.length > 0 && (
-          <>
-            <div className="section-label">Your best runs</div>
-            <table className="lb-table">
-              <thead><tr><th>#</th><th>Stars</th><th>Time</th><th>Date</th></tr></thead>
-              <tbody>
-                {topRuns.map((r, i) => (
-                  <tr key={i} className={i === 0 ? "lb-row lb-top" : "lb-row"}>
-                    <td className="lb-rank">{i + 1}</td><td>⭐ {r.stars}/{maxStars}</td><td>{formatTime(r.time ?? 0)}</td><td className="lb-date">{formatDate(r.date)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </>
-        )}
-      </div>
     </div>
   );
 }
