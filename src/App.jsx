@@ -17,6 +17,7 @@ import WordListScreen from "./components/WordListScreen";
 import LeaderboardScreen from "./components/LeaderboardScreen";
 import LoginScreen from "./components/LoginScreen";
 import ChildGate from "./components/ChildGate";
+import OnboardingScreen from "./components/OnboardingScreen";
 import { getSetting, setSetting } from "./utils/leaderboard";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import "./App.css";
@@ -91,6 +92,7 @@ function AppInner() {
   const [playKey, setPlayKey] = useState(0);
   const [lastPunctConfig, setLastPunctConfig] = useState(null);
   const [childUnlocked, setChildUnlocked] = useState(false);
+  const [onboarded, setOnboarded] = useState(() => getSetting("onboarded", false));
 
   if (user === undefined) {
     return (
@@ -114,6 +116,12 @@ function AppInner() {
         onReset={() => { setSetting("childPin", ""); setChildUnlocked(true); }}
       />
     );
+  }
+
+  // First-run "set up a learner" step — only when no proper name is set yet.
+  const needsOnboarding = !onboarded && (!user.displayName || user.displayName === "Player");
+  if (needsOnboarding) {
+    return <OnboardingScreen onDone={() => { setSetting("onboarded", true); setOnboarded(true); }} />;
   }
 
   function handleSelectGame(id) {
