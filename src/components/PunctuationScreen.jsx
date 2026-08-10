@@ -3,6 +3,7 @@ import { punctuationData } from "../data/punctuation";
 import { getPrefs, savePrefs, getBest, getTopRuns, formatTime, formatDate } from "../utils/leaderboard";
 import { getSkillMastery, getXp } from "../utils/gamify";
 import SampleQuiz from "./SampleQuiz";
+import Icon, { SKILL_ICON } from "./Icon";
 
 const Q_OPTIONS = [5, 10, 20, 30];
 
@@ -42,7 +43,7 @@ export default function PunctuationScreen({ onPlay }) {
   return (
     <div className="landing">
       <div className="landing-head">
-        <div className="landing-icon" style={{ background: "#f0f2f5" }}>✏️</div>
+        <div className="landing-icon" style={{ background: SKILL_ICON.punctuation.bg }}><Icon name="punct" stroke={SKILL_ICON.punctuation.stroke} size={26} /></div>
         <div className="landing-head-txt">
           <h1 className="landing-h1">Punctuation</h1>
           <div className="landing-sub">Add the right punctuation · {masteryPct}% mastered</div>

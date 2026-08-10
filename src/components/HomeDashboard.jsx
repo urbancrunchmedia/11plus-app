@@ -2,11 +2,13 @@ import React, { useState, useEffect } from "react";
 import { getStats } from "../utils/gamify";
 import { getLeaderboard } from "../utils/cloudScores";
 import { useAuth } from "../contexts/AuthContext";
+import Icon, { SKILL_ICON } from "./Icon";
 
-const SKILL_CARD = {
-  wordMatch:     { bar: "var(--brand)" },
-  fillInBlanks:  { bar: "var(--accent)" },
-  punctuation:   { bar: "var(--ink)" },
+const SKILL_BAR = {
+  wordMatch:     "var(--brand)",
+  fillInBlanks:  "var(--accent)",
+  punctuation:   "var(--ink)",
+  compoundWords: "#ff6b4a",
 };
 
 function initial(name) {
@@ -93,18 +95,18 @@ export default function HomeDashboard({ onPlaySkill, onOpenBoard }) {
       <div className="dash-jump-head">Jump back in</div>
       <div className="dash-jump">
         {stats.mastery.map((s) => {
-          const c = SKILL_CARD[s.id] || { bar: "var(--brand)" };
+          const ic = SKILL_ICON[s.id] || SKILL_ICON.wordMatch;
           return (
             <button key={s.id} className="jumpcard" onClick={() => onPlaySkill(s.id)}>
-              <div className="jumpcard-icon" style={{ background: s.id === "fillInBlanks" ? "#f3fbd4" : s.id === "punctuation" ? "#f0f2f5" : "#e4f6ff" }}>{s.icon}</div>
+              <div className="jumpcard-icon" style={{ background: ic.bg }}><Icon name={ic.name} stroke={ic.stroke} size={24} /></div>
               <div className="jumpcard-title">{s.label}</div>
               <div className="jumpcard-sub">{s.pct}% mastered</div>
-              <div className="dash-bar"><div className="dash-bar-fill" style={{ width: `${s.pct}%`, background: c.bar }} /></div>
+              <div className="dash-bar"><div className="dash-bar-fill" style={{ width: `${s.pct}%`, background: SKILL_BAR[s.id] || "var(--brand)" }} /></div>
             </button>
           );
         })}
         <button className="jumpcard" onClick={() => onPlaySkill("wordList")}>
-          <div className="jumpcard-icon" style={{ background: "#eaf4fc" }}>📖</div>
+          <div className="jumpcard-icon" style={{ background: SKILL_ICON.wordList.bg }}><Icon name={SKILL_ICON.wordList.name} stroke={SKILL_ICON.wordList.stroke} size={24} /></div>
           <div className="jumpcard-title">Word List</div>
           <div className="jumpcard-sub">Look up every word</div>
           <div className="jumpcard-link">Browse words →</div>

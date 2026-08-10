@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useEffect } from "react";
 import { wordData } from "../data/words";
 import { bookletWordData } from "../data/bookletWords";
+import Icon, { SKILL_ICON } from "./Icon";
 
 function buildWordMap() {
   const map = {};
@@ -52,7 +53,7 @@ export default function WordListScreen() {
   return (
     <div className="wordlist">
       <div className="wordlist-head">
-        <div className="landing-icon" style={{ background: "#e4f6ff" }}>📖</div>
+        <div className="landing-icon" style={{ background: SKILL_ICON.wordList.bg }}><Icon name="book" stroke={SKILL_ICON.wordList.stroke} size={26} /></div>
         <div className="landing-head-txt">
           <h1 className="landing-h1">Word List</h1>
           <div className="landing-sub">{ALL_WORDS.length} vocabulary words</div>

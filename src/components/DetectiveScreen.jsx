@@ -3,6 +3,7 @@ import { fillInBlanksData } from "../data/fillInBlanks";
 import { getBest, getTopRuns, formatTime, formatDate, getPrefs, savePrefs } from "../utils/leaderboard";
 import { getSkillMastery, getXp } from "../utils/gamify";
 import SampleQuiz from "./SampleQuiz";
+import Icon, { SKILL_ICON } from "./Icon";
 
 const Q_OPTIONS = [5, 10, 20, 30];
 
@@ -35,7 +36,7 @@ export default function DetectiveScreen({ onPlay, onLearn }) {
   return (
     <div className="landing">
       <div className="landing-head">
-        <div className="landing-icon" style={{ background: "#f3fbd4" }}>🕵️</div>
+        <div className="landing-icon" style={{ background: SKILL_ICON.fillInBlanks.bg }}><Icon name="detect" stroke={SKILL_ICON.fillInBlanks.stroke} size={26} /></div>
         <div className="landing-head-txt">
           <h1 className="landing-h1">Word Detective</h1>
           <div className="landing-sub">Work out the missing word from clues · {masteryPct}% mastered</div>

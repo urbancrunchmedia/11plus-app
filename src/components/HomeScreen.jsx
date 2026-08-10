@@ -3,6 +3,7 @@ import { getBest, getTopRuns, formatTime, formatDate, getPrefs, savePrefs, getSe
 import { getSkillMastery, getXp } from "../utils/gamify";
 import { compoundWords } from "../data/compoundWords";
 import SampleQuiz from "./SampleQuiz";
+import Icon, { SKILL_ICON } from "./Icon";
 
 function shuffle(a) { return [...a].sort(() => Math.random() - 0.5); }
 
@@ -94,7 +95,9 @@ export default function HomeScreen({ gameType, onPlay, onLearn, initialConfig })
     <div className="landing">
       {/* Header */}
       <div className="landing-head">
-        <div className="landing-icon" style={{ background: meta.bg }}>{meta.icon}</div>
+        <div className="landing-icon" style={{ background: (SKILL_ICON[gameType] || SKILL_ICON.wordMatch).bg }}>
+          <Icon name={(SKILL_ICON[gameType] || SKILL_ICON.wordMatch).name} stroke={(SKILL_ICON[gameType] || SKILL_ICON.wordMatch).stroke} size={26} />
+        </div>
         <div className="landing-head-txt">
           <h1 className="landing-h1">{meta.title}</h1>
           <div className="landing-sub">{meta.sub} · {masteryPct}% mastered</div>
