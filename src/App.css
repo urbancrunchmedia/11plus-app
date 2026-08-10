@@ -2488,3 +2488,16 @@ body {
 .cgate-key { border: none; background: var(--surface-2, #f4f9ff); border-radius: 16px; padding: 16px 0; font-weight: 800; font-size: 1.3rem; color: var(--ink); transition: background 0.1s; }
 .cgate-key:hover { background: #e4f6ff; }
 .cgate-reset { margin-top: 20px; border: none; background: none; color: var(--muted); font-weight: 600; font-size: 0.8rem; }
+
+/* ── Hero dropdown pills (Level / Length), per design ── */
+.landing-hero-actions { display: flex; align-items: center; gap: 12px; margin-top: 22px; flex-wrap: wrap; }
+.hero-select-wrap { position: relative; display: inline-flex; align-items: center; flex: none; }
+.hero-select {
+  appearance: none; -webkit-appearance: none;
+  background: rgba(255,255,255,0.16); border: none; border-radius: var(--r-full);
+  padding: 14px 38px 14px 18px; font: inherit; font-weight: 700; font-size: 0.9rem;
+  color: #fff; cursor: pointer;
+}
+.hero-select:focus { outline: none; box-shadow: 0 0 0 3px rgba(255,255,255,0.35); }
+.hero-select option { color: var(--ink); }
+.hero-select-chev { position: absolute; right: 15px; font-size: 0.7rem; color: #fff; pointer-events: none; }

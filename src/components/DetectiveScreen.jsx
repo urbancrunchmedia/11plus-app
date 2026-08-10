@@ -57,19 +57,13 @@ export default function DetectiveScreen({ onPlay, onLearn }) {
           <button className="landing-start" onClick={() => onPlay({ level: "all", totalQuestions })}>
             <span>Start round</span><span className="dash-hero-arrow">→</span>
           </button>
+          <div className="hero-select-wrap">
+            <select className="hero-select" value={totalQuestions} onChange={(e) => setTotal(Number(e.target.value))} aria-label="Length">
+              {Q_OPTIONS.map((q) => <option key={q} value={q}>{q} clues</option>)}
+            </select>
+            <span className="hero-select-chev">▾</span>
+          </div>
           {onLearn && <button className="landing-learn" onClick={onLearn}>Learn first</button>}
-        </div>
-      </div>
-
-      <div className="landing-lenrow">
-        <span className="landing-lenlabel">Length</span>
-        <div className="q-bar">
-          {Q_OPTIONS.map((q, i) => {
-            const activeIdx = Q_OPTIONS.indexOf(totalQuestions);
-            return (
-              <button key={q} className={`q-segment ${i <= activeIdx ? "filled" : ""} ${q === totalQuestions ? "selected" : ""}`} onClick={() => setTotal(q)}>{q}</button>
-            );
-          })}
         </div>
       </div>
 

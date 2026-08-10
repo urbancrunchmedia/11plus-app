@@ -131,66 +131,27 @@ export default function HomeScreen({ gameType, onPlay, onLearn, initialConfig })
           {noLevel ? `All words · ${totalQuestions}` : `Level ${level} · ${totalQuestions} words`}
         </div>
         <div className="landing-hero-blurb">{info.description}</div>
-        <div className="landing-tags">
-          <span className="landing-tag">⏱ ~{estMin} min</span>
-          {supportsFormat && <span className="landing-tag">{isWorksheet ? "📝 Worksheet" : "🎯 Match"}</span>}
-          <span className="landing-tag">🔥 keeps streak</span>
-        </div>
         <div className="landing-hero-actions">
           <button className="landing-start" onClick={handlePlay}>
             <span>Start round</span><span className="dash-hero-arrow">→</span>
           </button>
+          {!noLevel && (
+            <div className="hero-select-wrap">
+              <select className="hero-select" value={level} onChange={(e) => setLevel(e.target.value)} aria-label="Level">
+                <option value="A">Level A · easiest</option>
+                <option value="B">Level B · intermediate</option>
+                <option value="C">Level C · hardest</option>
+              </select>
+              <span className="hero-select-chev">▾</span>
+            </div>
+          )}
+          <div className="hero-select-wrap">
+            <select className="hero-select" value={totalQuestions} onChange={(e) => setTotal(Number(e.target.value))} aria-label="Length">
+              {Q_OPTIONS.map((q) => <option key={q} value={q}>{q} words</option>)}
+            </select>
+            <span className="hero-select-chev">▾</span>
+          </div>
           {onLearn && <button className="landing-learn" onClick={onLearn}>Learn first</button>}
-        </div>
-      </div>
-
-      {/* Choose your own */}
-      <div className="landing-or"><span>Or choose your own</span></div>
-
-      {supportsFormat && (
-        <div className="toggle-group">
-          <button className={`toggle-btn ${format === "match" ? "active" : ""}`} onClick={() => setFormat("match")}>🎯 Match</button>
-          <button className={`toggle-btn ${format === "worksheet" ? "active" : ""}`} onClick={() => setFormat("worksheet")}>📝 Worksheet</button>
-        </div>
-      )}
-
-      {!noLevel && (
-        <div className="level-group">
-          {LEVELS.map((l) => {
-            const lb = getBest(l.id, scoreType, totalQuestions);
-            return (
-              <button
-                key={l.id}
-                className={`level-btn ${level === l.id ? "active" : ""}`}
-                onClick={() => setLevel(l.id)}
-              >
-                <span className="level-emoji">{l.emoji}</span>
-                <span className="level-label">{l.label}</span>
-                <span className="level-desc">{l.desc}</span>
-                {lb && <span className="level-best">⭐ {lb.stars}/{maxStars}</span>}
-              </button>
-            );
-          })}
-        </div>
-      )}
-
-      <div className="landing-lenrow">
-        <span className="landing-lenlabel">Length</span>
-        <div className="q-bar">
-          {Q_OPTIONS.map((q, i) => {
-            const activeIdx  = Q_OPTIONS.indexOf(totalQuestions);
-            const isFilled   = i <= activeIdx;
-            const isSelected = q === totalQuestions;
-            return (
-              <button
-                key={q}
-                className={`q-segment ${isFilled ? "filled" : ""} ${isSelected ? "selected" : ""}`}
-                onClick={() => setTotal(q)}
-              >
-                {q}
-              </button>
-            );
-          })}
         </div>
       </div>
 
