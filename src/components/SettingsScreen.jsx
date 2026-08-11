@@ -22,12 +22,15 @@ const PARENT_TOGGLES = [
 function initial(name) { return name ? name.trim().charAt(0).toUpperCase() : "A"; }
 
 export default function SettingsScreen({ onHome }) {
-  const { user, signOut } = useAuth();
+  const { user, signOut, updateDisplayName } = useAuth();
   const stats = getStats();
   const [s, setS] = useState(getSettings);
   const [sheet, setSheet] = useState(false);
   const [editingPin, setEditingPin] = useState(false);
   const [pinInput, setPinInput] = useState("");
+  const [nameSheet, setNameSheet] = useState(false);
+  const [nameDraft, setNameDraft] = useState("");
+  const [savingName, setSavingName] = useState(false);
 
   function update(key, value) {
     setSetting(key, value);
@@ -37,6 +40,16 @@ export default function SettingsScreen({ onHome }) {
 
   const name = user?.displayName || "Player";
 
+  function openNameSheet() { setNameDraft(user?.displayName || ""); setNameSheet(true); }
+  async function saveName() {
+    const n = nameDraft.trim();
+    if (!n || savingName) return;
+    setSavingName(true);
+    try { await updateDisplayName(n); } catch { /* ignore */ }
+    setSavingName(false);
+    setNameSheet(false);
+  }
+
   return (
     <div className="settings">
       <div className="set-head">
@@ -45,6 +58,7 @@ export default function SettingsScreen({ onHome }) {
           <div className="set-name">{name}</div>
           <div className="set-sub">Level {stats.level} · {stats.title} · {stats.xp.toLocaleString()} XP · 🔥 {stats.streak} day streak</div>
         </div>
+        <button className="set-editname" onClick={openNameSheet}>Edit name</button>
         <button className="set-done" onClick={onHome}>Done</button>
       </div>
 
@@ -143,6 +157,28 @@ export default function SettingsScreen({ onHome }) {
             <div className="set-sheet-sub">Your progress is saved. You can sign back in any time.</div>
             <button className="set-sheet-confirm" onClick={() => { setSheet(false); signOut(); }}>Yes, log out</button>
             <button className="set-sheet-cancel" onClick={() => setSheet(false)}>Cancel</button>
+          </div>
+        </div>
+      )}
+
+      {nameSheet && (
+        <div className="set-sheet-overlay" onClick={() => setNameSheet(false)}>
+          <div className="set-sheet" onClick={(e) => e.stopPropagation()}>
+            <div className="set-sheet-title">Learner's name</div>
+            <div className="set-sheet-sub">This shows on the leaderboard and at the end of every round.</div>
+            <input
+              className="set-name-input"
+              value={nameDraft}
+              onChange={(e) => setNameDraft(e.target.value)}
+              placeholder="e.g. Amu"
+              maxLength={20}
+              autoFocus
+              onKeyDown={(e) => { if (e.key === "Enter") saveName(); }}
+            />
+            <button className="set-sheet-confirm" onClick={saveName} disabled={!nameDraft.trim() || savingName}>
+              {savingName ? "Saving…" : "Save name"}
+            </button>
+            <button className="set-sheet-cancel" onClick={() => setNameSheet(false)}>Cancel</button>
           </div>
         </div>
       )}

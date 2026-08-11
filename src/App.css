@@ -2568,3 +2568,9 @@ button { -webkit-tap-highlight-color: transparent; }
   .samp-opt:hover { border-color: transparent; }
   .jumpcard:hover, .dash-skill:hover, .playcard:hover, .board-row:hover { transform: none; box-shadow: var(--shadow-xs); }
 }
+
+/* ── Settings: edit name ── */
+.set-editname { flex: none; border: none; background: var(--surface-2, #f4f9ff); color: var(--brand-ink); border-radius: var(--r-full); padding: 10px 16px; font-weight: 800; font-size: 0.82rem; }
+.set-name-input { width: 100%; border: 2px solid var(--border); border-radius: 14px; padding: 14px 16px; font: inherit; font-size: 1.05rem; font-weight: 700; color: var(--ink); text-align: center; margin-bottom: 14px; }
+.set-name-input:focus { outline: none; border-color: var(--brand); box-shadow: 0 0 0 4px rgba(18,165,255,0.15); }
+@media (max-width: 560px) { .set-head { flex-wrap: wrap; } .set-editname { order: 3; } }
