@@ -2519,3 +2519,26 @@ body {
 .onb-create { width: 100%; border: none; background: var(--brand); color: #fff; border-radius: var(--r-full); padding: 16px; font-weight: 800; font-size: 1rem; margin-top: 22px; }
 .onb-create:disabled { opacity: 0.5; }
 .onb-skip { width: 100%; border: none; background: none; color: var(--muted); font-weight: 700; font-size: 0.9rem; padding: 14px; margin-top: 4px; }
+
+/* ── Punctuation: spot-the-mistake segments ── */
+.punct-segs { display: flex; flex-direction: column; gap: 10px; max-width: 640px; width: 100%; margin: 0 auto; }
+.punct-seg {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  background: #fff; border: 2.5px solid var(--border); border-bottom: 4px solid var(--border-2);
+  border-radius: 18px; padding: 15px 18px; text-align: left; transition: all 0.12s;
+}
+.punct-seg:hover:not(:disabled) { border-color: var(--brand); background: #e4f6ff; transform: translateY(-1px); }
+.punct-seg-text { font-weight: 700; font-size: 1.15rem; color: var(--ink); }
+.punct-seg-letter { width: 30px; height: 30px; border-radius: 9px; background: var(--surface-2, #f4f9ff); display: grid; place-items: center; font-weight: 800; font-size: 0.85rem; color: var(--muted); flex: none; }
+.punct-seg.correct { background: var(--accent) !important; border-color: var(--accent-dark) !important; color: var(--ink) !important; animation: pop 0.35s ease; }
+.punct-seg.correct .punct-seg-letter { background: rgba(14,17,22,0.15); color: var(--ink); }
+.punct-seg.wrong { background: var(--wrong-bg) !important; border-color: var(--wrong) !important; animation: shake 0.4s ease; }
+.punct-seg:disabled { cursor: default; }
+.punct-nomistake {
+  display: block; max-width: 640px; width: 100%; margin: 12px auto 0;
+  background: var(--ink); color: #fff; border: none; border-radius: var(--r-full);
+  padding: 15px; font-weight: 800; font-size: 0.95rem; transition: all 0.12s;
+}
+.punct-nomistake:hover:not(:disabled) { transform: translateY(-1px); }
+.punct-nomistake.correct { background: var(--accent); color: var(--ink); animation: pop 0.35s ease; }
+.punct-nomistake.wrong { background: var(--wrong); color: #fff; animation: shake 0.4s ease; }
