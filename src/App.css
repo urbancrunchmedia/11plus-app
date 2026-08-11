@@ -2246,7 +2246,11 @@ body {
 .board-you { font-weight: 500; color: rgba(255,255,255,0.75); }
 .board-pts { font-weight: 800; font-size: 1rem; color: var(--ink); }
 .board-row.me .board-pts { color: var(--accent); }
-.board-remove { border: none; background: rgba(255,255,255,0.25); color: #fff; width: 26px; height: 26px; border-radius: 50%; font-weight: 700; flex: none; }
+.board-remove { border: none; background: var(--wrong-bg); color: var(--wrong); border-radius: var(--r-full); padding: 8px 15px; font-weight: 800; font-size: 0.8rem; flex: none; margin-left: auto; }
+.board-managebar { display: flex; justify-content: flex-end; margin: -2px 2px 0; }
+.board-manage { border: none; background: none; color: var(--brand-ink); font-weight: 700; font-size: 0.82rem; padding: 4px 2px; }
+.board-empty-title { font-weight: 800; font-size: 1.05rem; color: var(--ink); }
+.board-empty-sub { font-weight: 500; font-size: 0.85rem; color: var(--muted); margin-top: 4px; }
 
 .board-empty { background: #fff; border-radius: 20px; padding: 28px; text-align: center; font-weight: 600; color: var(--muted, #6b7a8c); box-shadow: var(--shadow-xs); }
 
@@ -2542,3 +2546,25 @@ body {
 .punct-nomistake:hover:not(:disabled) { transform: translateY(-1px); }
 .punct-nomistake.correct { background: var(--accent); color: var(--ink); animation: pop 0.35s ease; }
 .punct-nomistake.wrong { background: var(--wrong); color: #fff; animation: shake 0.4s ease; }
+
+/* ── Touch devices: no tap-highlight, no stuck :hover on answer buttons ── */
+button { -webkit-tap-highlight-color: transparent; }
+.punct-opt:focus, .punct-seg:focus, .punct-nomistake:focus,
+.cg-opt:focus, .samp-opt:focus, .word-card:focus { outline: none; }
+
+@media (hover: none) {
+  .punct-opt:hover:not(:disabled),
+  .cg-opt:hover:not(:disabled),
+  .word-card:hover:not(:disabled):not(.matched) {
+    border-color: var(--border);
+    border-bottom-color: var(--border-2);
+    background: #fff;
+    color: var(--ink);
+    transform: none;
+    box-shadow: var(--shadow-xs);
+  }
+  .punct-seg:hover:not(:disabled) { border-color: var(--border); border-bottom-color: var(--border-2); background: #fff; transform: none; }
+  .punct-nomistake:hover:not(:disabled) { transform: none; }
+  .samp-opt:hover { border-color: transparent; }
+  .jumpcard:hover, .dash-skill:hover, .playcard:hover, .board-row:hover { transform: none; box-shadow: var(--shadow-xs); }
+}

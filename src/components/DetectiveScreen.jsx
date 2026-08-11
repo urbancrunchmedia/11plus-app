@@ -50,7 +50,7 @@ export default function DetectiveScreen({ onPlay, onLearn }) {
 
       <div className="landing-hero landing-hero--row">
         <div className="landing-hero-body">
-          <div className="landing-hero-title">{totalQuestions} clues · ~{estMin} min</div>
+          <div className="landing-hero-title">{totalQuestions} words · ~{estMin} min</div>
           <div className="landing-hero-blurb">Work out each word from its clue. Words you miss come back another day.</div>
         </div>
         <div className="landing-hero-actions">
@@ -59,7 +59,7 @@ export default function DetectiveScreen({ onPlay, onLearn }) {
           </button>
           <div className="hero-select-wrap">
             <select className="hero-select" value={totalQuestions} onChange={(e) => setTotal(Number(e.target.value))} aria-label="Length">
-              {Q_OPTIONS.map((q) => <option key={q} value={q}>{q} clues</option>)}
+              {Q_OPTIONS.map((q) => <option key={q} value={q}>{q} words</option>)}
             </select>
             <span className="hero-select-chev">▾</span>
           </div>

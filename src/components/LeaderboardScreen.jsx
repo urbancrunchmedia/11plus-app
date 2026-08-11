@@ -14,6 +14,8 @@ export default function LeaderboardScreen({ onPlay }) {
   const [people, setPeople]   = useState([]);
   const [loading, setLoading] = useState(true);
   const [showAdd, setShowAdd] = useState(false);
+  const [managing, setManaging]     = useState(false);
+  const [removeTarget, setRemoveTarget] = useState(null);
   const [code, setCode]       = useState("");
   const [adding, setAdding]   = useState(false);
   const [msg, setMsg]         = useState(null);
@@ -52,10 +54,11 @@ export default function LeaderboardScreen({ onPlay }) {
     else setMsg({ type: "err", text: res.error });
   }
 
-  async function handleRemove(friend) {
-    if (!user) return;
-    if (!window.confirm(`Remove ${friend.displayName || "this friend"}?`)) return;
-    await removeFriend(user.uid, friend.uid);
+  async function confirmRemove() {
+    if (!user || !removeTarget) return;
+    const t = removeTarget;
+    setRemoveTarget(null);
+    await removeFriend(user.uid, t.uid);
     load();
   }
 
@@ -117,6 +120,14 @@ export default function LeaderboardScreen({ onPlay }) {
         </div>
       )}
 
+      {!loading && rows.length > 1 && (
+        <div className="board-managebar">
+          <button className="board-manage" onClick={() => setManaging((m) => !m)}>
+            {managing ? "Done" : "Manage friends"}
+          </button>
+        </div>
+      )}
+
       {loading ? (
         <div className="board-empty">Loading leaderboard…</div>
       ) : (
@@ -128,9 +139,9 @@ export default function LeaderboardScreen({ onPlay }) {
               <span className="board-name">
                 {p.displayName || "Player"}{p.isMe && <span className="board-you"> (you)</span>}
               </span>
-              <span className="board-pts">{(p.points || 0).toLocaleString()}</span>
-              {!p.isMe && showAdd && (
-                <button className="board-remove" onClick={() => handleRemove(p)} aria-label="Remove friend">✕</button>
+              {!(managing && !p.isMe) && <span className="board-pts">{(p.points || 0).toLocaleString()}</span>}
+              {!p.isMe && managing && (
+                <button className="board-remove" onClick={() => setRemoveTarget(p)} aria-label={`Remove ${p.displayName || "friend"}`}>Remove</button>
               )}
             </div>
           ))}
@@ -138,7 +149,10 @@ export default function LeaderboardScreen({ onPlay }) {
       )}
 
       {!loading && rows.length <= 1 && (
-        <div className="board-empty">Add a friend with their code to start competing! 🎯</div>
+        <div className="board-empty">
+          <div className="board-empty-title">No friends yet</div>
+          <div className="board-empty-sub">Add a friend with their code to start comparing scores.</div>
+        </div>
       )}
 
       {!loading && rows.length > 1 && (
@@ -148,6 +162,17 @@ export default function LeaderboardScreen({ onPlay }) {
             <div className="board-foot-sub">Every round you play counts towards this week</div>
           </div>
           {onPlay && <button className="board-foot-cta" onClick={onPlay}>Play a round</button>}
+        </div>
+      )}
+
+      {removeTarget && (
+        <div className="set-sheet-overlay" onClick={() => setRemoveTarget(null)}>
+          <div className="set-sheet" onClick={(e) => e.stopPropagation()}>
+            <div className="set-sheet-title">Remove {removeTarget.displayName || "this friend"}?</div>
+            <div className="set-sheet-sub">They'll disappear from your leaderboard. You can add them back later with their code.</div>
+            <button className="set-sheet-confirm" onClick={confirmRemove}>Remove friend</button>
+            <button className="set-sheet-cancel" onClick={() => setRemoveTarget(null)}>Keep them</button>
+          </div>
         </div>
       )}
     </div>
