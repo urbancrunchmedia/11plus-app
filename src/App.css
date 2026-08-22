@@ -87,7 +87,14 @@
 
 /* ───── Reset & Base ───── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-button { cursor: pointer; font-family: inherit; }
+button {
+  cursor: pointer;
+  font-family: inherit;
+  touch-action: manipulation;        /* remove the 300ms tap delay / double-tap zoom */
+  -webkit-tap-highlight-color: transparent;
+  -webkit-user-select: none;
+  user-select: none;                  /* a tap on a word card shouldn't select its text */
+}
 
 body {
   font-family: "Plus Jakarta Sans", system-ui, "Segoe UI", sans-serif;
@@ -1015,11 +1022,13 @@ body {
 
 .punct-options:not(.punct-options--choice) .punct-opt { text-align: center; font-size: 1.5rem; }
 
-.punct-opt:hover:not(:disabled) {
-  border-color: var(--purple);
-  border-bottom-color: var(--purple-dark);
-  background: #e4f6ff;
-  transform: translateY(-2px);
+@media (hover: hover) {
+  .punct-opt:hover:not(:disabled) {
+    border-color: var(--purple);
+    border-bottom-color: var(--purple-dark);
+    background: #e4f6ff;
+    transform: translateY(-2px);
+  }
 }
 
 .punct-opt.correct { background: var(--correct-bg); border-color: var(--correct); border-bottom-color: var(--green-dark); color: var(--correct); animation: pop 0.35s ease; }
@@ -1056,13 +1065,15 @@ body {
   box-shadow: var(--shadow-xs);
 }
 
-.word-card:hover:not(:disabled):not(.matched) {
-  border-color: var(--purple);
-  border-bottom-color: var(--purple-dark);
-  background: #e4f6ff;
-  transform: translateY(-3px);
-  box-shadow: var(--shadow-sm);
-  color: var(--brand-ink);
+@media (hover: hover) {
+  .word-card:hover:not(:disabled):not(.matched):not(.selected) {
+    border-color: var(--purple);
+    border-bottom-color: var(--purple-dark);
+    background: #e4f6ff;
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-sm);
+    color: var(--brand-ink);
+  }
 }
 
 .word-card.selected {
@@ -1161,11 +1172,13 @@ body {
   transition: all 0.12s;
   box-shadow: var(--shadow-xs);
 }
-.ws-word:hover:not(:disabled) {
-  border-color: var(--purple);
-  background: #e4f6ff;
-  transform: translateY(-2px);
-  color: var(--brand-ink);
+@media (hover: hover) {
+  .ws-word:hover:not(:disabled):not(.selected):not(.correct):not(.incorrect) {
+    border-color: var(--purple);
+    background: #e4f6ff;
+    transform: translateY(-2px);
+    color: var(--brand-ink);
+  }
 }
 .ws-word.selected {
   border-color: var(--accent-dark);
@@ -2325,7 +2338,7 @@ body {
 .samp-blank { display: inline-block; background: var(--accent); border-radius: 6px; padding: 2px 22px; margin: 0 3px; vertical-align: middle; }
 .samp-options { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 22px; }
 .samp-opt { background: var(--surface-2, #f4f9ff); border: 2px solid transparent; border-radius: 16px; padding: 15px; text-align: center; font-weight: 700; font-size: 1rem; color: var(--ink); transition: all 0.12s; }
-.samp-opt:hover { border-color: var(--brand); }
+@media (hover: hover) { .samp-opt:hover:not(:disabled):not(.correct):not(.wrong) { border-color: var(--brand); } }
 .samp-opt.correct { background: var(--accent); color: var(--ink); }
 .samp-opt.wrong { background: var(--wrong-bg); color: var(--wrong); border-color: var(--wrong); }
 .samp-opt.faded { opacity: 0.45; }
@@ -2373,7 +2386,7 @@ body {
   border-radius: var(--r-xl); padding: 20px 12px; font-weight: 700; font-size: 1.05rem; color: var(--ink);
   box-shadow: var(--shadow-xs); transition: all 0.12s; min-height: 64px;
 }
-.cg-opt:hover:not(:disabled) { border-color: var(--brand); background: #e4f6ff; transform: translateY(-2px); }
+@media (hover: hover) { .cg-opt:hover:not(:disabled):not(.correct):not(.wrong) { border-color: var(--brand); background: #e4f6ff; transform: translateY(-2px); } }
 .cg-opt.correct { background: var(--accent) !important; border-color: var(--accent-dark) !important; border-bottom-color: var(--accent-dark) !important; color: var(--ink) !important; animation: pop 0.35s ease; }
 .cg-opt.wrong { background: var(--wrong-bg) !important; border-color: var(--wrong) !important; color: var(--wrong) !important; animation: shake 0.4s ease; }
 .cg-opt:disabled { cursor: default; }
@@ -2531,7 +2544,7 @@ body {
   background: #fff; border: 2.5px solid var(--border); border-bottom: 4px solid var(--border-2);
   border-radius: 18px; padding: 15px 18px; text-align: left; transition: all 0.12s;
 }
-.punct-seg:hover:not(:disabled) { border-color: var(--brand); background: #e4f6ff; transform: translateY(-1px); }
+@media (hover: hover) { .punct-seg:hover:not(:disabled):not(.correct):not(.wrong) { border-color: var(--brand); background: #e4f6ff; transform: translateY(-1px); } }
 .punct-seg-text { font-weight: 700; font-size: 1.15rem; color: var(--ink); }
 .punct-seg-letter { width: 30px; height: 30px; border-radius: 9px; background: var(--surface-2, #f4f9ff); display: grid; place-items: center; font-weight: 800; font-size: 0.85rem; color: var(--muted); flex: none; }
 .punct-seg.correct { background: var(--accent) !important; border-color: var(--accent-dark) !important; color: var(--ink) !important; animation: pop 0.35s ease; }
@@ -2543,30 +2556,18 @@ body {
   background: var(--ink); color: #fff; border: none; border-radius: var(--r-full);
   padding: 15px; font-weight: 800; font-size: 0.95rem; transition: all 0.12s;
 }
-.punct-nomistake:hover:not(:disabled) { transform: translateY(-1px); }
+@media (hover: hover) { .punct-nomistake:hover:not(:disabled):not(.correct):not(.wrong) { transform: translateY(-1px); } }
 .punct-nomistake.correct { background: var(--accent); color: var(--ink); animation: pop 0.35s ease; }
 .punct-nomistake.wrong { background: var(--wrong); color: #fff; animation: shake 0.4s ease; }
 
 /* ── Touch devices: no tap-highlight, no stuck :hover on answer buttons ── */
-button { -webkit-tap-highlight-color: transparent; }
 .punct-opt:focus, .punct-seg:focus, .punct-nomistake:focus,
 .cg-opt:focus, .samp-opt:focus, .word-card:focus { outline: none; }
 
-@media (hover: none) {
-  .punct-opt:hover:not(:disabled),
-  .cg-opt:hover:not(:disabled),
-  .word-card:hover:not(:disabled):not(.matched) {
-    border-color: var(--border);
-    border-bottom-color: var(--border-2);
-    background: #fff;
-    color: var(--ink);
-    transform: none;
-    box-shadow: var(--shadow-xs);
-  }
-  .punct-seg:hover:not(:disabled) { border-color: var(--border); border-bottom-color: var(--border-2); background: #fff; transform: none; }
-  .punct-nomistake:hover:not(:disabled) { transform: none; }
-  .samp-opt:hover { border-color: transparent; }
-  .jumpcard:hover, .dash-skill:hover, .playcard:hover, .board-row:hover { transform: none; box-shadow: var(--shadow-xs); }
+/* Card lifts (nav/dashboard) only on real-hover devices, so a tap doesn't leave
+   them raised on touch. Game-answer hovers are gated the same way above. */
+@media (hover: hover) {
+  .jumpcard:hover, .dash-skill:hover, .playcard:hover { transform: translateY(-3px); }
 }
 
 /* ── Settings: edit name ── */
