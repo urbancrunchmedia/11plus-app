@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import { getSettings, setSetting } from "../utils/leaderboard";
 import { getStats } from "../utils/gamify";
 import { useAuth } from "../contexts/AuthContext";
+import { usePremium } from "../contexts/PremiumContext";
+import { openBillingPortal } from "../utils/subscription";
 
 const GOALS = [3, 5, 10];
 const DIFFS = [
@@ -21,9 +23,18 @@ const PARENT_TOGGLES = [
 
 function initial(name) { return name ? name.trim().charAt(0).toUpperCase() : "A"; }
 
-export default function SettingsScreen({ onHome }) {
+export default function SettingsScreen({ onHome, onOpenReport }) {
   const { user, signOut, updateDisplayName } = useAuth();
+  const { isPremium, openPaywall } = usePremium();
   const stats = getStats();
+  const [portalBusy, setPortalBusy] = useState(false);
+
+  async function manageBilling() {
+    if (portalBusy) return;
+    setPortalBusy(true);
+    try { await openBillingPortal(); }
+    catch { setPortalBusy(false); }
+  }
   const [s, setS] = useState(getSettings);
   const [sheet, setSheet] = useState(false);
   const [editingPin, setEditingPin] = useState(false);
@@ -60,6 +71,28 @@ export default function SettingsScreen({ onHome }) {
         </div>
         <button className="set-editname" onClick={openNameSheet}>Edit name</button>
         <button className="set-done" onClick={onHome}>Done</button>
+      </div>
+
+      {/* Plan / Full Access */}
+      <div className={`set-plan ${isPremium ? "premium" : ""}`}>
+        <div className="set-plan-txt">
+          <div className="set-plan-badge">{isPremium ? "FULL ACCESS" : "FREE PLAN"}</div>
+          <div className="set-plan-title">
+            {isPremium ? "You have Full Access 🎉" : "Unlock every level & unlimited play"}
+          </div>
+          <div className="set-plan-sub">
+            {isPremium
+              ? "All levels, unlimited rounds and the progress report are on."
+              : "Free is Level A with a daily limit. Full Access opens Levels B & C, unlimited rounds and the parent report."}
+          </div>
+        </div>
+        {isPremium ? (
+          <button className="set-plan-cta ghost" onClick={manageBilling} disabled={portalBusy}>
+            {portalBusy ? "Opening…" : "Manage billing"}
+          </button>
+        ) : (
+          <button className="set-plan-cta" onClick={() => openPaywall("feature")}>Upgrade</button>
+        )}
       </div>
 
       {/* Your learning */}
@@ -100,6 +133,11 @@ export default function SettingsScreen({ onHome }) {
       {/* Grown-ups */}
       <div className="set-card">
         <div className="set-card-title">Grown-ups</div>
+        <div className="set-row">
+          <div className="set-row-txt"><div className="set-row-label">Progress report</div><div className="set-row-sub">See accuracy by skill and the words to revise next</div></div>
+          <button className="set-ghost" onClick={onOpenReport}>View{!isPremium && " 🔒"}</button>
+        </div>
+        <div className="set-divider" />
         {PARENT_TOGGLES.map((t, i) => (
           <React.Fragment key={t.key}>
             {i > 0 && <div className="set-divider" />}

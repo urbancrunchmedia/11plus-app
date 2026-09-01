@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import GameComplete from "./GameComplete";
 import { makeCompoundBuildQuestions } from "../utils/worksheet";
 import { playCorrect, playWrong } from "../utils/feedback";
+import { recordAttempt } from "../utils/progress";
 
 const stars = (wrong) => (wrong === 0 ? 3 : wrong === 1 ? 2 : 1);
 
@@ -36,6 +37,8 @@ export default function CompoundGame({ level, totalQuestions = 20, onHome }) {
     if (i === q.answer) {
       locked.current = true;
       const s = stars(wrongCount);
+      // One record per question: a hit only if they got it first try.
+      recordAttempt({ skill: "compoundWords", word: `${q.first}${q.second}`, correct: wrongCount === 0, meaning: `${q.first} + ${q.second}` });
       if (!muted) playCorrect();
       setJustRight(i);
       setStreak((v) => (wrongCount === 0 ? v + 1 : 0));

@@ -3,6 +3,7 @@ import { wordData } from "../data/words";
 import { bookletWordData } from "../data/bookletWords";
 import GameComplete from "./GameComplete";
 import { playCorrect, playWrong } from "../utils/feedback";
+import { recordAttempt } from "../utils/progress";
 
 const BOARD_SIZE = 5;
 
@@ -135,6 +136,8 @@ export default function GameScreen({ level, gameType, totalQuestions = 20, onHom
       const newResults = [...results, newResult];
       const newStreak = item.wrongCount === 0 ? streak + 1 : 0;
 
+      // Review signal: a hit only if matched first try, else a miss for this word.
+      recordAttempt({ skill: "wordMatch", word: item.word, correct: item.wrongCount === 0, meaning: item.match });
       performance.current[item.word] = stars;
       if (!muted) playCorrect();
       setResults(newResults);

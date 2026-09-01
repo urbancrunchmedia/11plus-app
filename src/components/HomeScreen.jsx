@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import { getBest, getTopRuns, formatTime, formatDate, getPrefs, savePrefs, getSetting } from "../utils/leaderboard";
 import { getSkillMastery, getXp } from "../utils/gamify";
 import { compoundWords } from "../data/compoundWords";
+import { usePremium } from "../contexts/PremiumContext";
+import { isLevelFree } from "../utils/entitlement";
 import SampleQuiz from "./SampleQuiz";
 import Icon, { SKILL_ICON } from "./Icon";
 
@@ -72,6 +74,17 @@ export default function HomeScreen({ gameType, onPlay, onLearn, initialConfig })
 
   const [compSamples] = useState(() => (gameType === "compoundWords" ? buildCompoundSamples() : []));
 
+  const { isPremium, openPaywall } = usePremium();
+  // Free users can't sit on a premium level — snap back to A once we know.
+  useEffect(() => {
+    if (!isPremium && !noLevel && !isLevelFree(level)) setLevel("A");
+  }, [isPremium, noLevel, level]);
+
+  function handleLevelChange(v) {
+    if (!isPremium && !isLevelFree(v)) { openPaywall("level"); return; }
+    setLevel(v);
+  }
+
   useEffect(() => {
     savePrefs(gameType, { subType, level, totalQuestions, format });
   }, [gameType, subType, level, totalQuestions, format]);
@@ -137,10 +150,10 @@ export default function HomeScreen({ gameType, onPlay, onLearn, initialConfig })
           </button>
           {!noLevel && (
             <div className="hero-select-wrap">
-              <select className="hero-select" value={level} onChange={(e) => setLevel(e.target.value)} aria-label="Level">
+              <select className="hero-select" value={level} onChange={(e) => handleLevelChange(e.target.value)} aria-label="Level">
                 <option value="A">Level A · easiest</option>
-                <option value="B">Level B · intermediate</option>
-                <option value="C">Level C · hardest</option>
+                <option value="B">{isPremium ? "Level B · intermediate" : "🔒 Level B · premium"}</option>
+                <option value="C">{isPremium ? "Level C · hardest" : "🔒 Level C · premium"}</option>
               </select>
               <span className="hero-select-chev">▾</span>
             </div>

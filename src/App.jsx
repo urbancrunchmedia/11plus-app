@@ -15,11 +15,14 @@ import FlashcardScreen from "./components/FlashcardScreen";
 import ComingSoon from "./components/ComingSoon";
 import WordListScreen from "./components/WordListScreen";
 import LeaderboardScreen from "./components/LeaderboardScreen";
+import ProgressReport from "./components/ProgressReport";
 import LoginScreen from "./components/LoginScreen";
 import ChildGate from "./components/ChildGate";
 import OnboardingScreen from "./components/OnboardingScreen";
 import { getSetting, setSetting } from "./utils/leaderboard";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
+import { PremiumProvider, usePremium } from "./contexts/PremiumContext";
+import { roundsToday, bumpRoundsToday, FREE_DAILY_ROUNDS } from "./utils/entitlement";
 import "./App.css";
 
 // Worksheet-format metadata per skill (baseType). Drives the exam-style
@@ -68,13 +71,14 @@ function WorksheetFor({ baseType, config, playKey, onHome }) {
 
 function AppInner() {
   const { user } = useAuth();
+  const { isPremium, openPaywall } = usePremium();
 
   // All hooks must run on every render (before any early return) — otherwise
   // the hook count changes when auth flips logged-out → logged-in and React
   // crashes the tree to a blank screen (only a refresh recovered it).
   const VALID_SCREENS = [
     "home", "me", "wordMatch", "compoundWords",
-    "punctuation", "fillInBlanks", "wordList", "leaderboard",
+    "punctuation", "fillInBlanks", "wordList", "leaderboard", "report",
   ];
   const [selectedGame, setSelectedGame] = useState(() => {
     try {
@@ -130,6 +134,13 @@ function AppInner() {
   }
 
   function handlePlay(cfg) {
+    // Paywall choke point. Word Detective has no levels, so it stays fully free.
+    if (!isPremium) {
+      const leveled = selectedGame !== "fillInBlanks";
+      if (leveled && cfg.level && cfg.level !== "A") { openPaywall("level"); return; }
+      if (roundsToday() >= FREE_DAILY_ROUNDS) { openPaywall("limit"); return; }
+      bumpRoundsToday();
+    }
     if (selectedGame === "punctuation") setLastPunctConfig(cfg);
     setConfig(cfg);
     setPlayKey((k) => k + 1);
@@ -152,9 +163,10 @@ function AppInner() {
   const isFillInBlanks   = selectedGame === "fillInBlanks";
   const isWordList       = selectedGame === "wordList";
   const isLeaderboard    = selectedGame === "leaderboard";
+  const isReport         = selectedGame === "report";
   const isKnown =
     isDashboard || isMe || isWordMatch || isCompoundWords ||
-    isPunctuation || isFillInBlanks || isWordList || isLeaderboard;
+    isPunctuation || isFillInBlanks || isWordList || isLeaderboard || isReport;
 
   return (
     <div className="app-layout">
@@ -171,7 +183,20 @@ function AppInner() {
           )}
 
           {/* Me — profile & settings */}
-          {isMe && <SettingsScreen onHome={() => handleSelectGame("home")} />}
+          {isMe && (
+            <SettingsScreen
+              onHome={() => handleSelectGame("home")}
+              onOpenReport={() => handleSelectGame("report")}
+            />
+          )}
+
+          {/* Parent progress report */}
+          {isReport && (
+            <ProgressReport
+              onBack={() => handleSelectGame("me")}
+              onPractise={() => handleSelectGame("fillInBlanks")}
+            />
+          )}
 
           {/* Word Match — synonyms/antonyms, in Match or Worksheet format */}
           {isWordMatch && screen === "home" && (
@@ -250,7 +275,9 @@ function AppInner() {
 export default function App() {
   return (
     <AuthProvider>
-      <AppInner />
+      <PremiumProvider>
+        <AppInner />
+      </PremiumProvider>
     </AuthProvider>
   );
 }

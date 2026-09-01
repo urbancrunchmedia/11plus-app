@@ -4,6 +4,8 @@ import { saveRun, saveIfBest } from "../utils/leaderboard";
 import { pushToCloud } from "../utils/cloudScores";
 import { useAuth } from "../contexts/AuthContext";
 import { playCorrect, playWrong } from "../utils/feedback";
+import { recordAttempt, selectWithReview } from "../utils/progress";
+import { getSetting } from "../utils/leaderboard";
 
 function shuffle(arr) {
   const a = [...arr];
@@ -24,7 +26,8 @@ function buildQuestions(level, totalQuestions) {
   const pool = level === "all"
     ? [...(fillInBlanksData.A || []), ...(fillInBlanksData.B || []), ...(fillInBlanksData.C || [])]
     : (fillInBlanksData[level] || []);
-  const selected = shuffle(pool).slice(0, totalQuestions);
+  // Bring back previously-missed words when the setting is on.
+  const selected = selectWithReview(pool, totalQuestions, (it) => it.word, "fillInBlanks", getSetting("revisitMisses", true));
 
   return selected.map((item) => {
     // Pick 3 wrong options from the rest of the pool
@@ -69,7 +72,9 @@ export default function FillInBlanksGame({ level, totalQuestions, onHome }) {
       if (chosen !== null) return; // already answered
       setChosen(word);
 
-      const isCorrect = word === questions[current].word;
+      const q = questions[current];
+      const isCorrect = word === q.word;
+      recordAttempt({ skill: "fillInBlanks", word: q.word, correct: isCorrect, meaning: q.definition });
       if (isCorrect) { setCorrect((c) => c + 1); playCorrect(); }
       else { setWrong((w) => w + 1); playWrong(); }
     },

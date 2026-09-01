@@ -9,6 +9,8 @@
 import { wordData } from "../data/words";
 import { bookletWordData } from "../data/bookletWords";
 import { compoundWords } from "../data/compoundWords";
+import { selectWithReview } from "./progress";
+import { getSetting } from "./leaderboard";
 
 function shuffle(arr) {
   const a = [...arr];
@@ -52,7 +54,8 @@ export function makeCompoundBuildQuestions(level, count = 20) {
   const valid   = new Set(pool.map((c) => (c.first + c.second).toLowerCase()));
   const combines = (l, r) => valid.has((l + r).toLowerCase());
 
-  return pickTargets(pool, count).map(({ first, second }) => {
+  const targets = selectWithReview(pool, count, (c) => c.first + c.second, "compoundWords", getSetting("revisitMisses", true));
+  return targets.map(({ first, second }) => {
     const decoys = sampleDistinct(
       seconds.filter((s) => s !== second && !combines(first, s)),
       3,

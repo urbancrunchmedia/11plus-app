@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import { punctuationData } from "../data/punctuation";
 import { getPrefs, savePrefs, getBest, getTopRuns, formatTime, formatDate } from "../utils/leaderboard";
 import { getSkillMastery, getXp } from "../utils/gamify";
+import { usePremium } from "../contexts/PremiumContext";
+import { isLevelFree } from "../utils/entitlement";
 import SampleQuiz from "./SampleQuiz";
 import Icon, { SKILL_ICON } from "./Icon";
 
@@ -32,6 +34,16 @@ export default function PunctuationScreen({ onPlay }) {
     return Q_OPTIONS.includes(s?.totalQuestions) ? s.totalQuestions : 10;
   });
   useEffect(() => { savePrefs("punctuation", { level, totalQuestions }); }, [level, totalQuestions]);
+
+  const { isPremium, openPaywall } = usePremium();
+  useEffect(() => {
+    if (!isPremium && !isLevelFree(level)) setLevel("A");
+  }, [isPremium, level]);
+
+  function handleLevelChange(v) {
+    if (!isPremium && !isLevelFree(v)) { openPaywall("level"); return; }
+    setLevel(v);
+  }
 
   const maxStars   = totalQuestions * 3;
   const best       = getBest(level, "punctuation", totalQuestions);
@@ -66,11 +78,11 @@ export default function PunctuationScreen({ onPlay }) {
             <span>Start round</span><span className="dash-hero-arrow">→</span>
           </button>
           <div className="hero-select-wrap">
-            <select className="hero-select" value={level} onChange={(e) => setLevel(e.target.value)} aria-label="Set">
+            <select className="hero-select" value={level} onChange={(e) => handleLevelChange(e.target.value)} aria-label="Set">
               <option value="A">Level A · easiest</option>
-              <option value="B">Level B · intermediate</option>
-              <option value="C">Level C · hardest</option>
-              <option value="all">All levels · mixed</option>
+              <option value="B">{isPremium ? "Level B · intermediate" : "🔒 Level B · premium"}</option>
+              <option value="C">{isPremium ? "Level C · hardest" : "🔒 Level C · premium"}</option>
+              <option value="all">{isPremium ? "All levels · mixed" : "🔒 All levels · premium"}</option>
             </select>
             <span className="hero-select-chev">▾</span>
           </div>

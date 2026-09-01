@@ -3,6 +3,7 @@ import { punctuationData } from "../data/punctuation";
 import { punctuationSpot } from "../data/punctuationSpot";
 import GameComplete from "./GameComplete";
 import { playCorrect, playWrong } from "../utils/feedback";
+import { recordAttempt } from "../utils/progress";
 
 const ABCD = ["A", "B", "C", "D"];
 
@@ -61,6 +62,7 @@ export default function PunctuationGame({ level, totalQuestions = 20, onHome, mu
     if (flash !== null) return;
     const q = questions.current[current];
     if (idx === q.answer) {
+      recordAttempt({ skill: "punctuation", correct: wrongCount === 0 });
       if (!muted) playCorrect();
       const stars = getStars(wrongCount);
       const label = q.kind === "spot"

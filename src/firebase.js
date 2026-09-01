@@ -1,6 +1,7 @@
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
+import { getFunctions } from "firebase/functions";
 
 // Trim each value — Vercel env vars were stored with trailing newlines, which
 // corrupt the Firebase auth iframe URL ("Illegal url for new iframe").
@@ -19,3 +20,5 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db   = getFirestore(app);
+// The "Run Payments with Stripe" extension deploys callables to us-central1.
+export const functions = getFunctions(app, "us-central1");
