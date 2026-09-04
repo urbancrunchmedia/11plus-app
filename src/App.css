@@ -2778,3 +2778,14 @@ body {
   box-shadow: 0 10px 26px rgba(18,165,255,0.35); transition: transform 0.1s;
 }
 .errscreen-btn:hover { transform: translateY(-1px); }
+
+/* Settings — email line + save toast */
+.set-row-email { font-size: 13px; color: var(--brand-ink); font-weight: 600; margin-top: 2px; word-break: break-all; }
+.set-toast {
+  position: fixed; left: 50%; bottom: 88px; transform: translateX(-50%);
+  background: var(--ink); color: #fff; font-weight: 700; font-size: 14px;
+  padding: 12px 20px; border-radius: 999px; z-index: 1200;
+  box-shadow: 0 12px 30px rgba(11,60,110,0.35);
+  animation: set-toast-in 0.2s ease;
+}
+@keyframes set-toast-in { from { opacity: 0; transform: translate(-50%, 8px); } to { opacity: 1; transform: translate(-50%, 0); } }

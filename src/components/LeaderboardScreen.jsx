@@ -8,6 +8,13 @@ function initials(name) {
   return (name || "?").trim().slice(0, 1).toUpperCase();
 }
 
+// Codes look like "WM-7H2K9". Auto-insert the hyphen after the 2-letter prefix
+// so users never type it themselves.
+function formatCode(raw) {
+  const s = (raw || "").toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 7);
+  return s.length > 2 ? `${s.slice(0, 2)}-${s.slice(2)}` : s;
+}
+
 export default function LeaderboardScreen({ onPlay }) {
   const { user, updateDisplayName } = useAuth();
   const [me, setMe]           = useState(null);
@@ -101,8 +108,8 @@ export default function LeaderboardScreen({ onPlay }) {
               className="board-input"
               placeholder="Friend code e.g. WM-7H2K9"
               value={code}
-              onChange={(e) => setCode(e.target.value)}
-              autoCapitalize="characters" autoCorrect="off" spellCheck={false}
+              onChange={(e) => setCode(formatCode(e.target.value))}
+              inputMode="text" autoCapitalize="characters" autoCorrect="off" spellCheck={false}
             />
             <button className="board-mini-btn board-mini-btn--go" type="submit" disabled={adding}>{adding ? "…" : "Add"}</button>
           </form>

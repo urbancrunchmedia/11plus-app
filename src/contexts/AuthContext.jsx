@@ -11,7 +11,7 @@ import {
   updateProfile,
 } from "firebase/auth";
 import { auth } from "../firebase";
-import { mergeFromCloud, syncProfile } from "../utils/cloudScores";
+import { mergeFromCloud, syncProfile, prepareLocalForUser } from "../utils/cloudScores";
 
 const AuthContext = createContext(null);
 
@@ -39,7 +39,9 @@ export function AuthProvider({ children }) {
     const unsub = onAuthStateChanged(auth, (u) => {
       setUser(u ?? null);
       if (u) {
-        // Merge cloud scores, then publish a profile (friend code + points)
+        // Clear any previous account's local progress on this device, THEN merge
+        // this account's cloud scores and publish a profile (friend code + points).
+        prepareLocalForUser(u.uid);
         mergeFromCloud(u.uid).then(() => syncProfile(u)).catch(console.error);
       }
     });
@@ -81,11 +83,13 @@ export function AuthProvider({ children }) {
     const u = auth.currentUser;
     const clean = (name || "").trim();
     if (!u || !clean) return;
-    await updateProfile(u, { displayName: clean });
-    await syncProfile(u);
-    // Re-render with the new name (Firebase mutates currentUser in place, so
-    // build a plain object the app's data-only reads can use).
+    // Optimistic: show the new name instantly (Firebase mutates currentUser in
+    // place, so build a plain object the app's data-only reads can use).
     setUser({ uid: u.uid, displayName: clean, photoURL: u.photoURL, email: u.email });
+    await updateProfile(u, { displayName: clean });
+    // Publish to the public profile in the background — don't block the UI on the
+    // extra Firestore round-trips (that was the long "Saving…" delay).
+    syncProfile(u).catch(console.error);
   }
 
   return (

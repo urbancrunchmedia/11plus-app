@@ -12,6 +12,24 @@ function pairId(a, b) {
 
 const BEST_KEY    = "11plus_personal_bests";
 const HISTORY_KEY = "11plus_history";
+const UID_KEY     = "11plus_uid";
+
+// localStorage is shared by everyone who signs in on this device. When the
+// account changes, wipe the previous user's local progress FIRST so their XP,
+// scores and review words don't leak into the new account. Call before
+// mergeFromCloud on every sign-in.
+export function prepareLocalForUser(uid) {
+  try {
+    const prev = localStorage.getItem(UID_KEY);
+    if (prev && prev !== uid) {
+      [BEST_KEY, HISTORY_KEY, "11plus_progress"].forEach((k) => localStorage.removeItem(k));
+      Object.keys(localStorage)
+        .filter((k) => k.startsWith("11plus_rounds_"))
+        .forEach((k) => localStorage.removeItem(k));
+    }
+    localStorage.setItem(UID_KEY, uid);
+  } catch { /* storage unavailable */ }
+}
 
 function localBests()   { try { return JSON.parse(localStorage.getItem(BEST_KEY))    || {}; } catch { return {}; } }
 function localHistory() { try { return JSON.parse(localStorage.getItem(HISTORY_KEY)) || {}; } catch { return {}; } }

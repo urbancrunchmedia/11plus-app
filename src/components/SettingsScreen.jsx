@@ -23,7 +23,7 @@ const PARENT_TOGGLES = [
 
 function initial(name) { return name ? name.trim().charAt(0).toUpperCase() : "A"; }
 
-export default function SettingsScreen({ onHome, onOpenReport }) {
+export default function SettingsScreen({ onOpenReport }) {
   const { user, signOut, updateDisplayName } = useAuth();
   const { isPremium, openPaywall } = usePremium();
   const stats = getStats();
@@ -42,6 +42,7 @@ export default function SettingsScreen({ onHome, onOpenReport }) {
   const [nameSheet, setNameSheet] = useState(false);
   const [nameDraft, setNameDraft] = useState("");
   const [savingName, setSavingName] = useState(false);
+  const [toast, setToast] = useState(null);
 
   function update(key, value) {
     setSetting(key, value);
@@ -56,9 +57,11 @@ export default function SettingsScreen({ onHome, onOpenReport }) {
     const n = nameDraft.trim();
     if (!n || savingName) return;
     setSavingName(true);
-    try { await updateDisplayName(n); } catch { /* ignore */ }
+    setNameSheet(false); // close immediately — the update is optimistic
+    try { await updateDisplayName(n); setToast(`Name updated to ${n} ✓`); }
+    catch { setToast("Couldn't save name — please try again"); }
     setSavingName(false);
-    setNameSheet(false);
+    setTimeout(() => setToast(null), 2200);
   }
 
   return (
@@ -70,7 +73,6 @@ export default function SettingsScreen({ onHome, onOpenReport }) {
           <div className="set-sub">Level {stats.level} · {stats.title} · {stats.xp.toLocaleString()} XP · 🔥 {stats.streak} day streak</div>
         </div>
         <button className="set-editname" onClick={openNameSheet}>Edit name</button>
-        <button className="set-done" onClick={onHome}>Done</button>
       </div>
 
       {/* Plan / Full Access */}
@@ -181,12 +183,15 @@ export default function SettingsScreen({ onHome, onOpenReport }) {
       <div className="set-card set-account">
         <div className="set-row-txt">
           <div className="set-row-label">Signed in as {name}</div>
+          {user?.email && <div className="set-row-email">{user.email}</div>}
           <div className="set-row-sub">Logging out keeps your XP, badges and streak safe.</div>
         </div>
         <button className="set-logout" onClick={() => setSheet(true)}>Log out</button>
       </div>
 
       <div className="set-foot">11 Plus Study · <a href="#" onClick={(e) => e.preventDefault()}>Privacy</a></div>
+
+      {toast && <div className="set-toast">{toast}</div>}
 
       {sheet && (
         <div className="set-sheet-overlay" onClick={() => setSheet(false)}>
