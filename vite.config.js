@@ -10,8 +10,8 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.svg', 'apple-touch-icon.png'],
       manifest: {
-        name: '11 Plus Study',
-        short_name: '11 Plus',
+        name: '11 Plus Lab',
+        short_name: '11 Plus Lab',
         description: 'Fun 11+ vocabulary, compounds and punctuation games.',
         theme_color: '#12a5ff',
         background_color: '#f4f9ff',
