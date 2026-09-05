@@ -137,9 +137,18 @@ export default function HomeScreen({ gameType, onPlay, onLearn, initialConfig, o
       {/* Picked-for-you hero */}
       <div className="landing-hero">
         {isWordMatch && (
-          <div className="hero-chips">
-            <button className={`hero-chip ${subType === "synonyms" ? "active" : ""}`} onClick={() => setSubType("synonyms")}>Synonyms</button>
-            <button className={`hero-chip ${subType === "antonyms" ? "active" : ""}`} onClick={() => setSubType("antonyms")}>Antonyms</button>
+          <div className="hero-mode">
+            <div className="hero-mode-lbl">What are we matching?</div>
+            <div className="hero-seg">
+              <button className={`hero-seg-btn ${subType === "synonyms" ? "active" : ""}`} onClick={() => setSubType("synonyms")}>
+                <span className="hero-seg-title">Synonyms</span>
+                <span className="hero-seg-sub">same meaning</span>
+              </button>
+              <button className={`hero-seg-btn ${subType === "antonyms" ? "active" : ""}`} onClick={() => setSubType("antonyms")}>
+                <span className="hero-seg-title">Antonyms</span>
+                <span className="hero-seg-sub">opposite meaning</span>
+              </button>
+            </div>
           </div>
         )}
         <span className="dash-chip">PICKED FOR YOU</span>
