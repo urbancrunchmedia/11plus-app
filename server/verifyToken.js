@@ -2,7 +2,9 @@
 // SDK — validate the RS256 JWT against Google's public keys. Returns { uid, email }.
 import { createRemoteJWKSet, jwtVerify } from "jose";
 
-const projectId = process.env.VITE_FIREBASE_PROJECT_ID;
+// Trim — Vercel stored these env vars with trailing newlines, which would
+// corrupt the issuer/audience match ("unexpected iss claim value").
+const projectId = (process.env.VITE_FIREBASE_PROJECT_ID || "").trim();
 
 // Google's JWKS for Firebase Auth ID tokens.
 const JWKS = createRemoteJWKSet(
