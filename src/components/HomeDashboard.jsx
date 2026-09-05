@@ -9,6 +9,7 @@ const SKILL_BAR = {
   fillInBlanks:  "var(--accent)",
   punctuation:   "var(--ink)",
   compoundWords: "#ff6b4a",
+  spelling:      "#8b5cf6",
 };
 
 function initial(name) {
@@ -100,7 +101,7 @@ export default function HomeDashboard({ onPlaySkill, onOpenBoard }) {
             <button key={s.id} className="jumpcard" onClick={() => onPlaySkill(s.id)}>
               <div className="jumpcard-icon" style={{ background: ic.bg }}><Icon name={ic.name} stroke={ic.stroke} size={24} /></div>
               <div className="jumpcard-title">{s.label}</div>
-              <div className="jumpcard-sub">{s.pct}% mastered</div>
+              <div className="jumpcard-sub">{s.attempted ? `${s.pct}% accuracy` : "Not started yet"}</div>
               <div className="dash-bar"><div className="dash-bar-fill" style={{ width: `${s.pct}%`, background: SKILL_BAR[s.id] || "var(--brand)" }} /></div>
             </button>
           );

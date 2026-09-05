@@ -5,6 +5,7 @@ import { compoundWords } from "../data/compoundWords";
 import { usePremium } from "../contexts/PremiumContext";
 import { isLevelFree } from "../utils/entitlement";
 import SampleQuiz from "./SampleQuiz";
+import PracticeButton from "./PracticeButton";
 import Icon, { SKILL_ICON } from "./Icon";
 
 function shuffle(a) { return [...a].sort(() => Math.random() - 0.5); }
@@ -45,7 +46,7 @@ const NO_LEVEL_GAMES = ["fillInBlanks"];
 // Word Match plays Match; Compound Words plays the build-the-word puzzle.
 const FORMAT_GAMES = [];
 
-export default function HomeScreen({ gameType, onPlay, onLearn, initialConfig }) {
+export default function HomeScreen({ gameType, onPlay, onLearn, initialConfig, onExit }) {
   const isWordMatch    = gameType === "wordMatch";
   const noLevel        = NO_LEVEL_GAMES.includes(gameType);
   const supportsFormat = FORMAT_GAMES.includes(gameType);
@@ -97,7 +98,8 @@ export default function HomeScreen({ gameType, onPlay, onLearn, initialConfig })
   const maxStars    = totalQuestions * 3;
   const best        = getBest(scoreLevel, scoreType, totalQuestions);
   const topRuns     = getTopRuns(scoreLevel, scoreType, totalQuestions, 5);
-  const masteryPct  = (getSkillMastery().find((m) => m.id === gameType) || {}).pct ?? 0;
+  const skillM      = getSkillMastery().find((m) => m.id === gameType) || {};
+  const masteryPct  = skillM.pct ?? 0;
   const estMin      = Math.max(1, Math.round(totalQuestions * 0.3));
 
   function handlePlay() {
@@ -106,6 +108,7 @@ export default function HomeScreen({ gameType, onPlay, onLearn, initialConfig })
 
   return (
     <div className="landing">
+      {onExit && <button className="landing-back" onClick={onExit}>← All games</button>}
       {/* Header */}
       <div className="landing-head">
         <div className="landing-icon" style={{ background: (SKILL_ICON[gameType] || SKILL_ICON.wordMatch).bg }}>
@@ -113,7 +116,7 @@ export default function HomeScreen({ gameType, onPlay, onLearn, initialConfig })
         </div>
         <div className="landing-head-txt">
           <h1 className="landing-h1">{meta.title}</h1>
-          <div className="landing-sub">{meta.sub} · {masteryPct}% mastered</div>
+          <div className="landing-sub">{meta.sub}{skillM.attempted ? ` · ${masteryPct}% accuracy` : ""}</div>
         </div>
         <span className="landing-xp">{getXp().toLocaleString()} XP</span>
       </div>
@@ -165,9 +168,9 @@ export default function HomeScreen({ gameType, onPlay, onLearn, initialConfig })
             <span className="hero-select-chev">▾</span>
           </div>
           {onLearn && <button className="landing-learn" onClick={onLearn}>Learn first</button>}
+          <PracticeButton skill={gameType} onPractice={() => onPlay({ practice: true, level: scoreLevel, totalQuestions, gameType: scoreType, baseType })} />
         </div>
       </div>
-
     </div>
   );
 }

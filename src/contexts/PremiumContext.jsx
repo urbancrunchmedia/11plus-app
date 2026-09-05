@@ -9,6 +9,13 @@ const PremiumContext = createContext(null);
 // premium experience without a live Stripe subscription (dev/testing only).
 const DEV_KEY = "11plus_dev_premium";
 
+// Comp accounts: these emails always get Full Access, no subscription needed
+// (owner/testing). Client-side grant — fine for comps; real paid access is
+// enforced by the Stripe subscription in Firestore.
+const COMP_EMAILS = new Set([
+  "reuben.dongre@gmail.com",
+]);
+
 export function PremiumProvider({ children }) {
   const { user } = useAuth();
   const [isPremium, setIsPremium] = useState(false);
@@ -21,6 +28,8 @@ export function PremiumProvider({ children }) {
     } catch { /* ignore */ }
 
     if (!user) { setIsPremium(false); setLoading(false); return; }
+    // Comp accounts get Full Access without a subscription.
+    if (user.email && COMP_EMAILS.has(user.email.toLowerCase())) { setIsPremium(true); setLoading(false); return; }
     setLoading(true);
     const unsub = watchSubscription(user.uid, ({ isPremium }) => {
       setIsPremium(isPremium);

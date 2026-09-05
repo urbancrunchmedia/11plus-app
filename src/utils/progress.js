@@ -14,6 +14,7 @@ export const SKILL_LABEL = {
   compoundWords: "Compound Words",
   fillInBlanks:  "Word Detective",
   punctuation:   "Punctuation",
+  spelling:      "Spelling",
 };
 
 function load() {

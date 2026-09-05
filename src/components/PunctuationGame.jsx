@@ -1,11 +1,12 @@
 import React, { useState, useRef, useEffect } from "react";
-import { punctuationData } from "../data/punctuation";
 import { punctuationSpot } from "../data/punctuationSpot";
 import GameComplete from "./GameComplete";
 import { playCorrect, playWrong } from "../utils/feedback";
 import { recordAttempt } from "../utils/progress";
+import { addMiss, clearMiss, getMisses } from "../utils/misses";
+import SpotSentence from "./SpotSentence";
 
-const ABCD = ["A", "B", "C", "D"];
+const SKILL = "punctuation";
 
 function shuffle(arr) {
   const a = [...arr];
@@ -17,30 +18,21 @@ function shuffle(arr) {
 }
 function getStars(wrong) { return wrong === 0 ? 3 : wrong === 1 ? 2 : 1; }
 
-function prepareQuestions(level, count) {
+function prepareQuestions(level, count, practice) {
+  if (practice) return getMisses(SKILL).map((b) => ({ segments: b.segments, answer: b.answer, why: b.why }));
   const pick = (obj) => (level === "all"
     ? [...(obj.A || []), ...(obj.B || []), ...(obj.C || [])]
     : [...(obj[level] || [])]);
-
-  const fill = pick(punctuationData).map((b) => {
-    const correct = b.options[b.answer];
-    const opts = shuffle([...b.options]);
-    return { kind: b.type === "choice" ? "choice" : "fill", prompt: b.prompt, sentence: b.sentence, options: opts, answer: opts.indexOf(correct) };
-  });
-  const spot = pick(punctuationSpot).map((b) => ({ kind: "spot", segments: b.segments, answer: b.answer, why: b.why }));
-
-  const pool = shuffle([...fill, ...spot]);
+  // Every question is "spot the mistake": the child finds which section has the
+  // punctuation/capital-letter error (A–D) or picks N for no mistake.
+  const spot = pick(punctuationSpot).map((b) => ({ segments: b.segments, answer: b.answer, why: b.why }));
+  const pool = shuffle(spot);
   return Array.from({ length: count }, (_, i) => pool[i % pool.length]);
 }
 
-function SentenceDisplay({ sentence }) {
-  const parts = sentence.split("___");
-  if (parts.length === 1) return <span className="punct-sentence">{sentence}</span>;
-  return <span className="punct-sentence">{parts[0]}<span className="punct-blank">___</span>{parts[1]}</span>;
-}
-
-export default function PunctuationGame({ level, totalQuestions = 20, onHome, muted: mutedProp }) {
-  const questions = useRef(prepareQuestions(level, totalQuestions));
+export default function PunctuationGame({ level, totalQuestions = 20, onHome, muted: mutedProp, practice = false }) {
+  const questions = useRef(prepareQuestions(level, totalQuestions, practice));
+  const total = questions.current.length;
   const [current, setCurrent]       = useState(0);
   const [wrongCount, setWrongCount] = useState(0);
   const [results, setResults]       = useState([]);
@@ -61,25 +53,23 @@ export default function PunctuationGame({ level, totalQuestions = 20, onHome, mu
   function handleAnswer(idx) {
     if (flash !== null) return;
     const q = questions.current[current];
+    const id = q.segments.join("|");
     if (idx === q.answer) {
-      recordAttempt({ skill: "punctuation", correct: wrongCount === 0 });
+      recordAttempt({ skill: SKILL, correct: wrongCount === 0 });
+      if (wrongCount === 0) clearMiss(SKILL, id);
       if (!muted) playCorrect();
       const stars = getStars(wrongCount);
-      const label = q.kind === "spot"
-        ? q.segments.join(" ")
-        : q.kind === "choice"
-          ? q.options[q.answer].slice(0, 40)
-          : q.sentence.replace("___", q.options[q.answer]);
-      const newResults = [...results, { word: label, match: "", stars }];
+      const newResults = [...results, { word: q.segments.join(" "), match: "", stars }];
       setStreak((v) => (wrongCount === 0 ? v + 1 : 0));
       setFlash({ idx, type: "correct" });
       setTimeout(() => {
         setFlash(null);
         setResults(newResults);
-        if (newResults.length >= totalQuestions) setGameComplete(true);
+        if (newResults.length >= total) setGameComplete(true);
         else { setCurrent((c) => c + 1); setWrongCount(0); }
       }, 600);
     } else {
+      addMiss(SKILL, id, { segments: q.segments, answer: q.answer, why: q.why });
       if (!muted) playWrong();
       setWrongCount((w) => w + 1);
       setTotalWrong((w) => w + 1);
@@ -92,7 +82,7 @@ export default function PunctuationGame({ level, totalQuestions = 20, onHome, mu
   if (gameComplete) {
     return (
       <GameComplete results={results} totalWrong={totalWrong} timeTaken={elapsed}
-        onPlayAgain={onHome} onHome={onHome} level={level} gameType="punctuation" totalQuestions={totalQuestions} />
+        onPlayAgain={onHome} onHome={onHome} level={level} gameType="punctuation" totalQuestions={total} />
     );
   }
 
@@ -116,33 +106,9 @@ export default function PunctuationGame({ level, totalQuestions = 20, onHome, mu
         <div className="ig-card"><div className="ig-card-val ig-card-val--wrong">{totalWrong}</div><div className="ig-card-lbl">wrong</div></div>
       </div>
 
-      <div className="punct-game">
-        {q.kind === "spot" ? (
-          <>
-            <p className="punct-prompt">Which section has the punctuation mistake?</p>
-            <div className="punct-segs">
-              {q.segments.map((seg, i) => (
-                <button key={i} className={`punct-seg ${flashCls(i)}`} onClick={() => handleAnswer(i)} disabled={flash !== null}>
-                  <span className="punct-seg-text">{seg}</span>
-                  <span className="punct-seg-letter">{ABCD[i]}</span>
-                </button>
-              ))}
-            </div>
-            <button className={`punct-nomistake ${flashCls(4)}`} onClick={() => handleAnswer(4)} disabled={flash !== null}>
-              N · No mistake
-            </button>
-          </>
-        ) : (
-          <>
-            <p className="punct-prompt">{q.kind === "choice" ? q.prompt : "Choose the correct punctuation for the blank"}</p>
-            {q.kind !== "choice" && <div className="punct-sentence-box"><SentenceDisplay sentence={q.sentence} /></div>}
-            <div className={`punct-options ${q.kind === "choice" ? "punct-options--choice" : ""}`}>
-              {q.options.map((opt, i) => (
-                <button key={i} className={`punct-opt ${flashCls(i)}`} onClick={() => handleAnswer(i)} disabled={flash !== null}>{opt}</button>
-              ))}
-            </div>
-          </>
-        )}
+      <div className="punct-game play-card">
+        <p className="punct-prompt">Which section has the mistake?</p>
+        <SpotSentence segments={q.segments} classFor={flashCls} onPick={handleAnswer} disabled={flash !== null} />
       </div>
     </div>
   );

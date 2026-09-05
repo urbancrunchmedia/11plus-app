@@ -3,6 +3,7 @@ import { fillInBlanksData } from "../data/fillInBlanks";
 import { getBest, getTopRuns, formatTime, formatDate, getPrefs, savePrefs } from "../utils/leaderboard";
 import { getSkillMastery, getXp } from "../utils/gamify";
 import SampleQuiz from "./SampleQuiz";
+import PracticeButton from "./PracticeButton";
 import Icon, { SKILL_ICON } from "./Icon";
 
 const Q_OPTIONS = [5, 10, 20, 30];
@@ -19,7 +20,7 @@ function buildSamples() {
   });
 }
 
-export default function DetectiveScreen({ onPlay, onLearn }) {
+export default function DetectiveScreen({ onPlay, onLearn, onExit }) {
   const [samples] = useState(buildSamples);
   const [totalQuestions, setTotal] = useState(() => {
     const saved = getPrefs("fillInBlanks");
@@ -30,16 +31,18 @@ export default function DetectiveScreen({ onPlay, onLearn }) {
   const maxStars   = totalQuestions * 3;
   const best       = getBest("all", "fillInBlanks", totalQuestions);
   const topRuns    = getTopRuns("all", "fillInBlanks", totalQuestions, 5);
-  const masteryPct = (getSkillMastery().find((m) => m.id === "fillInBlanks") || {}).pct ?? 0;
+  const skillM     = getSkillMastery().find((m) => m.id === "fillInBlanks") || {};
+  const masteryPct = skillM.pct ?? 0;
   const estMin     = Math.max(1, Math.round(totalQuestions * 0.35));
 
   return (
     <div className="landing">
+      {onExit && <button className="landing-back" onClick={onExit}>← All games</button>}
       <div className="landing-head">
         <div className="landing-icon" style={{ background: SKILL_ICON.fillInBlanks.bg }}><Icon name="detect" stroke={SKILL_ICON.fillInBlanks.stroke} size={26} /></div>
         <div className="landing-head-txt">
           <h1 className="landing-h1">Word Detective</h1>
-          <div className="landing-sub">Work out the missing word from clues · {masteryPct}% mastered</div>
+          <div className="landing-sub">Work out the missing word from clues{skillM.attempted ? ` · ${masteryPct}% accuracy` : ""}</div>
         </div>
         <span className="landing-xp">{getXp().toLocaleString()} XP</span>
       </div>
@@ -64,9 +67,9 @@ export default function DetectiveScreen({ onPlay, onLearn }) {
             <span className="hero-select-chev">▾</span>
           </div>
           {onLearn && <button className="landing-learn" onClick={onLearn}>Learn first</button>}
+          <PracticeButton skill="fillInBlanks" onPractice={() => onPlay({ practice: true, level: "all", totalQuestions })} />
         </div>
       </div>
-
     </div>
   );
 }

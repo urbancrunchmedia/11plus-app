@@ -24,7 +24,7 @@ export function prepareLocalForUser(uid) {
     if (prev && prev !== uid) {
       [BEST_KEY, HISTORY_KEY, "11plus_progress"].forEach((k) => localStorage.removeItem(k));
       Object.keys(localStorage)
-        .filter((k) => k.startsWith("11plus_rounds_"))
+        .filter((k) => k.startsWith("11plus_rounds_") || k.startsWith("11plus_misses_"))
         .forEach((k) => localStorage.removeItem(k));
     }
     localStorage.setItem(UID_KEY, uid);

@@ -2,6 +2,7 @@
 // localStorage (see leaderboard.js). Nothing here needs a backend — XP, level,
 // streak, per-skill mastery and badges are all computed from real play data.
 import { getAllBests, getAllHistory, getSetting } from "./leaderboard";
+import { getSkillAccuracy } from "./progress";
 
 // Skills shown on the dashboard, each mapping to the score gameTypes it covers.
 export const SKILLS = [
@@ -9,6 +10,7 @@ export const SKILLS = [
   { id: "compoundWords", label: "Compound Words", icon: "🧩",  types: ["compoundWords", "compoundWordsWs"] },
   { id: "fillInBlanks",  label: "Word Detective", icon: "🕵️", types: ["fillInBlanks"] },
   { id: "punctuation",   label: "Punctuation",    icon: "✏️", types: ["punctuation"] },
+  { id: "spelling",      label: "Spelling",       icon: "🔤", types: ["spelling"] },
 ];
 
 const TITLES = [
@@ -85,17 +87,15 @@ export function getStreak() {
 }
 
 // Peak mastery per skill = best (stars / maxStars) across that skill's bests.
+// Per-skill accuracy: the % of questions answered right first try, across all
+// rounds played (from progress.js). More honest than "best round" — it reflects
+// how well the child actually knows the material and moves with real performance.
 export function getSkillMastery() {
-  const bests = getAllBests();
+  const byId = {};
+  for (const a of getSkillAccuracy()) byId[a.skill] = a;
   return SKILLS.map((skill) => {
-    let best = 0;
-    for (const [key, b] of Object.entries(bests)) {
-      const { gameType, total } = parseKey(key);
-      if (!skill.types.includes(gameType)) continue;
-      const max = total * 3;
-      if (max > 0) best = Math.max(best, b.stars / max);
-    }
-    return { ...skill, pct: Math.round(best * 100) };
+    const a = byId[skill.id];
+    return { ...skill, pct: a ? a.pct : 0, attempted: a ? a.total : 0 };
   });
 }
 

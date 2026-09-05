@@ -10,6 +10,8 @@ const ICONS = {
   detect:   '<circle cx="11" cy="11" r="6"/><path d="M20 20l-4.5-4.5"/><path d="M9 11h4"/>',
   punct:    '<circle cx="7" cy="11" r="2.2"/><path d="M7 13.2c0 2.4-1 3.9-2.6 4.8"/><circle cx="17" cy="16" r="2.2"/>',
   compound: '<rect x="3" y="4" width="8" height="8" rx="2.5"/><rect x="13" y="12" width="8" height="8" rx="2.5"/><path d="M11 8h3a2 2 0 0 1 2 2v2"/>',
+  spelling: '<path d="M4 18l4.5-11 4.5 11"/><path d="M5.6 14h5.8"/><path d="M20 8v10"/><path d="M20 11.5a3 3 0 1 0 0 6"/>',
+  refresh:  '<path d="M20 12a8 8 0 1 1-2.3-5.6"/><path d="M20 4v4h-4"/>',
 };
 
 // Per-skill icon name + stroke + tile background, matching the design.
@@ -18,6 +20,7 @@ export const SKILL_ICON = {
   fillInBlanks:  { name: "detect",   stroke: "#7fa30c", bg: "#f3fbd4" },
   punctuation:   { name: "punct",    stroke: "#0e1116", bg: "#f0f2f5" },
   compoundWords: { name: "compound", stroke: "#ff6b4a", bg: "#ffe9e3" },
+  spelling:      { name: "spelling", stroke: "#8b5cf6", bg: "#f1ecfe" },
   wordList:      { name: "book",     stroke: "#12a5ff", bg: "#eaf4fc" },
 };
 

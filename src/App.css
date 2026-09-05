@@ -1047,48 +1047,37 @@ body {
   min-width: 10px;
 }
 
-.divider-dot { width: 6px; height: 6px; border-radius: 50%; background: #bcdff5; flex-shrink: 0; }
+.divider-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--line); flex-shrink: 0; }
 
 .word-card {
   width: 100%;
-  padding: 14px 10px;
-  border-radius: var(--r-xl);
-  border: 2.5px solid var(--border);
-  border-bottom: 4px solid var(--border-2);
-  background: white;
-  font-size: 0.9rem;
+  padding: 18px 12px;
+  border-radius: 16px;
+  border: 2px solid transparent;
+  background: var(--surface-2, #f4f9ff);
+  font-size: 1.05rem;
   font-weight: 700;
-  color: var(--text);
+  color: var(--ink);
   text-align: center;
-  transition: all 0.15s;
-  min-height: 54px;
-  box-shadow: var(--shadow-xs);
+  transition: all 0.12s;
+  min-height: 64px;
 }
 
 @media (hover: hover) {
   .word-card:hover:not(:disabled):not(.matched):not(.selected) {
-    border-color: var(--purple);
-    border-bottom-color: var(--purple-dark);
-    background: #e4f6ff;
-    transform: translateY(-3px);
-    box-shadow: var(--shadow-sm);
-    color: var(--brand-ink);
+    border-color: var(--brand);
   }
 }
 
 .word-card.selected {
   border-color: var(--accent-dark);
-  border-bottom-color: var(--accent-dark);
   background: var(--accent);
-  box-shadow: 0 5px 0 var(--accent-dark);
-  transform: translateY(-2px);
   color: var(--ink);
 }
 
 .word-card.matched {
-  background: linear-gradient(135deg, #f0fdf4, #dcfce7) !important;
+  background: var(--correct-bg) !important;
   border-color: var(--correct) !important;
-  border-bottom-color: var(--green-dark) !important;
   color: var(--correct) !important;
   font-weight: 700;
   animation: pop 0.35s cubic-bezier(0.34,1.56,0.64,1);
@@ -1489,10 +1478,11 @@ body {
 
 /* ───── Fill in the Blanks ───── */
 .fib-sentence-card {
-  background: linear-gradient(135deg, #e4f6ff, #cfe8fb);
-  border: 2.5px solid #bcdff5;
+  background: #fff;
+  border: 2px solid var(--line);
   border-radius: var(--r-2xl);
-  padding: 28px 24px;
+  padding: 26px 22px;
+  box-shadow: var(--shadow-xs);
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -1517,9 +1507,9 @@ body {
 }
 
 .fib-blank--empty {
-  background: white;
+  background: var(--track);
   color: var(--brand-ink);
-  border-bottom: 3px solid var(--purple);
+  border-bottom: 3px solid var(--brand);
   letter-spacing: 4px;
 }
 
@@ -2023,12 +2013,12 @@ body {
 .appnav-item {
   width: 64px; height: 56px; border: none; background: transparent; border-radius: 18px;
   display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
-  color: rgba(255,255,255,0.5); transition: all 0.15s;
+  color: rgba(255,255,255,0.7); transition: all 0.15s;
 }
 .appnav-item:hover  { color: #fff; background: rgba(255,255,255,0.1); }
 .appnav-item.active { color: #fff; background: var(--brand); }
 .appnav-icon  { font-size: 1.25rem; line-height: 1; }
-.appnav-label { font-size: 0.6rem; font-weight: 700; }
+.appnav-label { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.01em; }
 .appnav-foot  { display: flex; flex-direction: column; align-items: center; gap: 10px; margin-top: 10px; flex-shrink: 0; }
 .appnav-streak { background: rgba(212,245,32,0.14); color: var(--accent); border-radius: var(--r-full); padding: 6px 11px; font-weight: 800; font-size: 0.75rem; }
 .appnav-avatar { width: 44px; height: 44px; border-radius: 50%; border: none; background: var(--brand); color: #fff; font-weight: 800; font-size: 1.05rem; }
@@ -2104,7 +2094,7 @@ body {
   .appnav-item { flex: 1; width: auto; height: 52px; color: var(--text-light); }
   .appnav-item.active { color: var(--brand); background: transparent; }
   .appnav-icon { font-size: 1.2rem; }
-  .appnav-label { font-size: 0.55rem; }
+  .appnav-label { font-size: 0.64rem; }
   .appnav-foot { flex-direction: row; margin-top: 0; gap: 0; }
   .appnav-streak { display: none; }
   .appnav-avatar { width: 38px; height: 38px; font-size: 0.9rem; }
@@ -2382,10 +2372,11 @@ body {
 .cg-blank { min-width: 90px; height: 52px; display: grid; place-items: center; background: var(--accent); border-radius: 14px; font-weight: 800; font-size: 1.5rem; color: var(--ink); }
 .cg-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; max-width: 520px; width: 100%; margin: 0 auto; }
 .cg-opt {
-  background: #fff; border: 2.5px solid var(--border); border-bottom: 4px solid var(--border-2);
-  border-radius: var(--r-xl); padding: 20px 12px; font-weight: 700; font-size: 1.05rem; color: var(--ink);
-  box-shadow: var(--shadow-xs); transition: all 0.12s; min-height: 64px;
+  background: var(--surface-2, #f4f9ff); border: 2px solid transparent;
+  border-radius: 16px; padding: 20px 12px; font-weight: 700; font-size: 1.05rem; color: var(--ink);
+  transition: all 0.12s; min-height: 64px;
 }
+@media (hover: hover) { .cg-opt:hover:not(:disabled):not(.correct):not(.wrong) { border-color: var(--brand); } }
 @media (hover: hover) { .cg-opt:hover:not(:disabled):not(.correct):not(.wrong) { border-color: var(--brand); background: #e4f6ff; transform: translateY(-2px); } }
 .cg-opt.correct { background: var(--accent) !important; border-color: var(--accent-dark) !important; border-bottom-color: var(--accent-dark) !important; color: var(--ink) !important; animation: pop 0.35s ease; }
 .cg-opt.wrong { background: var(--wrong-bg) !important; border-color: var(--wrong) !important; color: var(--wrong) !important; animation: shake 0.4s ease; }
@@ -2789,3 +2780,120 @@ body {
   animation: set-toast-in 0.2s ease;
 }
 @keyframes set-toast-in { from { opacity: 0; transform: translate(-50%, 8px); } to { opacity: 1; transform: translate(-50%, 0); } }
+
+/* Punctuation landing — spot-the-mistake sample */
+.spotsamp-q { font-weight: 700; font-size: 1rem; color: var(--ink); margin: 10px 0 12px; }
+.spotsamp-fb { display: flex; align-items: center; gap: 12px; justify-content: space-between; margin-top: 14px; flex-wrap: wrap; }
+.spotsamp-why { font-size: 0.9rem; color: var(--muted); flex: 1; min-width: 180px; }
+.spotsamp-next {
+  border: none; cursor: pointer; background: var(--brand); color: #fff;
+  font-weight: 800; font-size: 0.9rem; padding: 9px 16px; border-radius: 12px; flex: none;
+}
+.spotsamp-next:hover { background: var(--brand-dark); }
+
+/* ============================================================
+   Spot-the-mistake — sentence reads as ONE line, A/B/C/D under each part
+   ============================================================ */
+.spot-line {
+  display: flex; flex-wrap: wrap; justify-content: center; align-items: flex-start;
+  gap: 8px 10px; margin: 8px 0 20px; padding: 4px;
+}
+.spot-part {
+  display: inline-flex; flex-direction: column; align-items: center; gap: 7px;
+  background: none; border: none; padding: 0; cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.spot-part-text {
+  font-size: 1.28rem; font-weight: 600; color: var(--ink); line-height: 1.35;
+  padding: 3px 7px 5px; border-bottom: 2.5px solid var(--line); border-radius: 5px 5px 0 0;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+.spot-part-tag {
+  width: 23px; height: 23px; border-radius: 7px; background: var(--track);
+  display: grid; place-items: center; font-size: 0.72rem; font-weight: 800; color: var(--muted);
+  transition: background 0.15s, color 0.15s;
+}
+/* Sentence is read-only — no hover styling at all. */
+.spot-part.correct .spot-part-text { background: var(--accent); border-color: var(--accent-dark); color: var(--ink); border-radius: 7px; animation: pop 0.35s ease; }
+.spot-part.correct .spot-part-tag { background: var(--accent-dark); color: var(--ink); }
+.spot-part.wrong .spot-part-text { background: var(--wrong-bg); border-color: var(--wrong); border-radius: 7px; animation: shake 0.4s ease; }
+.spot-part.wrong .spot-part-tag { background: var(--wrong); color: #fff; }
+.spot-part:disabled { cursor: default; }
+
+/* Spot — tighter sentence spacing + answer row (matches mockup) */
+.spot-line { gap: 3px 5px; }
+.spot-part-text { font-size: 1.35rem; padding: 2px 4px 5px; border-bottom-width: 2px; }
+.spot-part-tag { background: transparent; color: var(--muted); width: auto; height: 20px; font-size: 0.78rem; }
+.spot-part.correct .spot-part-tag { background: var(--ink); color: #fff; width: 24px; height: 24px; }
+.spot-part.wrong .spot-part-tag { background: var(--wrong); color: #fff; width: 24px; height: 24px; }
+
+.spot-answers { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; margin-top: 4px; }
+.spot-ans {
+  min-width: 62px; height: 58px; padding: 0 16px; border: none; border-radius: 16px;
+  background: var(--track); color: var(--muted); font-weight: 800; font-size: 1.15rem; cursor: pointer;
+  transition: transform 0.1s, background 0.15s, color 0.15s;
+}
+@media (hover: hover) { .spot-ans:not(:disabled):hover { transform: translateY(-1px); background: #e4f6ff; color: var(--brand-ink); } }
+.spot-ans--n { background: #fde8e8; color: #c0512b; }
+@media (hover: hover) { .spot-ans--n:not(:disabled):hover { background: #fbd7d7; color: #c0512b; } }
+.spot-ans.correct { background: var(--accent) !important; color: var(--ink) !important; animation: pop 0.35s ease; }
+/* Wrong = light red fill + red text/outline, matching the other answer buttons. */
+.spot-ans.wrong { background: var(--wrong-bg) !important; color: var(--wrong) !important; box-shadow: inset 0 0 0 2px var(--wrong); animation: shake 0.4s ease; }
+.spot-ans:disabled { cursor: default; }
+.spot-ncap { text-align: center; color: var(--muted); font-size: 0.78rem; margin-top: 10px; }
+
+/* Spot — read-only sentence, neutral N, tighter one-sentence spacing */
+.spot-part { cursor: default; }
+.spot-line { gap: 0 2px; }
+.spot-part-text { padding: 0 2px 4px; }
+/* (sentence hover removed above) */
+@media (hover: hover) {
+  .x-unused-spot-hover:hover { color: inherit; }
+}
+/* N looks like every other answer button (no pink). */
+.spot-ans--n, .spot-ans--n:hover { background: var(--track); color: var(--muted); }
+
+/* Spot sample feedback colour */
+.spotsamp-why.ok { color: var(--correct); }
+.spotsamp-why.no { color: var(--wrong); }
+
+/* White card wrapping the in-round play area (question + answers), so the soft
+   grey buttons stand out — same look as the sample cards. */
+.play-card {
+  background: #fff;
+  border-radius: 24px;
+  padding: 24px 20px;
+  box-shadow: var(--shadow-xs);
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+/* Detective clue inside the white play-card (no inner card) */
+.fib-sentence-plain { display: flex; flex-direction: column; gap: 10px; }
+
+/* "All games" back link on each game landing */
+.landing-back {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: none; border: none; cursor: pointer;
+  color: var(--muted); font-weight: 700; font-size: 0.88rem;
+  padding: 4px 2px; margin-bottom: 10px;
+}
+.landing-back:hover { color: var(--brand-ink); }
+
+/* "Practice your misses" — an ACTION inside the blue banner, so it gets a solid
+   white pill (distinct from the translucent Level/Length selectors and the lime
+   Start button). Sits on its own line under the controls. */
+.landing-practice {
+  flex-basis: 100%; margin-top: 8px;
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  background: #fff; color: var(--brand-ink); border: none;
+  border-radius: var(--r-full); padding: 13px 20px;
+  font-weight: 800; font-size: 0.92rem; cursor: pointer;
+  box-shadow: 0 6px 16px rgba(11,60,110,0.18); transition: background 0.12s, transform 0.1s;
+}
+.landing-practice:hover:not(:disabled) { background: #eaf4ff; transform: translateY(-1px); }
+.landing-practice:disabled {
+  background: rgba(255,255,255,0.14); color: rgba(255,255,255,0.6);
+  box-shadow: none; cursor: default;
+}

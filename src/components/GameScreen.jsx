@@ -4,7 +4,9 @@ import { bookletWordData } from "../data/bookletWords";
 import GameComplete from "./GameComplete";
 import { playCorrect, playWrong } from "../utils/feedback";
 import { recordAttempt } from "../utils/progress";
+import { addMiss, clearMiss, getMisses } from "../utils/misses";
 
+const SKILL = "wordMatch";
 const BOARD_SIZE = 5;
 
 function shuffle(arr) {
@@ -60,19 +62,21 @@ function pickNonColliding(queue, boardItems) {
   return idx === -1 ? 0 : idx;
 }
 
-export default function GameScreen({ level, gameType, totalQuestions = 20, onHome, pairs, instruction, typeLabel: typeLabelProp }) {
-  // A caller can pass an explicit `pairs` list (e.g. compound words); otherwise
-  // fall back to the synonyms/antonyms data keyed by level + gameType.
-  const allPairs = pairs ?? [
+export default function GameScreen({ level, gameType, totalQuestions = 20, onHome, pairs, instruction, typeLabel: typeLabelProp, practice = false }) {
+  // Practice = only the pairs you've missed. Otherwise a caller can pass an
+  // explicit `pairs` list, or we fall back to synonyms/antonyms by level+type.
+  const allPairs = practice ? getMisses(SKILL) : (pairs ?? [
     ...(wordData[level]?.[gameType] ?? []),
     ...(bookletWordData[level]?.[gameType] ?? []),
-  ];
+  ]);
+  // In practice, the round is exactly the missed pairs (min 1 so the board works).
+  const roundLength = practice ? Math.max(1, allPairs.length) : totalQuestions;
   const performance  = useRef({});  // word → last stars, persists across replays
 
   function buildGame() {
     const list = buildPrioritisedList(allPairs, performance.current);
-    // Cycle list if fewer words than totalQuestions
-    const full = Array.from({ length: totalQuestions }, (_, i) => list[i % list.length]);
+    // Cycle list if fewer words than the round length
+    const full = Array.from({ length: roundLength }, (_, i) => list[i % list.length]);
     // Greedily seat a starting board whose left words AND right matches are all
     // distinct — otherwise two identical cards would make a match ambiguous
     // (common with compound words that share a half, e.g. Back-drop / Rain-drop).
@@ -137,7 +141,8 @@ export default function GameScreen({ level, gameType, totalQuestions = 20, onHom
       const newStreak = item.wrongCount === 0 ? streak + 1 : 0;
 
       // Review signal: a hit only if matched first try, else a miss for this word.
-      recordAttempt({ skill: "wordMatch", word: item.word, correct: item.wrongCount === 0, meaning: item.match });
+      recordAttempt({ skill: SKILL, word: item.word, correct: item.wrongCount === 0, meaning: item.match });
+      if (item.wrongCount === 0) clearMiss(SKILL, item.word.toLowerCase());
       performance.current[item.word] = stars;
       if (!muted) playCorrect();
       setResults(newResults);
@@ -146,7 +151,7 @@ export default function GameScreen({ level, gameType, totalQuestions = 20, onHom
       setJustMatched({ uid: item.uid, rightIdx, stars });
 
       setTimeout(() => {
-        if (newResults.length >= totalQuestions) {
+        if (newResults.length >= roundLength) {
           setGameComplete(true);
           setJustMatched(null);
           return;
@@ -175,7 +180,9 @@ export default function GameScreen({ level, gameType, totalQuestions = 20, onHom
       }, 700);
 
     } else {
-      // Wrong — increment wrongCount for this slot
+      // Wrong — increment wrongCount for this slot and queue the word for practice.
+      const missItem = board[leftIdx];
+      if (missItem) addMiss(SKILL, missItem.word.toLowerCase(), { word: missItem.word, match: missItem.match });
       setGame((prev) => ({
         ...prev,
         board: prev.board.map((slot, i) =>
@@ -207,7 +214,7 @@ export default function GameScreen({ level, gameType, totalQuestions = 20, onHom
   }
 
   const typeLabel = typeLabelProp ?? (gameType === "synonyms" ? "Synonyms" : "Antonyms");
-  const progress  = (results.length / totalQuestions) * 100;
+  const progress  = (results.length / roundLength) * 100;
 
   if (gameComplete) {
     return (
@@ -219,7 +226,7 @@ export default function GameScreen({ level, gameType, totalQuestions = 20, onHom
         onHome={onHome}
         level={level}
         gameType={gameType}
-        totalQuestions={totalQuestions}
+        totalQuestions={roundLength}
       />
     );
   }
@@ -230,7 +237,7 @@ export default function GameScreen({ level, gameType, totalQuestions = 20, onHom
       <div className="ig-top">
         <button className="ig-back" onClick={onHome} aria-label="Home">←</button>
         <div className="ig-pips">
-          {Array.from({ length: totalQuestions }, (_, i) => (
+          {Array.from({ length: roundLength }, (_, i) => (
             <span key={i} className={`ig-pip ${i < results.length ? "done" : ""}`} />
           ))}
         </div>
@@ -259,6 +266,7 @@ export default function GameScreen({ level, gameType, totalQuestions = 20, onHom
         </div>
       </div>
 
+      <div className="play-card">
       <p className="game-instruction">
         {instruction ?? (gameType === "synonyms"
           ? "Match each word with its synonym (same meaning)"
@@ -308,6 +316,7 @@ export default function GameScreen({ level, gameType, totalQuestions = 20, onHom
             );
           })}
         </div>
+      </div>
       </div>
     </div>
   );

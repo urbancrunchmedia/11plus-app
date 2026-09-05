@@ -51,7 +51,11 @@ function pickTargets(pool, count) {
 export function makeCompoundBuildQuestions(level, count = 20) {
   const pool    = compoundWords[level] ?? [];
   const seconds = [...new Set(pool.map((c) => c.second))];
-  const valid   = new Set(pool.map((c) => (c.first + c.second).toLowerCase()));
+  // Validity is checked against EVERY level's compounds (not just this one), so a
+  // decoy can never coincidentally be a real compound from another level — which
+  // would give the question two correct answers.
+  const allCompounds = [...(compoundWords.A || []), ...(compoundWords.B || []), ...(compoundWords.C || [])];
+  const valid   = new Set(allCompounds.map((c) => (c.first + c.second).toLowerCase()));
   const combines = (l, r) => valid.has((l + r).toLowerCase());
 
   const targets = selectWithReview(pool, count, (c) => c.first + c.second, "compoundWords", getSetting("revisitMisses", true));
@@ -61,6 +65,21 @@ export function makeCompoundBuildQuestions(level, count = 20) {
       3,
       [second]
     );
+    const options = shuffle([second, ...decoys]);
+    return { first, second, word: first + second, options, answer: options.indexOf(second) };
+  });
+}
+
+// Build compound questions from a specific list of {first, second} targets
+// (e.g. the ones the child previously missed). Decoys are drawn from every
+// level and never form a real compound with the stem.
+export function makeCompoundQuestionsFromTargets(targets) {
+  const all     = [...(compoundWords.A || []), ...(compoundWords.B || []), ...(compoundWords.C || [])];
+  const seconds = [...new Set(all.map((c) => c.second))];
+  const valid   = new Set(all.map((c) => (c.first + c.second).toLowerCase()));
+  const combines = (l, r) => valid.has((l + r).toLowerCase());
+  return targets.map(({ first, second }) => {
+    const decoys = sampleDistinct(seconds.filter((s) => s !== second && !combines(first, s)), 3, [second]);
     const options = shuffle([second, ...decoys]);
     return { first, second, word: first + second, options, answer: options.indexOf(second) };
   });

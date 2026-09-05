@@ -1,15 +1,20 @@
 import React, { useState, useRef, useEffect } from "react";
 import GameComplete from "./GameComplete";
-import { makeCompoundBuildQuestions } from "../utils/worksheet";
+import { makeCompoundBuildQuestions, makeCompoundQuestionsFromTargets } from "../utils/worksheet";
 import { playCorrect, playWrong } from "../utils/feedback";
 import { recordAttempt } from "../utils/progress";
+import { addMiss, clearMiss, getMisses } from "../utils/misses";
+
+const SKILL = "compoundWords";
 
 const stars = (wrong) => (wrong === 0 ? 3 : wrong === 1 ? 2 : 1);
 
 // Compound Words round (prototype style): show a stem word + four options,
 // pick the word that joins on to make a real compound word.
-export default function CompoundGame({ level, totalQuestions = 20, onHome }) {
-  const build = () => makeCompoundBuildQuestions(level, totalQuestions);
+export default function CompoundGame({ level, totalQuestions = 20, onHome, practice = false }) {
+  const build = () => (practice
+    ? makeCompoundQuestionsFromTargets(getMisses(SKILL))
+    : makeCompoundBuildQuestions(level, totalQuestions));
   const [questions, setQuestions] = useState(build);
   const [idx, setIdx]         = useState(0);
   const [wrongCount, setWrong] = useState(0);   // wrong picks on the current question
@@ -38,7 +43,8 @@ export default function CompoundGame({ level, totalQuestions = 20, onHome }) {
       locked.current = true;
       const s = stars(wrongCount);
       // One record per question: a hit only if they got it first try.
-      recordAttempt({ skill: "compoundWords", word: `${q.first}${q.second}`, correct: wrongCount === 0, meaning: `${q.first} + ${q.second}` });
+      recordAttempt({ skill: SKILL, word: `${q.first}${q.second}`, correct: wrongCount === 0, meaning: `${q.first} + ${q.second}` });
+      if (wrongCount === 0) clearMiss(SKILL, `${q.first}${q.second}`.toLowerCase());
       if (!muted) playCorrect();
       setJustRight(i);
       setStreak((v) => (wrongCount === 0 ? v + 1 : 0));
@@ -52,6 +58,7 @@ export default function CompoundGame({ level, totalQuestions = 20, onHome }) {
         else setIdx(idx + 1);
       }, 600);
     } else {
+      addMiss(SKILL, `${q.first}${q.second}`.toLowerCase(), { first: q.first, second: q.second });
       if (!muted) playWrong();
       setWrong((w) => w + 1);
       setTotalWrong((w) => w + 1);
@@ -103,25 +110,27 @@ export default function CompoundGame({ level, totalQuestions = 20, onHome }) {
         <div className="ig-card"><div className="ig-card-val ig-card-val--wrong">{totalWrong}</div><div className="ig-card-lbl">wrong</div></div>
       </div>
 
-      <p className="game-instruction">Pick the word that joins on to make a real compound word</p>
+      <div className="play-card">
+        <p className="game-instruction">Pick the word that joins on to make a real compound word</p>
 
-      <div className="cg-stem">
-        <span className="cg-stem-word">{q.first}</span>
-        <span className="cg-plus">+</span>
-        <span className="cg-blank">?</span>
-      </div>
+        <div className="cg-stem">
+          <span className="cg-stem-word">{q.first}</span>
+          <span className="cg-plus">+</span>
+          <span className="cg-blank">?</span>
+        </div>
 
-      <div className="cg-grid">
-        {q.options.map((opt, i) => {
-          let cls = "cg-opt";
-          if (justRight === i) cls += " correct";
-          else if (flash === i) cls += " wrong";
-          return (
-            <button key={i} className={cls} onClick={() => pick(i)} disabled={justRight !== null}>
-              {opt}
-            </button>
-          );
-        })}
+        <div className="cg-grid">
+          {q.options.map((opt, i) => {
+            let cls = "cg-opt";
+            if (justRight === i) cls += " correct";
+            else if (flash === i) cls += " wrong";
+            return (
+              <button key={i} className={cls} onClick={() => pick(i)} disabled={justRight !== null}>
+                {opt}
+              </button>
+            );
+          })}
+        </div>
       </div>
     </div>
   );

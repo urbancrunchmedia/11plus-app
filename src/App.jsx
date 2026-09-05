@@ -9,6 +9,8 @@ import WorksheetGame from "./components/WorksheetGame";
 import { makeCompoundQuestions, makeSynonymQuestions, makeAntonymQuestions } from "./utils/worksheet";
 import PunctuationScreen from "./components/PunctuationScreen";
 import PunctuationGame from "./components/PunctuationGame";
+import SpellingScreen from "./components/SpellingScreen";
+import SpellingGame from "./components/SpellingGame";
 import DetectiveScreen from "./components/DetectiveScreen";
 import FillInBlanksGame from "./components/FillInBlanksGame";
 import FlashcardScreen from "./components/FlashcardScreen";
@@ -78,7 +80,7 @@ function AppInner() {
   // crashes the tree to a blank screen (only a refresh recovered it).
   const VALID_SCREENS = [
     "home", "me", "wordMatch", "compoundWords",
-    "punctuation", "fillInBlanks", "wordList", "leaderboard", "report",
+    "punctuation", "spelling", "fillInBlanks", "wordList", "leaderboard", "report",
   ];
   const [selectedGame, setSelectedGame] = useState(() => {
     try {
@@ -134,8 +136,8 @@ function AppInner() {
   }
 
   function handlePlay(cfg) {
-    // Paywall choke point. Word Detective has no levels, so it stays fully free.
-    if (!isPremium) {
+    // Paywall choke point — skipped for practice (replaying your own misses).
+    if (!cfg.practice && !isPremium) {
       const leveled = selectedGame !== "fillInBlanks";
       if (leveled && cfg.level && cfg.level !== "A") { openPaywall("level"); return; }
       if (roundsToday() >= FREE_DAILY_ROUNDS) { openPaywall("limit"); return; }
@@ -160,13 +162,14 @@ function AppInner() {
   const isWordMatch      = selectedGame === "wordMatch";
   const isCompoundWords  = selectedGame === "compoundWords";
   const isPunctuation    = selectedGame === "punctuation";
+  const isSpelling       = selectedGame === "spelling";
   const isFillInBlanks   = selectedGame === "fillInBlanks";
   const isWordList       = selectedGame === "wordList";
   const isLeaderboard    = selectedGame === "leaderboard";
   const isReport         = selectedGame === "report";
   const isKnown =
     isDashboard || isMe || isWordMatch || isCompoundWords ||
-    isPunctuation || isFillInBlanks || isWordList || isLeaderboard || isReport;
+    isPunctuation || isSpelling || isFillInBlanks || isWordList || isLeaderboard || isReport;
 
   return (
     <div className="app-layout">
@@ -200,7 +203,7 @@ function AppInner() {
 
           {/* Word Match — synonyms/antonyms, in Match or Worksheet format */}
           {isWordMatch && screen === "home" && (
-            <HomeScreen gameType="wordMatch" onPlay={handlePlay} initialConfig={config} />
+            <HomeScreen gameType="wordMatch" onPlay={handlePlay} initialConfig={config} onExit={() => handleSelectGame("home")} />
           )}
           {isWordMatch && screen === "game" && config && (
             config.format === "worksheet" ? (
@@ -212,13 +215,14 @@ function AppInner() {
                 gameType={config.gameType}
                 totalQuestions={config.totalQuestions}
                 onHome={handleHome}
+                practice={config.practice}
               />
             )
           )}
 
           {/* Compound Words — join two words, in Match or Worksheet format */}
           {isCompoundWords && screen === "home" && (
-            <HomeScreen gameType="compoundWords" onPlay={handlePlay} initialConfig={config} />
+            <HomeScreen gameType="compoundWords" onPlay={handlePlay} initialConfig={config} onExit={() => handleSelectGame("home")} />
           )}
           {isCompoundWords && screen === "game" && config && (
             <CompoundGame
@@ -226,12 +230,13 @@ function AppInner() {
               level={config.level}
               totalQuestions={config.totalQuestions}
               onHome={handleHome}
+              practice={config.practice}
             />
           )}
 
           {/* Punctuation */}
           {isPunctuation && screen === "home" && (
-            <PunctuationScreen onPlay={handlePlay} initialConfig={lastPunctConfig} />
+            <PunctuationScreen onPlay={handlePlay} initialConfig={lastPunctConfig} onExit={() => handleSelectGame("home")} />
           )}
           {isPunctuation && screen === "game" && config && (
             <PunctuationGame
@@ -239,12 +244,27 @@ function AppInner() {
               level={config.level}
               totalQuestions={config.totalQuestions}
               onHome={handleHome}
+              practice={config.practice}
+            />
+          )}
+
+          {/* Spelling — spot the misspelled section */}
+          {isSpelling && screen === "home" && (
+            <SpellingScreen onPlay={handlePlay} onExit={() => handleSelectGame("home")} />
+          )}
+          {isSpelling && screen === "game" && config && (
+            <SpellingGame
+              key={playKey}
+              level={config.level}
+              totalQuestions={config.totalQuestions}
+              onHome={handleHome}
+              practice={config.practice}
             />
           )}
 
           {/* Word Detective (fill in the blanks) */}
           {isFillInBlanks && screen === "home" && (
-            <DetectiveScreen onPlay={handlePlay} onLearn={handleLearn} />
+            <DetectiveScreen onPlay={handlePlay} onLearn={handleLearn} onExit={() => handleSelectGame("home")} />
           )}
           {isFillInBlanks && screen === "learn" && (
             <FlashcardScreen
@@ -258,6 +278,7 @@ function AppInner() {
               level={config.level}
               totalQuestions={config.totalQuestions}
               onHome={handleHome}
+              practice={config.practice}
             />
           )}
 
