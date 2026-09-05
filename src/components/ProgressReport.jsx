@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { getWeakWords, getSkillAccuracy, getProgressSummary, SKILL_LABEL } from "../utils/progress";
 import { usePremium } from "../contexts/PremiumContext";
+import Icon from "./Icon";
 
 // A parent-facing snapshot: where the child is strong, and exactly which words
 // to revise next. Premium — free users see a blurred teaser + upgrade.
@@ -68,7 +69,7 @@ export default function ProgressReport({ onBack, onPractise }) {
           <div className={`report-card ${!isPremium ? "report-locked" : ""}`}>
             <div className="report-card-title">
               Words to review
-              {!isPremium && <span className="report-lock-badge">🔒 Full Access</span>}
+              {!isPremium && <span className="report-lock-badge"><Icon className="inline-ico" name="lock" size={12} stroke="currentColor" strokeWidth={2.2} /> Full Access</span>}
             </div>
 
             {weak.length === 0 ? (

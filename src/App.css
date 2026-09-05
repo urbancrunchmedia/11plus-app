@@ -2943,3 +2943,4 @@ body {
 .hero-seg-btn.active { background: var(--accent); color: var(--ink); box-shadow: 0 4px 12px rgba(0,0,0,0.18); }
 .hero-seg-btn.active .hero-seg-sub { opacity: 0.72; }
 @media (hover: hover) { .hero-seg-btn:not(.active):hover { background: rgba(255,255,255,0.12); } }
+.inline-ico { vertical-align: -2px; }

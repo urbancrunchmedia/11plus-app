@@ -104,9 +104,9 @@ export default function SpellingScreen({ onPlay, onExit }) {
           <div className="hero-select-wrap">
             <select className="hero-select" value={level} onChange={(e) => handleLevelChange(e.target.value)} aria-label="Set">
               <option value="A">Level A · easiest</option>
-              <option value="B">{isPremium ? "Level B · intermediate" : "🔒 Level B · premium"}</option>
-              <option value="C">{isPremium ? "Level C · hardest" : "🔒 Level C · premium"}</option>
-              <option value="all">{isPremium ? "All levels · mixed" : "🔒 All levels · premium"}</option>
+              <option value="B">{isPremium ? "Level B · intermediate" : "Level B · premium"}</option>
+              <option value="C">{isPremium ? "Level C · hardest" : "Level C · premium"}</option>
+              <option value="all">{isPremium ? "All levels · mixed" : "All levels · premium"}</option>
             </select>
             <span className="hero-select-chev">▾</span>
           </div>

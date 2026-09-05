@@ -5,6 +5,7 @@ import { useAuth } from "../contexts/AuthContext";
 import { usePremium } from "../contexts/PremiumContext";
 import { openBillingPortal } from "../utils/subscription";
 import LegalModal from "./LegalModal";
+import Icon from "./Icon";
 
 const GOALS = [3, 5, 10];
 const DIFFS = [
@@ -139,7 +140,7 @@ export default function SettingsScreen({ onOpenReport }) {
         <div className="set-card-title">Grown-ups</div>
         <div className="set-row">
           <div className="set-row-txt"><div className="set-row-label">Progress report</div><div className="set-row-sub">See accuracy by skill and the words to revise next</div></div>
-          <button className="set-ghost" onClick={onOpenReport}>View{!isPremium && " 🔒"}</button>
+          <button className="set-ghost" onClick={onOpenReport}>View {!isPremium && <Icon className="inline-ico" name="lock" size={12} stroke="currentColor" strokeWidth={2.2} />}</button>
         </div>
         <div className="set-divider" />
         {PARENT_TOGGLES.map((t, i) => (

@@ -164,8 +164,8 @@ export default function HomeScreen({ gameType, onPlay, onLearn, initialConfig, o
             <div className="hero-select-wrap">
               <select className="hero-select" value={level} onChange={(e) => handleLevelChange(e.target.value)} aria-label="Level">
                 <option value="A">Level A · easiest</option>
-                <option value="B">{isPremium ? "Level B · intermediate" : "🔒 Level B · premium"}</option>
-                <option value="C">{isPremium ? "Level C · hardest" : "🔒 Level C · premium"}</option>
+                <option value="B">{isPremium ? "Level B · intermediate" : "Level B · premium"}</option>
+                <option value="C">{isPremium ? "Level C · hardest" : "Level C · premium"}</option>
               </select>
               <span className="hero-select-chev">▾</span>
             </div>

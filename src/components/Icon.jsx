@@ -12,6 +12,7 @@ const ICONS = {
   compound: '<rect x="3" y="4" width="8" height="8" rx="2.5"/><rect x="13" y="12" width="8" height="8" rx="2.5"/><path d="M11 8h3a2 2 0 0 1 2 2v2"/>',
   spelling: '<path d="M4 18l4.5-11 4.5 11"/><path d="M5.6 14h5.8"/><path d="M20 8v10"/><path d="M20 11.5a3 3 0 1 0 0 6"/>',
   refresh:  '<path d="M20 12a8 8 0 1 1-2.3-5.6"/><path d="M20 4v4h-4"/>',
+  lock:     '<rect x="5" y="11" width="14" height="9" rx="2.2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>',
 };
 
 // Per-skill icon name + stroke + tile background, matching the design.
