@@ -13,6 +13,8 @@ const ICONS = {
   spelling: '<path d="M4 18l4.5-11 4.5 11"/><path d="M5.6 14h5.8"/><path d="M20 8v10"/><path d="M20 11.5a3 3 0 1 0 0 6"/>',
   refresh:  '<path d="M20 12a8 8 0 1 1-2.3-5.6"/><path d="M20 4v4h-4"/>',
   lock:     '<rect x="5" y="11" width="14" height="9" rx="2.2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>',
+  volumeOn: '<path d="M11 5 6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 6a8.5 8.5 0 0 1 0 12"/>',
+  volumeOff:'<path d="M11 5 6 9H3v6h3l5 4z"/><path d="M22 9l-5 5"/><path d="M17 9l5 5"/>',
 };
 
 // Per-skill icon name + stroke + tile background, matching the design.

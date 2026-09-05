@@ -73,7 +73,7 @@ export default function ProgressReport({ onBack, onPractise }) {
             </div>
 
             {weak.length === 0 ? (
-              <div className="report-none">No weak words right now — nice! 🎉</div>
+              <div className="report-none">No weak words right now — nice!</div>
             ) : (
               <div className={!isPremium ? "report-blur" : ""}>
                 <ul className="report-words">

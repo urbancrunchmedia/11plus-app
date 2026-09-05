@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import GameComplete from "./GameComplete";
+import Icon from "./Icon";
 import { makeCompoundBuildQuestions, makeCompoundQuestionsFromTargets } from "../utils/worksheet";
 import { playCorrect, playWrong } from "../utils/feedback";
 import { recordAttempt } from "../utils/progress";
@@ -100,7 +101,7 @@ export default function CompoundGame({ level, totalQuestions = 20, onHome, pract
             <span key={i} className={`ig-pip ${i < results.length ? "done" : ""}`} />
           ))}
         </div>
-        <button className="ig-mute" onClick={() => setMuted((m) => !m)} aria-label={muted ? "Unmute" : "Mute"}>{muted ? "🔇" : "🔊"}</button>
+        <button className="ig-mute" onClick={() => setMuted((m) => !m)} aria-label={muted ? "Unmute" : "Mute"}><Icon name={muted ? "volumeOff" : "volumeOn"} size={18} stroke="currentColor" strokeWidth={2} /></button>
       </div>
 
       <div className="ig-hud">

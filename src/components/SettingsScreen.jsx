@@ -83,7 +83,7 @@ export default function SettingsScreen({ onOpenReport }) {
         <div className="set-plan-txt">
           <div className="set-plan-badge">{isPremium ? "FULL ACCESS" : "FREE PLAN"}</div>
           <div className="set-plan-title">
-            {isPremium ? "You have Full Access 🎉" : "Unlock every level & unlimited play"}
+            {isPremium ? "You have Full Access" : "Unlock every level & unlimited play"}
           </div>
           <div className="set-plan-sub">
             {isPremium

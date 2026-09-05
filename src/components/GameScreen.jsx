@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { wordData } from "../data/words";
 import { bookletWordData } from "../data/bookletWords";
 import GameComplete from "./GameComplete";
+import Icon from "./Icon";
 import { playCorrect, playWrong } from "../utils/feedback";
 import { recordAttempt } from "../utils/progress";
 import { addMiss, clearMiss, getMisses } from "../utils/misses";
@@ -242,7 +243,7 @@ export default function GameScreen({ level, gameType, totalQuestions = 20, onHom
           ))}
         </div>
         <button className="ig-mute" onClick={() => setMuted((m) => !m)} aria-label={muted ? "Unmute" : "Mute"}>
-          {muted ? "🔇" : "🔊"}
+          <Icon name={muted ? "volumeOff" : "volumeOn"} size={18} stroke="currentColor" strokeWidth={2} />
         </button>
       </div>
 
