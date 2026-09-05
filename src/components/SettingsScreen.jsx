@@ -4,6 +4,7 @@ import { getStats } from "../utils/gamify";
 import { useAuth } from "../contexts/AuthContext";
 import { usePremium } from "../contexts/PremiumContext";
 import { openBillingPortal } from "../utils/subscription";
+import LegalModal from "./LegalModal";
 
 const GOALS = [3, 5, 10];
 const DIFFS = [
@@ -43,6 +44,7 @@ export default function SettingsScreen({ onOpenReport }) {
   const [nameDraft, setNameDraft] = useState("");
   const [savingName, setSavingName] = useState(false);
   const [toast, setToast] = useState(null);
+  const [legal, setLegal] = useState(null); // "privacy" | "terms" | null
 
   function update(key, value) {
     setSetting(key, value);
@@ -189,8 +191,13 @@ export default function SettingsScreen({ onOpenReport }) {
         <button className="set-logout" onClick={() => setSheet(true)}>Log out</button>
       </div>
 
-      <div className="set-foot">11 Plus Study · <a href="#" onClick={(e) => e.preventDefault()}>Privacy</a></div>
+      <div className="set-foot">
+        11 Plus Lab ·{" "}
+        <a href="#" onClick={(e) => { e.preventDefault(); setLegal("privacy"); }}>Privacy</a> ·{" "}
+        <a href="#" onClick={(e) => { e.preventDefault(); setLegal("terms"); }}>Terms</a>
+      </div>
 
+      {legal && <LegalModal doc={legal} onClose={() => setLegal(null)} />}
       {toast && <div className="set-toast">{toast}</div>}
 
       {sheet && (
