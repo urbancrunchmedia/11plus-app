@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from "react";
 import { useAuth } from "./AuthContext";
-import { watchSubscription } from "../utils/subscription";
+import { fetchPremiumStatus } from "../utils/subscription";
 import Paywall from "../components/Paywall";
 
 const PremiumContext = createContext(null);
@@ -31,11 +31,9 @@ export function PremiumProvider({ children }) {
     // Comp accounts get Full Access without a subscription.
     if (user.email && COMP_EMAILS.has(user.email.toLowerCase())) { setIsPremium(true); setLoading(false); return; }
     setLoading(true);
-    const unsub = watchSubscription(user.uid, ({ isPremium }) => {
-      setIsPremium(isPremium);
-      setLoading(false);
-    });
-    return unsub;
+    let cancelled = false;
+    fetchPremiumStatus().then((p) => { if (!cancelled) { setIsPremium(p); setLoading(false); } });
+    return () => { cancelled = true; };
   }, [user]);
 
   const openPaywall  = useCallback((reason = "feature") => setPaywall(reason), []);

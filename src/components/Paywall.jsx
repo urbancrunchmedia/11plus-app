@@ -32,7 +32,7 @@ export default function Paywall({ reason = "feature", onClose }) {
     if (!priceId) { setErr("Billing isn't switched on yet — please check back soon."); return; }
     setBusy(true);
     try {
-      await startCheckout(user.uid, priceId);
+      await startCheckout(priceId);
       // On success the browser redirects to Stripe; keep the spinner until then.
     } catch (e) {
       setErr(e.message || "Something went wrong. Please try again.");
