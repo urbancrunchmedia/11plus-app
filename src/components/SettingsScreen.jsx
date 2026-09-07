@@ -4,7 +4,7 @@ import { getStats } from "../utils/gamify";
 import { useAuth } from "../contexts/AuthContext";
 import { usePremium } from "../contexts/PremiumContext";
 import { openBillingPortal } from "../utils/subscription";
-import LegalModal from "./LegalModal";
+import LegalModal, { CONTACT } from "./LegalModal";
 import Icon from "./Icon";
 import { formatDate } from "./SubscriptionSuccess";
 
@@ -182,6 +182,14 @@ export default function SettingsScreen({ onOpenReport }) {
             </div>
           </React.Fragment>
         ))}
+        <div className="set-divider" />
+        <div className="set-row">
+          <div className="set-row-txt"><div className="set-row-label">Contact support</div><div className="set-row-sub">Questions, problems or billing — we'll reply by email</div></div>
+          <a
+            className="set-ghost"
+            href={`mailto:${CONTACT}?subject=${encodeURIComponent("11 Plus Lab — support")}&body=${encodeURIComponent(`\n\n---\nAccount: ${user?.email || "(not signed in)"}\nPlan: ${isPremium ? "Full Access" : "Free"}`)}`}
+          >Email us</a>
+        </div>
         <div className="set-divider" />
         <div className="set-row">
           <div className="set-row-txt"><div className="set-row-label">Child PIN</div><div className="set-row-sub">A 4-digit PIN to start a session (soft lock)</div></div>

@@ -3110,3 +3110,6 @@ body {
 .login2-forgot { align-self: flex-end; background: none; border: none; cursor: pointer; color: var(--brand-ink); font-weight: 700; font-size: 0.8rem; padding: 2px 0; }
 .login2-forgot:hover { text-decoration: underline; }
 .login2-notice { background: #eefaf0; color: #15803d; border-radius: 12px; padding: 10px 12px; font-size: 0.85rem; font-weight: 600; line-height: 1.45; }
+
+/* "Email us" is an <a> but must match the ghost buttons next to it */
+a.set-ghost { display: inline-flex; align-items: center; justify-content: center; text-decoration: none; }

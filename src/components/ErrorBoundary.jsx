@@ -1,4 +1,5 @@
 import React from "react";
+import { reportError } from "../utils/monitoring";
 
 // Catches any render/runtime error in the tree below it and shows a friendly,
 // child-safe screen instead of a blank white page. Class component because only
@@ -16,6 +17,7 @@ export default class ErrorBoundary extends React.Component {
   componentDidCatch(error, info) {
     // Log for debugging; in production this could go to an error service.
     console.error("App error boundary caught:", error, info);
+    reportError(error, info);
   }
 
   handleReload = () => {
