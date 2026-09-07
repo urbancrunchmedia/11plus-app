@@ -79,7 +79,7 @@ export default function FlashcardScreen({ onHome, onPlay }) {
                 <Icon name="volumeOn" size={20} stroke="currentColor" strokeWidth={2} />
               </button>
               <span className="flashcard-word">{card.word}</span>
-              <span className="flashcard-flip-hint">tap to flip 👆</span>
+              <span className="flashcard-flip-hint">tap to flip</span>
             </div>
 
             {/* Back — meaning + example */}

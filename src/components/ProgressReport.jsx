@@ -25,7 +25,7 @@ export default function ProgressReport({ onBack, onPractise }) {
 
       {empty ? (
         <div className="report-empty">
-          <div className="report-empty-emoji">📊</div>
+          <div className="report-empty-emoji"><Icon name="chart" size={40} stroke="var(--muted)" strokeWidth={1.8} /></div>
           <div className="report-empty-title">No rounds played yet</div>
           <div className="report-empty-sub">Play a few rounds and this report will fill up with the words to revise.</div>
           {onPractise && <button className="report-cta" onClick={onPractise}>Play a round</button>}
