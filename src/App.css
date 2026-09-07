@@ -3018,3 +3018,8 @@ body {
 @media (max-width: 380px) {
   .spot-part-text { font-size: 0.86rem; }
 }
+
+/* Rank #1 = the winner: a subtle gold accent, whoever holds it. */
+.board-row--first:not(.me) { background: #fff9e6; box-shadow: inset 0 0 0 1.5px #efd784; }
+.board-row--first .board-rank { color: #d4a017; }
+.board-row--first.me .board-rank { color: #ffe08a; } /* gold that reads on the blue "me" bar */

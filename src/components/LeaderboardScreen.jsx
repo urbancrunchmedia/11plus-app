@@ -139,7 +139,7 @@ export default function LeaderboardScreen({ onPlay }) {
       ) : (
         <div className="board-rows">
           {rows.map((p, i) => (
-            <div key={p.uid} className={`board-row ${p.isMe ? "me" : ""}`}>
+            <div key={p.uid} className={`board-row ${p.isMe ? "me" : ""} ${i === 0 ? "board-row--first" : ""}`}>
               <span className="board-rank">{i + 1}</span>
               <span className={`board-avatar ${p.isMe ? "me" : ""}`}>{initials(p.displayName)}</span>
               <span className="board-name">
