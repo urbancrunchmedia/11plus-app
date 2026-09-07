@@ -8,7 +8,6 @@ import { useAuth } from "../contexts/AuthContext";
 // Slim rail per the design: games are reached from the Home dashboard cards.
 const ITEMS = [
   { id: "home",         label: "Home",   icon: "home" },
-  { id: "wordList",     label: "Words",  icon: "book" },
   { id: "leaderboard",  label: "Board",  icon: "board" },
 ];
 
