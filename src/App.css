@@ -2953,3 +2953,24 @@ body {
   border-bottom: 3px solid var(--line);
   border-radius: 0 0 6px 6px;
 }
+
+/* ============================================================
+   Spot sentence v2: continuous sentence on top, gapped underline bars below.
+   The text flows with normal word spacing; each section's underline is a
+   separate inset bar so you can still see the A/B/C/D grouping.
+   ============================================================ */
+.spot-line { gap: 6px 0; align-items: flex-start; justify-content: center; }
+.spot-part { display: inline-flex; flex-direction: column; align-items: stretch; gap: 5px; cursor: default; }
+.spot-part-text {
+  border: none; border-radius: 4px; padding: 1px 3px;
+  text-align: center; font-size: 1.35rem; font-weight: 600; color: var(--ink); line-height: 1.32;
+}
+.spot-part-bar { height: 3px; border-radius: 3px; background: var(--line); margin: 0 6px; }
+.spot-part-tag { text-align: center; background: transparent; color: var(--muted); width: auto; height: auto; font-size: 0.78rem; font-weight: 800; }
+/* reveal states — highlight the words, the bar and the letter for that section */
+.spot-part.correct .spot-part-text { background: var(--accent); color: var(--ink); }
+.spot-part.correct .spot-part-bar  { background: var(--accent-dark); }
+.spot-part.correct .spot-part-tag  { background: var(--ink); color: #fff; border-radius: 6px; width: 24px; height: 24px; align-self: center; display: grid; place-items: center; }
+.spot-part.wrong .spot-part-text { background: var(--wrong-bg); color: var(--wrong); }
+.spot-part.wrong .spot-part-bar  { background: var(--wrong); }
+.spot-part.wrong .spot-part-tag  { background: var(--wrong); color: #fff; border-radius: 6px; width: 24px; height: 24px; align-self: center; display: grid; place-items: center; }

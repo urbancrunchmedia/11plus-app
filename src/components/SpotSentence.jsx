@@ -15,6 +15,7 @@ export default function SpotSentence({ segments, classFor, onPick, disabled }) {
         {segments.map((seg, i) => (
           <span key={i} className={`spot-part ${classFor(i)}`}>
             <span className="spot-part-text">{seg}</span>
+            <span className="spot-part-bar" />
             <span className="spot-part-tag">{LETTERS[i]}</span>
           </span>
         ))}
