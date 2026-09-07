@@ -3092,3 +3092,16 @@ body {
 .set-plan.ending { background: linear-gradient(135deg, #6b6152 0%, #4a4238 100%); }
 .set-plan-actions { display: flex; flex-direction: column; gap: 8px; flex-shrink: 0; }
 @media (max-width: 560px) { .set-plan-actions { width: 100%; } .set-plan-actions .set-plan-cta { width: 100%; } }
+
+/* Section underlines as shallow brackets: the line curves gently upward at both
+   ends (like the exam paper) instead of being a flat bar. Colour lives on the
+   border now, so the reveal states tint the border, not a background. */
+.spot-part-bar {
+  height: 8px;
+  background: transparent;
+  border: 2.5px solid var(--line);
+  border-top: 0;
+  border-radius: 0 0 9px 9px;
+}
+.spot-part.correct .spot-part-bar { background: transparent; border-color: var(--accent-dark); }
+.spot-part.wrong   .spot-part-bar { background: transparent; border-color: var(--wrong); }
