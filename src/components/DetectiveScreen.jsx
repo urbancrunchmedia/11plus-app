@@ -57,17 +57,21 @@ export default function DetectiveScreen({ onPlay, onLearn, onExit }) {
           <div className="landing-hero-blurb">Work out each word from its clue. Words you miss come back another day.</div>
         </div>
         <div className="landing-hero-actions">
+          <div className="hero-selects">
+            <div className="hero-select-wrap">
+              <select className="hero-select" value={totalQuestions} onChange={(e) => setTotal(Number(e.target.value))} aria-label="Length">
+                {Q_OPTIONS.map((q) => <option key={q} value={q}>{q} words</option>)}
+              </select>
+              <span className="hero-select-chev">▾</span>
+            </div>
+          </div>
           <button className="landing-start" onClick={() => onPlay({ level: "all", totalQuestions })}>
             <span>Start round</span><span className="dash-hero-arrow">→</span>
           </button>
-          <div className="hero-select-wrap">
-            <select className="hero-select" value={totalQuestions} onChange={(e) => setTotal(Number(e.target.value))} aria-label="Length">
-              {Q_OPTIONS.map((q) => <option key={q} value={q}>{q} words</option>)}
-            </select>
-            <span className="hero-select-chev">▾</span>
+          <div className="hero-secondary">
+            {onLearn && <button className="landing-learn" onClick={onLearn}>Learn first</button>}
+            <PracticeButton skill="fillInBlanks" onPractice={() => onPlay({ practice: true, level: "all", totalQuestions })} />
           </div>
-          {onLearn && <button className="landing-learn" onClick={onLearn}>Learn first</button>}
-          <PracticeButton skill="fillInBlanks" onPractice={() => onPlay({ practice: true, level: "all", totalQuestions })} />
         </div>
       </div>
     </div>

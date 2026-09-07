@@ -98,25 +98,29 @@ export default function SpellingScreen({ onPlay, onExit }) {
           <div className="landing-hero-blurb">Find the section with the misspelled word — or spot when there's none.</div>
         </div>
         <div className="landing-hero-actions">
+          <div className="hero-selects">
+            <div className="hero-select-wrap">
+              <select className="hero-select" value={level} onChange={(e) => handleLevelChange(e.target.value)} aria-label="Set">
+                <option value="A">Level A · easiest</option>
+                <option value="B">{isPremium ? "Level B · intermediate" : "Level B · premium"}</option>
+                <option value="C">{isPremium ? "Level C · hardest" : "Level C · premium"}</option>
+                <option value="all">{isPremium ? "All levels · mixed" : "All levels · premium"}</option>
+              </select>
+              <span className="hero-select-chev">▾</span>
+            </div>
+            <div className="hero-select-wrap">
+              <select className="hero-select" value={totalQuestions} onChange={(e) => setTotal(Number(e.target.value))} aria-label="Length">
+                {Q_OPTIONS.map((q) => <option key={q} value={q}>{q} questions</option>)}
+              </select>
+              <span className="hero-select-chev">▾</span>
+            </div>
+          </div>
           <button className="landing-start" onClick={() => onPlay({ level, totalQuestions })}>
             <span>Start round</span><span className="dash-hero-arrow">→</span>
           </button>
-          <div className="hero-select-wrap">
-            <select className="hero-select" value={level} onChange={(e) => handleLevelChange(e.target.value)} aria-label="Set">
-              <option value="A">Level A · easiest</option>
-              <option value="B">{isPremium ? "Level B · intermediate" : "Level B · premium"}</option>
-              <option value="C">{isPremium ? "Level C · hardest" : "Level C · premium"}</option>
-              <option value="all">{isPremium ? "All levels · mixed" : "All levels · premium"}</option>
-            </select>
-            <span className="hero-select-chev">▾</span>
+          <div className="hero-secondary">
+            <PracticeButton skill="spelling" onPractice={() => onPlay({ practice: true, level, totalQuestions })} />
           </div>
-          <div className="hero-select-wrap">
-            <select className="hero-select" value={totalQuestions} onChange={(e) => setTotal(Number(e.target.value))} aria-label="Length">
-              {Q_OPTIONS.map((q) => <option key={q} value={q}>{q} questions</option>)}
-            </select>
-            <span className="hero-select-chev">▾</span>
-          </div>
-          <PracticeButton skill="spelling" onPractice={() => onPlay({ practice: true, level, totalQuestions })} />
         </div>
       </div>
     </div>

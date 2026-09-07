@@ -157,27 +157,31 @@ export default function HomeScreen({ gameType, onPlay, onLearn, initialConfig, o
         </div>
         <div className="landing-hero-blurb">{info.description}</div>
         <div className="landing-hero-actions">
-          <button className="landing-start" onClick={handlePlay}>
-            <span>Start round</span><span className="dash-hero-arrow">→</span>
-          </button>
-          {!noLevel && (
+          <div className="hero-selects">
+            {!noLevel && (
+              <div className="hero-select-wrap">
+                <select className="hero-select" value={level} onChange={(e) => handleLevelChange(e.target.value)} aria-label="Level">
+                  <option value="A">Level A · easiest</option>
+                  <option value="B">{isPremium ? "Level B · intermediate" : "Level B · premium"}</option>
+                  <option value="C">{isPremium ? "Level C · hardest" : "Level C · premium"}</option>
+                </select>
+                <span className="hero-select-chev">▾</span>
+              </div>
+            )}
             <div className="hero-select-wrap">
-              <select className="hero-select" value={level} onChange={(e) => handleLevelChange(e.target.value)} aria-label="Level">
-                <option value="A">Level A · easiest</option>
-                <option value="B">{isPremium ? "Level B · intermediate" : "Level B · premium"}</option>
-                <option value="C">{isPremium ? "Level C · hardest" : "Level C · premium"}</option>
+              <select className="hero-select" value={totalQuestions} onChange={(e) => setTotal(Number(e.target.value))} aria-label="Length">
+                {Q_OPTIONS.map((q) => <option key={q} value={q}>{q} words</option>)}
               </select>
               <span className="hero-select-chev">▾</span>
             </div>
-          )}
-          <div className="hero-select-wrap">
-            <select className="hero-select" value={totalQuestions} onChange={(e) => setTotal(Number(e.target.value))} aria-label="Length">
-              {Q_OPTIONS.map((q) => <option key={q} value={q}>{q} words</option>)}
-            </select>
-            <span className="hero-select-chev">▾</span>
           </div>
-          {onLearn && <button className="landing-learn" onClick={onLearn}>Learn first</button>}
-          <PracticeButton skill={gameType} onPractice={() => onPlay({ practice: true, level: scoreLevel, totalQuestions, gameType: scoreType, baseType })} />
+          <button className="landing-start" onClick={handlePlay}>
+            <span>Start round</span><span className="dash-hero-arrow">→</span>
+          </button>
+          <div className="hero-secondary">
+            {onLearn && <button className="landing-learn" onClick={onLearn}>Learn first</button>}
+            <PracticeButton skill={gameType} onPractice={() => onPlay({ practice: true, level: scoreLevel, totalQuestions, gameType: scoreType, baseType })} />
+          </div>
         </div>
       </div>
     </div>
