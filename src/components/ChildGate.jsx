@@ -2,7 +2,12 @@ import React, { useState } from "react";
 
 // Soft PIN gate shown after sign-in when a child PIN is set. Friendly, not
 // security — a grown-up reset is always available so no one gets locked out.
-export default function ChildGate({ name, pin, onUnlock, onReset }) {
+export default function ChildGate({
+  name, pin, onUnlock, onReset, onCancel,
+  title = "Who's learning today?",
+  prompt = "Enter your PIN to start",
+  resetLabel = "Forgot your PIN? Grown-up reset",
+}) {
   const [entry, setEntry] = useState("");
   const [shake, setShake] = useState(false);
   const initial = name ? name.trim().charAt(0).toUpperCase() : "A";
@@ -24,13 +29,13 @@ export default function ChildGate({ name, pin, onUnlock, onReset }) {
   return (
     <div className="cgate">
       <div className="cgate-card">
-        <div className="cgate-title">Who's learning today?</div>
+        <div className="cgate-title">{title}</div>
         <div className="cgate-profile">
           <div className="cgate-avatar">{initial}</div>
           <div className="cgate-name">{name || "Player"}</div>
         </div>
 
-        <div className="cgate-prompt">Enter your PIN to start</div>
+        <div className="cgate-prompt">{prompt}</div>
         <div className={`cgate-dots ${shake ? "shake" : ""}`}>
           {Array.from({ length: len }, (_, i) => (
             <span key={i} className={`cgate-dot ${i < entry.length ? "filled" : ""}`} />
@@ -45,7 +50,8 @@ export default function ChildGate({ name, pin, onUnlock, onReset }) {
           )}
         </div>
 
-        <button className="cgate-reset" onClick={onReset}>Forgot your PIN? Grown-up reset</button>
+        <button className="cgate-reset" onClick={onReset}>{resetLabel}</button>
+        {onCancel && <button className="cgate-reset" onClick={onCancel}>Back</button>}
       </div>
     </div>
   );

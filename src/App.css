@@ -3105,3 +3105,8 @@ body {
 }
 .spot-part.correct .spot-part-bar { background: transparent; border-color: var(--accent-dark); }
 .spot-part.wrong   .spot-part-bar { background: transparent; border-color: var(--wrong); }
+
+/* Login: forgot-password link + success notice */
+.login2-forgot { align-self: flex-end; background: none; border: none; cursor: pointer; color: var(--brand-ink); font-weight: 700; font-size: 0.8rem; padding: 2px 0; }
+.login2-forgot:hover { text-decoration: underline; }
+.login2-notice { background: #eefaf0; color: #15803d; border-radius: 12px; padding: 10px 12px; font-size: 0.85rem; font-weight: 600; line-height: 1.45; }

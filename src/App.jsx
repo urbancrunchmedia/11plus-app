@@ -99,6 +99,7 @@ function AppInner() {
   const [playKey, setPlayKey] = useState(0);
   const [lastPunctConfig, setLastPunctConfig] = useState(null);
   const [childUnlocked, setChildUnlocked] = useState(false);
+  const [parentUnlocked, setParentUnlocked] = useState(false);
   // Returning from Stripe: ?checkout=success | ?checkout=cancel | ?billing=return
   const [billingEvent, setBillingEvent] = useState(null);
   const [billingNote, setBillingNote] = useState(null);
@@ -161,6 +162,7 @@ function AppInner() {
   }
 
   function handleSelectGame(id) {
+    if (id !== "me") setParentUnlocked(false); // re-lock the grown-up area
     setSelectedGame(id);
     setScreen("home");
   }
@@ -189,6 +191,7 @@ function AppInner() {
 
   const isDashboard      = selectedGame === "home";
   const isMe             = selectedGame === "me";
+  const needsParentPin   = isMe && !!childPin && getSetting("parentPinLock", false) && !parentUnlocked;
   const isWordMatch      = selectedGame === "wordMatch";
   const isCompoundWords  = selectedGame === "compoundWords";
   const isPunctuation    = selectedGame === "punctuation";
@@ -215,12 +218,25 @@ function AppInner() {
             />
           )}
 
-          {/* Me — profile & settings */}
+          {/* Me — profile & settings (optionally PIN-protected from the child) */}
           {isMe && (
-            <SettingsScreen
-              onHome={() => handleSelectGame("home")}
-              onOpenReport={() => handleSelectGame("report")}
-            />
+            needsParentPin ? (
+              <ChildGate
+                name={user.displayName}
+                pin={childPin}
+                title="Grown-ups only"
+                prompt="Enter the PIN to open Settings"
+                resetLabel="Forgot the PIN? Turn the lock off"
+                onUnlock={() => setParentUnlocked(true)}
+                onReset={() => { setSetting("parentPinLock", false); setParentUnlocked(true); }}
+                onCancel={() => handleSelectGame("home")}
+              />
+            ) : (
+              <SettingsScreen
+                onHome={() => handleSelectGame("home")}
+                onOpenReport={() => handleSelectGame("report")}
+              />
+            )
           )}
 
           {/* Parent progress report */}

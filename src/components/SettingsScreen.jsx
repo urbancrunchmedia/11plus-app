@@ -20,8 +20,7 @@ const LEARN_TOGGLES = [
   { key: "revisitMisses", label: "Bring back missed words", sub: "Words you slip on return in a later round" },
 ];
 const PARENT_TOGGLES = [
-  { key: "parentPinLock", label: "PIN-protect grown-up settings", sub: "Stops goals being changed mid-revision" },
-  { key: "weeklyEmail",   label: "Email me a weekly summary",     sub: "Sent every Monday morning (coming soon)" },
+  { key: "parentPinLock", label: "PIN-protect grown-up settings", sub: "Ask for the Child PIN before opening Settings", needsPin: true },
 ];
 
 function initial(name) { return name ? name.trim().charAt(0).toUpperCase() : "A"; }
@@ -173,8 +172,13 @@ export default function SettingsScreen({ onOpenReport }) {
           <React.Fragment key={t.key}>
             {i > 0 && <div className="set-divider" />}
             <div className="set-row">
-              <div className="set-row-txt"><div className="set-row-label">{t.label}</div><div className="set-row-sub">{t.sub}</div></div>
-              <button className={`set-switch ${s[t.key] ? "on" : ""}`} onClick={() => toggle(t.key)} aria-pressed={!!s[t.key]}><span className="set-knob" /></button>
+              <div className="set-row-txt"><div className="set-row-label">{t.label}</div><div className="set-row-sub">{t.needsPin && !s.childPin ? "Set a Child PIN below to use this" : t.sub}</div></div>
+              <button
+                className={`set-switch ${s[t.key] ? "on" : ""}`}
+                onClick={() => toggle(t.key)}
+                disabled={t.needsPin && !s.childPin}
+                aria-pressed={!!s[t.key]}
+              ><span className="set-knob" /></button>
             </div>
           </React.Fragment>
         ))}
@@ -201,11 +205,7 @@ export default function SettingsScreen({ onOpenReport }) {
             </div>
           )}
         </div>
-        <div className="set-divider" />
-        <div className="set-row">
-          <div className="set-row-txt"><div className="set-row-label">Weekly progress report</div><div className="set-row-sub">Emailed summary of what was learned</div></div>
-          <button className="set-ghost" disabled title="Coming soon">Send now</button>
-        </div>
+
       </div>
 
       {/* Account */}

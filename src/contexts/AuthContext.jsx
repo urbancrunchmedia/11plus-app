@@ -9,6 +9,7 @@ import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   updateProfile,
+  sendPasswordResetEmail,
 } from "firebase/auth";
 import { auth } from "../firebase";
 import { mergeFromCloud, syncProfile, prepareLocalForUser } from "../utils/cloudScores";
@@ -69,6 +70,13 @@ export function AuthProvider({ children }) {
     await signInWithEmailAndPassword(auth, email, password);
   }
 
+  // Email a reset link so a forgotten password never locks anyone out.
+  async function resetPassword(email) {
+    const clean = (email || "").trim();
+    if (!clean) throw new Error("Please enter your email address first.");
+    await sendPasswordResetEmail(auth, clean);
+  }
+
   async function signUpWithEmail(email, password, name) {
     const cred = await createUserWithEmailAndPassword(auth, email, password);
     if (name) await updateProfile(cred.user, { displayName: name });
@@ -100,6 +108,7 @@ export function AuthProvider({ children }) {
       signInWithGoogle,
       signInWithEmail,
       signUpWithEmail,
+      resetPassword,
       signOut: handleSignOut,
     }}>
       {children}

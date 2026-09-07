@@ -32,7 +32,7 @@ function friendlyError(code, message) {
 }
 
 export default function LoginScreen() {
-  const { signInWithEmail, signUpWithEmail, signInWithGoogle, redirectError } = useAuth();
+  const { signInWithEmail, signUpWithEmail, signInWithGoogle, resetPassword, redirectError } = useAuth();
 
   const [tab, setTab]           = useState("parent"); // "child" | "parent"
   const [mode, setMode]         = useState("signin");  // "signin" | "signup"
@@ -41,10 +41,11 @@ export default function LoginScreen() {
   const [password, setPassword] = useState("");
   const [error, setError]       = useState("");
   const [loading, setLoading]   = useState(false);
+  const [notice, setNotice]     = useState("");
 
   async function handleSubmit(e) {
     e.preventDefault();
-    setError(""); setLoading(true);
+    setError(""); setNotice(""); setLoading(true);
     try {
       if (mode === "signup") await signUpWithEmail(email, password, name);
       else await signInWithEmail(email, password);
@@ -53,6 +54,17 @@ export default function LoginScreen() {
       if (msg) setError(msg);
     }
     setLoading(false);
+  }
+
+  async function handleForgot() {
+    setError(""); setNotice("");
+    if (!email.trim()) { setError("Enter your email above, then tap 'Forgot password?'."); return; }
+    try {
+      await resetPassword(email);
+      setNotice(`Password reset link sent to ${email.trim()}. Check your inbox (and spam).`);
+    } catch (err) {
+      setError(friendlyError(err.code, err.message) || "Couldn't send the reset email.");
+    }
   }
 
   async function handleGoogle() {
@@ -114,9 +126,14 @@ export default function LoginScreen() {
                   <input type="password" placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} required autoComplete={mode === "signup" ? "new-password" : "current-password"} />
                 </label>
 
+                {mode === "signin" && (
+                  <button type="button" className="login2-forgot" onClick={handleForgot}>Forgot password?</button>
+                )}
+
                 {(error || redirectError) && (
                   <div className="login2-error">{error || friendlyError(redirectError) || "Sign-in error"}</div>
                 )}
+                {notice && <div className="login2-notice">{notice}</div>}
 
                 <button className="login2-submit" type="submit" disabled={loading}>
                   {loading ? "Please wait…" : mode === "signin" ? "Log in" : "Create account"}

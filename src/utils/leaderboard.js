@@ -11,7 +11,6 @@ const SETTING_DEFAULTS = {
   showTimer: true,
   revisitMisses: true,
   parentPinLock: false,
-  weeklyEmail: false,
 };
 export function getSettings() {
   try { return { ...SETTING_DEFAULTS, ...(JSON.parse(localStorage.getItem(SETTINGS_KEY)) || {}) }; }
