@@ -2987,3 +2987,15 @@ body {
   box-shadow: 0 8px 20px rgba(18,165,255,0.32); transition: transform 0.1s;
 }
 .spot-next:hover { transform: translateY(-1px); }
+
+/* Spot sentence on mobile: shrink the text so more fits per line, keep each
+   labelled section intact (never split a group across lines), and give wrapped
+   lines breathing room so A/B/C/D letters don't crowd the next line. */
+.spot-part-text { white-space: nowrap; }
+@media (max-width: 600px) {
+  .spot-line { gap: 12px 0; justify-content: flex-start; }
+  .spot-part-text { font-size: 1.05rem; }
+}
+@media (max-width: 380px) {
+  .spot-part-text { font-size: 0.92rem; }
+}
