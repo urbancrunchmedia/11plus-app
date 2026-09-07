@@ -51,8 +51,9 @@ export default function HomeDashboard({ onPlaySkill, onOpenBoard }) {
         </div>
       </div>
 
-      {/* Hero + friends */}
-      <div className="dash-grid">
+      {/* Challenge → Games → Friends (grid-placed on desktop; stacked in this
+          order on mobile so a new user sees the games right after the hero). */}
+      <div className="dash-body">
         <div className="dash-hero">
           <div className="dash-hero-body">
             <span className="dash-chip">TODAY'S CHALLENGE</span>
@@ -69,6 +70,29 @@ export default function HomeDashboard({ onPlaySkill, onOpenBoard }) {
           </div>
           <div className="dash-ring" style={{ "--pct": `${ringPct}%` }}>
             <div className="dash-ring-mid">{ringPct}%</div>
+          </div>
+        </div>
+
+        <div className="dash-games">
+          <div className="dash-jump-head">Choose a game</div>
+          <div className="dash-jump">
+            {stats.mastery.map((s) => {
+              const ic = SKILL_ICON[s.id] || SKILL_ICON.wordMatch;
+              return (
+                <button key={s.id} className="jumpcard" onClick={() => onPlaySkill(s.id)}>
+                  <div className="jumpcard-icon" style={{ background: ic.bg }}><Icon name={ic.name} stroke={ic.stroke} size={24} /></div>
+                  <div className="jumpcard-title">{s.label}</div>
+                  <div className="jumpcard-sub">{s.attempted ? `${s.pct}% accuracy` : "Not started yet"}</div>
+                  <div className="dash-bar"><div className="dash-bar-fill" style={{ width: `${s.pct}%`, background: SKILL_BAR[s.id] || "var(--brand)" }} /></div>
+                </button>
+              );
+            })}
+            <button className="jumpcard" onClick={() => onPlaySkill("wordList")}>
+              <div className="jumpcard-icon" style={{ background: SKILL_ICON.wordList.bg }}><Icon name={SKILL_ICON.wordList.name} stroke={SKILL_ICON.wordList.stroke} size={24} /></div>
+              <div className="jumpcard-title">Word List</div>
+              <div className="jumpcard-sub">Look up every word</div>
+              <div className="jumpcard-link">Browse words →</div>
+            </button>
           </div>
         </div>
 
@@ -90,28 +114,6 @@ export default function HomeDashboard({ onPlaySkill, onOpenBoard }) {
           </div>
           <button className="dash-side-cta" onClick={onOpenBoard}>Open leaderboard</button>
         </div>
-      </div>
-
-      {/* Jump back in */}
-      <div className="dash-jump-head">Jump back in</div>
-      <div className="dash-jump">
-        {stats.mastery.map((s) => {
-          const ic = SKILL_ICON[s.id] || SKILL_ICON.wordMatch;
-          return (
-            <button key={s.id} className="jumpcard" onClick={() => onPlaySkill(s.id)}>
-              <div className="jumpcard-icon" style={{ background: ic.bg }}><Icon name={ic.name} stroke={ic.stroke} size={24} /></div>
-              <div className="jumpcard-title">{s.label}</div>
-              <div className="jumpcard-sub">{s.attempted ? `${s.pct}% accuracy` : "Not started yet"}</div>
-              <div className="dash-bar"><div className="dash-bar-fill" style={{ width: `${s.pct}%`, background: SKILL_BAR[s.id] || "var(--brand)" }} /></div>
-            </button>
-          );
-        })}
-        <button className="jumpcard" onClick={() => onPlaySkill("wordList")}>
-          <div className="jumpcard-icon" style={{ background: SKILL_ICON.wordList.bg }}><Icon name={SKILL_ICON.wordList.name} stroke={SKILL_ICON.wordList.stroke} size={24} /></div>
-          <div className="jumpcard-title">Word List</div>
-          <div className="jumpcard-sub">Look up every word</div>
-          <div className="jumpcard-link">Browse words →</div>
-        </button>
       </div>
     </div>
   );

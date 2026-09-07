@@ -2033,7 +2033,16 @@ body {
 .dash-pill { background: #fff; color: var(--ink); border-radius: var(--r-full); padding: 11px 18px; font-weight: 700; font-size: 0.85rem; box-shadow: var(--shadow-xs); white-space: nowrap; flex: none; }
 .dash-pill--dark { background: var(--ink); color: var(--accent); font-weight: 800; }
 
-.dash-grid { display: grid; grid-template-columns: 1.35fr 1fr; gap: 18px; }
+/* Desktop: hero + friends across the top, games full-width below.
+   Mobile: stacks as hero -> games -> friends (games right under the challenge). */
+.dash-body {
+  display: grid; gap: 18px; align-items: start;
+  grid-template-columns: 1.35fr 1fr;
+  grid-template-areas: "hero friends" "games games";
+}
+.dash-hero  { grid-area: hero; }
+.dash-side  { grid-area: friends; }
+.dash-games { grid-area: games; display: flex; flex-direction: column; gap: 14px; }
 .dash-hero { background: var(--brand); border-radius: 30px; padding: 28px; color: #fff; position: relative; overflow: hidden; display: flex; justify-content: space-between; gap: 20px; }
 .dash-hero::after { content: ""; position: absolute; right: -60px; bottom: -70px; width: 220px; height: 220px; border-radius: 50%; background: rgba(255,255,255,0.09); pointer-events: none; }
 .dash-hero-body, .dash-ring { position: relative; z-index: 1; }
@@ -2101,7 +2110,7 @@ body {
 
   .dash { max-width: 100%; }
   .dash-name { font-size: 1.5rem; }
-  .dash-grid { grid-template-columns: 1fr; }
+  .dash-body { grid-template-columns: 1fr; grid-template-areas: "hero" "games" "friends"; }
   .dash-jump { grid-template-columns: 1fr 1fr; }
   .main-content { padding: 18px 14px 84px; }
 }
