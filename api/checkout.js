@@ -14,11 +14,16 @@ export default async function handler(req, res) {
     const customer = await findOrCreateCustomer(stripe, uid, email);
     const origin = req.headers.origin || `https://${req.headers.host}`;
 
+    // The free trial is ONCE per customer. Without this, someone could cancel
+    // before day 7 and resubscribe forever without ever paying.
+    const prior = await stripe.subscriptions.list({ customer: customer.id, status: "all", limit: 1 });
+    const trialEligible = prior.data.length === 0;
+
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",
       customer: customer.id,
       line_items: [{ price: priceId, quantity: 1 }],
-      subscription_data: { trial_period_days: 7 },
+      ...(trialEligible ? { subscription_data: { trial_period_days: 7 } } : {}),
       allow_promotion_codes: true,
       client_reference_id: uid,
       success_url: `${origin}/?checkout=success`,

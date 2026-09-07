@@ -10,11 +10,11 @@ export default async function handler(req, res) {
     const { uid, email } = await verifyToken(req);
     const stripe = getStripe();
     const customer = await findCustomer(stripe, uid, email);
-    if (!customer) return res.status(200).json({ isPremium: false, status: "none" });
+    if (!customer) return res.status(200).json({ isPremium: false, status: "none", trialEligible: true });
 
     const subs = await stripe.subscriptions.list({ customer: customer.id, status: "all", limit: 10 });
-    res.status(200).json(summarise(subs.data));
+    res.status(200).json({ ...summarise(subs.data), trialEligible: subs.data.length === 0 });
   } catch (e) {
-    res.status(200).json({ isPremium: false, status: "none", error: e.message });
+    res.status(200).json({ isPremium: false, status: "none", trialEligible: false, error: e.message });
   }
 }

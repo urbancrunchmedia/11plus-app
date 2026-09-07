@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import { PRICES, stripeConfigured, startCheckout } from "../utils/subscription";
+import { usePremium } from "../contexts/PremiumContext";
 
 // Headline changes with what the child bumped into, so the ask feels relevant.
 const REASONS = {
@@ -15,11 +16,14 @@ const BENEFITS = [
   "Unlimited rounds, every day",
   "Parent progress report — spot weak words",
   "Every game · all 776 words",
-  "7-day free trial · cancel anytime",
+  "Cancel anytime",
 ];
 
 export default function Paywall({ reason = "feature", onClose }) {
   const { user } = useAuth();
+  const { subscription } = usePremium();
+  // The free trial is once per customer — don't promise it to a returning one.
+  const trialEligible = subscription?.trialEligible !== false;
   const [plan, setPlan] = useState("annual");
   const [busy, setBusy] = useState(false);
   const [err, setErr]   = useState(null);
@@ -67,11 +71,11 @@ export default function Paywall({ reason = "feature", onClose }) {
         {err && <div className="pw-err">{err}</div>}
 
         <button className="pw-cta" onClick={unlock} disabled={busy}>
-          {busy ? "Opening secure checkout…" : "Start 7-day free trial"}
+          {busy ? "Opening secure checkout…" : trialEligible ? "Start 7-day free trial" : "Subscribe"}
         </button>
         <button className="pw-later" onClick={onClose}>Maybe later</button>
         <div className="pw-foot">
-          A grown-up will need a card. You won't be charged during the free trial.
+          A grown-up will need a card. {trialEligible ? "You won't be charged during the 7-day free trial." : "You've already used your free trial, so billing starts today."}
           {!stripeConfigured && " (Billing setup pending.)"}
         </div>
       </div>
