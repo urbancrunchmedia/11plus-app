@@ -41,7 +41,8 @@ export default function AppNav({ active, onNavigate }) {
           onClick={() => onNavigate("me")}
           aria-label="Me"
         >
-          {initial}
+          <span className="appnav-avatar-dot">{initial}</span>
+          <span className="appnav-label appnav-avatar-lbl">Me</span>
         </button>
       </div>
     </nav>
