@@ -7,6 +7,8 @@ import Icon from "./Icon";
 
 export default function GameComplete({ results, totalWrong, timeTaken, onPlayAgain, onHome, level, gameType, totalQuestions }) {
   const totalStars = results.reduce((sum, r) => sum + r.stars, 0);
+  // Correct = answers that earned stars (in one-shot games a wrong answer is 0).
+  const correctCount = results.filter((r) => r.stars > 0).length;
   const maxStars   = totalQuestions * 3;
   const pct        = maxStars ? Math.round((totalStars / maxStars) * 100) : 0;
 
@@ -39,7 +41,7 @@ export default function GameComplete({ results, totalWrong, timeTaken, onPlayAga
         <div className="gc-badge">{badge}</div>
 
         <div className="gc-tiles">
-          <div className="gc-tile"><div className="gc-tile-val">{results.length}<span className="gc-tile-of">/{totalQuestions}</span></div><div className="gc-tile-lbl">correct</div></div>
+          <div className="gc-tile"><div className="gc-tile-val">{correctCount}<span className="gc-tile-of">/{totalQuestions}</span></div><div className="gc-tile-lbl">correct</div></div>
           <div className="gc-tile"><div className="gc-tile-val">{totalWrong}</div><div className="gc-tile-lbl">wrong</div></div>
           <div className="gc-tile"><div className="gc-tile-val">{formatTime(timeTaken)}</div><div className="gc-tile-lbl">time</div></div>
           <div className="gc-tile gc-tile--lime"><div className="gc-tile-val"><Icon className="inline-ico" name="star" size={15} stroke="var(--ink)" strokeWidth={2} /> {totalStars}</div><div className="gc-tile-lbl">stars</div></div>

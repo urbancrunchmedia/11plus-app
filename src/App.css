@@ -2974,3 +2974,16 @@ body {
 .spot-part.wrong .spot-part-text { background: var(--wrong-bg); color: var(--wrong); }
 .spot-part.wrong .spot-part-bar  { background: var(--wrong); }
 .spot-part.wrong .spot-part-tag  { background: var(--wrong); color: #fff; border-radius: 6px; width: 24px; height: 24px; align-self: center; display: grid; place-items: center; }
+
+/* Spot one-shot feedback: verdict + explanation + Next */
+.spot-feedback { display: flex; flex-direction: column; align-items: center; gap: 10px; margin-top: 6px; text-align: center; }
+.spot-fb-verdict { font-weight: 800; font-size: 1.05rem; }
+.spot-fb-verdict.ok { color: var(--correct); }
+.spot-fb-verdict.no { color: var(--wrong); }
+.spot-fb-why { font-size: 0.95rem; color: var(--muted); line-height: 1.5; max-width: 460px; }
+.spot-next {
+  margin-top: 4px; border: none; cursor: pointer; background: var(--brand); color: #fff;
+  font-weight: 800; font-size: 1rem; padding: 13px 30px; border-radius: 14px;
+  box-shadow: 0 8px 20px rgba(18,165,255,0.32); transition: transform 0.1s;
+}
+.spot-next:hover { transform: translateY(-1px); }

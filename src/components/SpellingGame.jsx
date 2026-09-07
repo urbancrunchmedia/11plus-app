@@ -17,15 +17,12 @@ function shuffle(arr) {
   }
   return a;
 }
-function getStars(wrong) { return wrong === 0 ? 3 : wrong === 1 ? 2 : 1; }
 
 function prepareQuestions(level, count, practice) {
   if (practice) return getMisses(SKILL).map((b) => ({ segments: b.segments, answer: b.answer, why: b.why }));
   const pick = (obj) => (level === "all"
     ? [...(obj.A || []), ...(obj.B || []), ...(obj.C || [])]
     : [...(obj[level] || [])]);
-  // Every question is "spot the mistake": find the section with the misspelled
-  // word (A–D), or pick N for no mistake.
   const spot = pick(spellingSpot).map((b) => ({ segments: b.segments, answer: b.answer, why: b.why }));
   const pool = shuffle(spot);
   return Array.from({ length: count }, (_, i) => pool[i % pool.length]);
@@ -35,11 +32,11 @@ export default function SpellingGame({ level, totalQuestions = 20, onHome, muted
   const questions = useRef(prepareQuestions(level, totalQuestions, practice));
   const total = questions.current.length;
   const [current, setCurrent]       = useState(0);
-  const [wrongCount, setWrongCount] = useState(0);
+  const [answered, setAnswered]     = useState(null);
   const [results, setResults]       = useState([]);
   const [totalWrong, setTotalWrong] = useState(0);
+  const [correctCount, setCorrect]  = useState(0);
   const [streak, setStreak]         = useState(0);
-  const [flash, setFlash]           = useState(null); // { idx, type }
   const [gameComplete, setGameComplete] = useState(false);
   const [muted, setMuted]           = useState(mutedProp ?? false);
   const [elapsed, setElapsed]       = useState(0);
@@ -51,33 +48,33 @@ export default function SpellingGame({ level, totalQuestions = 20, onHome, muted
     return () => clearInterval(id);
   }, [gameComplete]);
 
+  const q = questions.current[current];
+  const isLast    = current >= total - 1;
+  const isCorrect = answered !== null && answered === q.answer;
+
   function handleAnswer(idx) {
-    if (flash !== null) return;
-    const q = questions.current[current];
+    if (answered !== null) return; // one shot — locked after the first answer
+    const correct = idx === q.answer;
     const id = q.segments.join("|");
-    if (idx === q.answer) {
-      recordAttempt({ skill: SKILL, correct: wrongCount === 0 });
-      if (wrongCount === 0) clearMiss(SKILL, id);
+    setAnswered(idx);
+    recordAttempt({ skill: SKILL, correct });
+    if (correct) {
       if (!muted) playCorrect();
-      const stars = getStars(wrongCount);
-      const newResults = [...results, { word: q.segments.join(" "), match: "", stars }];
-      setStreak((v) => (wrongCount === 0 ? v + 1 : 0));
-      setFlash({ idx, type: "correct" });
-      setTimeout(() => {
-        setFlash(null);
-        setResults(newResults);
-        if (newResults.length >= total) setGameComplete(true);
-        else { setCurrent((c) => c + 1); setWrongCount(0); }
-      }, 600);
+      clearMiss(SKILL, id);
+      setStreak((v) => v + 1);
+      setCorrect((c) => c + 1);
     } else {
-      addMiss(SKILL, id, { segments: q.segments, answer: q.answer, why: q.why });
       if (!muted) playWrong();
-      setWrongCount((w) => w + 1);
-      setTotalWrong((w) => w + 1);
+      addMiss(SKILL, id, { segments: q.segments, answer: q.answer, why: q.why });
       setStreak(0);
-      setFlash({ idx, type: "wrong" });
-      setTimeout(() => setFlash(null), 500);
+      setTotalWrong((w) => w + 1);
     }
+    setResults((r) => [...r, { word: q.segments.join(" "), match: "", stars: correct ? 3 : 0 }]);
+  }
+
+  function handleNext() {
+    if (isLast) setGameComplete(true);
+    else { setCurrent((c) => c + 1); setAnswered(null); }
   }
 
   if (gameComplete) {
@@ -87,8 +84,7 @@ export default function SpellingGame({ level, totalQuestions = 20, onHome, muted
     );
   }
 
-  const q = questions.current[current];
-  const flashCls = (i) => `${flash?.type === "correct" && flash.idx === i ? "correct" : ""} ${flash?.type === "wrong" && flash.idx === i ? "wrong" : ""}`;
+  const classFor = (i) => (answered === null ? "" : i === q.answer ? "correct" : i === answered ? "wrong" : "");
 
   return (
     <div className="game-screen">
@@ -103,13 +99,21 @@ export default function SpellingGame({ level, totalQuestions = 20, onHome, muted
       <div className="ig-hud">
         <div className="ig-card ig-card--combo"><div className="ig-card-val">×{streak}</div><div className="ig-card-lbl">combo</div></div>
         <div className="ig-card"><div className="ig-card-val">{Math.floor(elapsed / 60)}:{String(elapsed % 60).padStart(2, "0")}</div><div className="ig-card-lbl">time</div></div>
-        <div className="ig-card"><div className="ig-card-val ig-card-val--correct">✓ {results.length}</div><div className="ig-card-lbl">correct</div></div>
+        <div className="ig-card"><div className="ig-card-val ig-card-val--correct">✓ {correctCount}</div><div className="ig-card-lbl">correct</div></div>
         <div className="ig-card"><div className="ig-card-val ig-card-val--wrong">{totalWrong}</div><div className="ig-card-lbl">wrong</div></div>
       </div>
 
       <div className="punct-game play-card">
         <p className="punct-prompt">Which section has the spelling mistake?</p>
-        <SpotSentence segments={q.segments} classFor={flashCls} onPick={handleAnswer} disabled={flash !== null} />
+        <SpotSentence segments={q.segments} classFor={classFor} onPick={handleAnswer} disabled={answered !== null} />
+
+        {answered !== null && (
+          <div className="spot-feedback">
+            <div className={`spot-fb-verdict ${isCorrect ? "ok" : "no"}`}>{isCorrect ? "Correct!" : "Not quite."}</div>
+            <div className="spot-fb-why">{q.why}</div>
+            <button className="spot-next" onClick={handleNext}>{isLast ? "See results" : "Next"} →</button>
+          </div>
+        )}
       </div>
     </div>
   );
