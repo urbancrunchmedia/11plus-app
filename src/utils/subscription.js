@@ -27,13 +27,14 @@ async function authedFetch(path, body) {
   return data;
 }
 
-// Is the signed-in user subscribed (active or in trial)? Fails safe to false.
-export async function fetchPremiumStatus() {
+// Full subscription state for the signed-in user. Fails safe to "free".
+// { isPremium, status, cancelAtPeriodEnd, currentPeriodEnd, trialEnd, interval }
+export async function fetchSubscription() {
   try {
-    const { isPremium } = await authedFetch("/api/status");
-    return !!isPremium;
+    const data = await authedFetch("/api/status");
+    return { ...data, isPremium: !!data.isPremium };
   } catch {
-    return false;
+    return { isPremium: false, status: "none" };
   }
 }
 

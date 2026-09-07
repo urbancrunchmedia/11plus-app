@@ -18,6 +18,7 @@ import ComingSoon from "./components/ComingSoon";
 import WordListScreen from "./components/WordListScreen";
 import LeaderboardScreen from "./components/LeaderboardScreen";
 import ProgressReport from "./components/ProgressReport";
+import SubscriptionSuccess, { formatDate } from "./components/SubscriptionSuccess";
 import LoginScreen from "./components/LoginScreen";
 import ChildGate from "./components/ChildGate";
 import OnboardingScreen from "./components/OnboardingScreen";
@@ -73,7 +74,7 @@ function WorksheetFor({ baseType, config, playKey, onHome }) {
 
 function AppInner() {
   const { user } = useAuth();
-  const { isPremium, openPaywall } = usePremium();
+  const { isPremium, subscription, openPaywall, refresh, refreshUntilPremium } = usePremium();
 
   // All hooks must run on every render (before any early return) — otherwise
   // the hook count changes when auth flips logged-out → logged-in and React
@@ -98,6 +99,35 @@ function AppInner() {
   const [playKey, setPlayKey] = useState(0);
   const [lastPunctConfig, setLastPunctConfig] = useState(null);
   const [childUnlocked, setChildUnlocked] = useState(false);
+  // Returning from Stripe: ?checkout=success | ?checkout=cancel | ?billing=return
+  const [billingEvent, setBillingEvent] = useState(null);
+  const [billingNote, setBillingNote] = useState(null);
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const checkout = params.get("checkout");
+    const billing  = params.get("billing");
+    if (!checkout && !billing) return;
+    // Clear the params so a refresh doesn't replay the celebration.
+    window.history.replaceState({}, "", window.location.pathname);
+    if (checkout === "success") { setBillingEvent("success"); refreshUntilPremium(); }
+    else if (checkout === "cancel") setBillingNote("Checkout cancelled — no payment was taken.");
+    else if (billing === "return") {
+      refresh().then((next) => {
+        if (!next) return;
+        if (next.cancelAtPeriodEnd) {
+          const until = formatDate(next.currentPeriodEnd);
+          setBillingNote(until ? `Subscription cancelled — Full Access until ${until}.` : "Subscription cancelled.");
+        } else if (!next.isPremium) {
+          setBillingNote("Your subscription has ended. You're back on the free plan.");
+        }
+      });
+    }
+  }, [refresh, refreshUntilPremium]);
+  useEffect(() => {
+    if (!billingNote) return;
+    const t = setTimeout(() => setBillingNote(null), 6000);
+    return () => clearTimeout(t);
+  }, [billingNote]);
   const [onboarded, setOnboarded] = useState(() => getSetting("onboarded", false));
 
   if (user === undefined) {
@@ -289,6 +319,11 @@ function AppInner() {
           {!isKnown && <ComingSoon gameId={selectedGame} />}
         </div>
       </div>
+
+      {billingEvent === "success" && (
+        <SubscriptionSuccess onStart={() => { setBillingEvent(null); handleSelectGame("home"); }} />
+      )}
+      {billingNote && <div className="set-toast">{billingNote}</div>}
     </div>
   );
 }

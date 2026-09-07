@@ -6,6 +6,7 @@ import { usePremium } from "../contexts/PremiumContext";
 import { openBillingPortal } from "../utils/subscription";
 import LegalModal from "./LegalModal";
 import Icon from "./Icon";
+import { formatDate } from "./SubscriptionSuccess";
 
 const GOALS = [3, 5, 10];
 const DIFFS = [
@@ -27,7 +28,7 @@ function initial(name) { return name ? name.trim().charAt(0).toUpperCase() : "A"
 
 export default function SettingsScreen({ onOpenReport }) {
   const { user, signOut, updateDisplayName } = useAuth();
-  const { isPremium, openPaywall } = usePremium();
+  const { isPremium, subscription, openPaywall } = usePremium();
   const stats = getStats();
   const [portalBusy, setPortalBusy] = useState(false);
 
@@ -67,6 +68,14 @@ export default function SettingsScreen({ onOpenReport }) {
     setTimeout(() => setToast(null), 2200);
   }
 
+  const isComp     = subscription?.status === "comp";
+  const endingSoon = isPremium && !!subscription?.cancelAtPeriodEnd;
+  const endsOn     = formatDate(subscription?.currentPeriodEnd);
+  const renewsOn   = isComp ? null : formatDate(subscription?.currentPeriodEnd);
+  const daysLeft   = subscription?.currentPeriodEnd
+    ? Math.max(0, Math.ceil((subscription.currentPeriodEnd - Date.now()) / 86400000))
+    : null;
+
   return (
     <div className="settings">
       <div className="set-head">
@@ -78,25 +87,42 @@ export default function SettingsScreen({ onOpenReport }) {
         <button className="set-editname" onClick={openNameSheet}>Edit name</button>
       </div>
 
-      {/* Plan / Full Access */}
-      <div className={`set-plan ${isPremium ? "premium" : ""}`}>
+      {/* Plan: free / full access / cancelling (ends on a date) */}
+      <div className={`set-plan ${isPremium ? (endingSoon ? "ending" : "premium") : ""}`}>
         <div className="set-plan-txt">
-          <div className="set-plan-badge">{isPremium ? "FULL ACCESS" : "FREE PLAN"}</div>
+          <div className="set-plan-badge">
+            {!isPremium ? "FREE PLAN" : endingSoon ? "CANCELLED" : isComp ? "FULL ACCESS · COMPLIMENTARY" : "FULL ACCESS"}
+          </div>
           <div className="set-plan-title">
-            {isPremium ? "You have Full Access" : "Unlock every level & unlimited play"}
+            {!isPremium
+              ? "Unlock every level & unlimited play"
+              : endingSoon
+                ? "Your subscription is cancelled"
+                : "You have Full Access"}
           </div>
           <div className="set-plan-sub">
-            {isPremium
-              ? "All levels, unlimited rounds and the progress report are on."
-              : "Free is Level A with a daily limit. Full Access opens Levels B & C, unlimited rounds and the parent report."}
+            {!isPremium
+              ? "Free is Level A with a daily limit. Full Access opens Levels B & C, unlimited rounds and the parent report."
+              : endingSoon
+                ? `You still have Full Access${daysLeft != null ? ` for ${daysLeft} more ${daysLeft === 1 ? "day" : "days"}` : ""}${endsOn ? ` — until ${endsOn}` : ""}. Resubscribe any time to keep it.`
+                : renewsOn
+                  ? `All levels, unlimited rounds and the progress report are on. Renews ${renewsOn}.`
+                  : "All levels, unlimited rounds and the progress report are on."}
           </div>
         </div>
-        {isPremium ? (
+        {!isPremium ? (
+          <button className="set-plan-cta" onClick={() => openPaywall("feature")}>Upgrade</button>
+        ) : endingSoon ? (
+          <div className="set-plan-actions">
+            <button className="set-plan-cta" onClick={() => openPaywall("feature")}>Resubscribe</button>
+            <button className="set-plan-cta ghost" onClick={manageBilling} disabled={portalBusy}>
+              {portalBusy ? "Opening…" : "Manage billing"}
+            </button>
+          </div>
+        ) : isComp ? null : (
           <button className="set-plan-cta ghost" onClick={manageBilling} disabled={portalBusy}>
             {portalBusy ? "Opening…" : "Manage billing"}
           </button>
-        ) : (
-          <button className="set-plan-cta" onClick={() => openPaywall("feature")}>Upgrade</button>
         )}
       </div>
 
