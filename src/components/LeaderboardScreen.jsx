@@ -3,9 +3,6 @@ import { useAuth } from "../contexts/AuthContext";
 import { getProfile, getLeaderboard, addFriendByCode, removeFriend, syncProfile } from "../utils/cloudScores";
 import Icon from "./Icon";
 
-// Gold / silver / bronze for the top three (line-icon medals, colour = rank).
-const MEDAL_COLOURS = ["#e0a400", "#9aa4ad", "#c77b3b"];
-
 function initials(name) {
   return (name || "?").trim().slice(0, 1).toUpperCase();
 }
@@ -143,7 +140,7 @@ export default function LeaderboardScreen({ onPlay }) {
         <div className="board-rows">
           {rows.map((p, i) => (
             <div key={p.uid} className={`board-row ${p.isMe ? "me" : ""}`}>
-              <span className="board-rank">{i < 3 ? <Icon name="medal" size={20} stroke={MEDAL_COLOURS[i]} strokeWidth={2} /> : i + 1}</span>
+              <span className="board-rank">{i + 1}</span>
               <span className={`board-avatar ${p.isMe ? "me" : ""}`}>{initials(p.displayName)}</span>
               <span className="board-name">
                 {p.displayName || "Player"}{p.isMe && <span className="board-you"> (you)</span>}
