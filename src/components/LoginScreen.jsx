@@ -73,7 +73,7 @@ export default function LoginScreen() {
           <div className="login2-blurb">Vocabulary, punctuation and compound words for the 11+ — as short daily rounds you'll actually want to finish.</div>
         </div>
         <div className="login2-stats">
-          <div className="login2-stat"><Icon className="inline-ico" name="flame" size={14} stroke="currentColor" strokeWidth={2} /> Build a daily streak</div>
+          <div className="login2-stat">🔥 Build a daily streak</div>
           <div className="login2-stat"><Icon className="inline-ico" name="book" size={14} stroke="currentColor" strokeWidth={2} /> 700+ words to master</div>
         </div>
       </div>

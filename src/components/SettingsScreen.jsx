@@ -73,7 +73,7 @@ export default function SettingsScreen({ onOpenReport }) {
         <div className="set-avatar">{initial(name)}</div>
         <div className="set-head-txt">
           <div className="set-name">{name}</div>
-          <div className="set-sub">Level {stats.level} · {stats.title} · {stats.xp.toLocaleString()} XP · <Icon className="inline-ico" name="flame" size={12} stroke="currentColor" strokeWidth={2} /> {stats.streak} day streak</div>
+          <div className="set-sub">Level {stats.level} · {stats.title} · {stats.xp.toLocaleString()} XP · 🔥 {stats.streak} day streak</div>
         </div>
         <button className="set-editname" onClick={openNameSheet}>Edit name</button>
       </div>

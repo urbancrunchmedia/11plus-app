@@ -55,7 +55,7 @@ export default function GameComplete({ results, totalWrong, timeTaken, onPlayAga
           <div className="gc-xpbar2"><div className="gc-xpbar2-fill" style={{ width: `${payout.level.pct}%` }} /></div>
           <div className="gc-xpcard-note">{payout.level.toNext} XP to Level {payout.level.level + 1}</div>
           <div className="gc-streakrow">
-            <div className="gc-streak-ic"><Icon name="flame" size={20} stroke="#fff" strokeWidth={2} /></div>
+            <div className="gc-streak-ic">🔥</div>
             <div>
               <div className="gc-streak-title">Day {payout.streak} streak</div>
               <div className="gc-streak-sub">Play again tomorrow to keep it going</div>

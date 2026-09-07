@@ -46,7 +46,7 @@ export default function HomeDashboard({ onPlaySkill, onOpenBoard }) {
           <div className="dash-sub">Level {stats.level} · {stats.title} · {stats.xp.toLocaleString()} XP</div>
         </div>
         <div className="dash-head-pills">
-          <span className="dash-pill dash-pill--dark"><Icon className="inline-ico" name="flame" size={13} stroke="currentColor" strokeWidth={2} /> {stats.streak} day streak</span>
+          <span className="dash-pill dash-pill--dark">🔥 {stats.streak} day streak</span>
           <span className="dash-pill">{stats.badges} badges</span>
         </div>
       </div>
