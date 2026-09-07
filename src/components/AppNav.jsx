@@ -36,7 +36,7 @@ export default function AppNav({ active, onNavigate }) {
       </div>
 
       <div className="appnav-foot">
-        <div className="appnav-streak"><Icon className="inline-ico" name="flame" size={13} stroke="currentColor" strokeWidth={2} /> {streak}</div>
+        <div className="appnav-streak"><Icon className="inline-ico" name="flame" size={14} stroke="currentColor" strokeWidth={2} /> {streak}</div>
         <button
           className={`appnav-avatar ${active === "me" ? "active" : ""}`}
           onClick={() => onNavigate("me")}
