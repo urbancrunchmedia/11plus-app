@@ -3,6 +3,7 @@ import { saveIfBest, saveRun, getBest, formatTime } from "../utils/leaderboard";
 import { xpToRunReward, getLevelInfo, getStreak } from "../utils/gamify";
 import { pushToCloud } from "../utils/cloudScores";
 import { useAuth } from "../contexts/AuthContext";
+import Icon from "./Icon";
 
 export default function GameComplete({ results, totalWrong, timeTaken, onPlayAgain, onHome, level, gameType, totalQuestions }) {
   const totalStars = results.reduce((sum, r) => sum + r.stars, 0);
@@ -23,7 +24,7 @@ export default function GameComplete({ results, totalWrong, timeTaken, onPlayAga
   const xpEarned = xpToRunReward(totalStars);
   const [payout] = useState(() => ({ level: getLevelInfo(), streak: getStreak() }));
 
-  const emoji  = pct === 100 ? "🌟" : pct >= 70 ? "🎉" : "💪";
+  const resultIcon = pct === 100 ? "trophy" : pct >= 70 ? "star" : "target";
   const title  = pct === 100 ? `Flawless, ${firstName}!` : pct >= 70 ? `Nice one, ${firstName}!` : `Good effort, ${firstName}`;
   const badge  = isNewBest ? "NEW PERSONAL BEST" : pct >= 70 ? "GREAT ROUND" : "KEEP GOING";
 
@@ -33,7 +34,7 @@ export default function GameComplete({ results, totalWrong, timeTaken, onPlayAga
   return (
     <div className="gc-screen">
       <div className="gc-inner">
-        <div className="gc-emoji">{emoji}</div>
+        <div className="gc-emoji"><Icon name={resultIcon} size={52} stroke="var(--accent)" strokeWidth={1.9} /></div>
         <div className="gc-title">{title}</div>
         <div className="gc-badge">{badge}</div>
 
@@ -41,7 +42,7 @@ export default function GameComplete({ results, totalWrong, timeTaken, onPlayAga
           <div className="gc-tile"><div className="gc-tile-val">{results.length}<span className="gc-tile-of">/{totalQuestions}</span></div><div className="gc-tile-lbl">correct</div></div>
           <div className="gc-tile"><div className="gc-tile-val">{totalWrong}</div><div className="gc-tile-lbl">wrong</div></div>
           <div className="gc-tile"><div className="gc-tile-val">{formatTime(timeTaken)}</div><div className="gc-tile-lbl">time</div></div>
-          <div className="gc-tile gc-tile--lime"><div className="gc-tile-val">⭐ {totalStars}</div><div className="gc-tile-lbl">stars</div></div>
+          <div className="gc-tile gc-tile--lime"><div className="gc-tile-val"><Icon className="inline-ico" name="star" size={15} stroke="var(--ink)" strokeWidth={2} /> {totalStars}</div><div className="gc-tile-lbl">stars</div></div>
         </div>
 
         <div className="gc-xpcard">
@@ -52,7 +53,7 @@ export default function GameComplete({ results, totalWrong, timeTaken, onPlayAga
           <div className="gc-xpbar2"><div className="gc-xpbar2-fill" style={{ width: `${payout.level.pct}%` }} /></div>
           <div className="gc-xpcard-note">{payout.level.toNext} XP to Level {payout.level.level + 1}</div>
           <div className="gc-streakrow">
-            <div className="gc-streak-ic">🔥</div>
+            <div className="gc-streak-ic"><Icon name="flame" size={20} stroke="#fff" strokeWidth={2} /></div>
             <div>
               <div className="gc-streak-title">Day {payout.streak} streak</div>
               <div className="gc-streak-sub">Play again tomorrow to keep it going</div>
@@ -62,7 +63,7 @@ export default function GameComplete({ results, totalWrong, timeTaken, onPlayAga
 
         {watch.length > 0 && (
           <div className="gc-watch">
-            <span className="gc-watch-ic">🎯</span>
+            <span className="gc-watch-ic"><Icon name="target" size={18} stroke="currentColor" strokeWidth={2} /></span>
             <span>Worth another look: <strong>{watch.slice(0, 4).join(", ")}</strong>{watch.length > 4 ? "…" : ""}</span>
           </div>
         )}

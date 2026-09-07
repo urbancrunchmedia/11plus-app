@@ -289,7 +289,7 @@ export default function GameScreen({ level, gameType, totalQuestions = 20, onHom
               >
                 <span>{item.word}</span>
                 {isMatched && (
-                  <span className="card-stars">{"⭐".repeat(justMatched.stars)}</span>
+                  <span className="card-stars">{Array.from({ length: justMatched.stars }).map((_, i) => <Icon key={i} name="star" size={11} stroke="currentColor" strokeWidth={2} />)}</span>
                 )}
               </button>
             );

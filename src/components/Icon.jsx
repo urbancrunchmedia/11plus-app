@@ -15,6 +15,11 @@ const ICONS = {
   lock:     '<rect x="5" y="11" width="14" height="9" rx="2.2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>',
   volumeOn: '<path d="M11 5 6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 6a8.5 8.5 0 0 1 0 12"/>',
   volumeOff:'<path d="M11 5 6 9H3v6h3l5 4z"/><path d="M22 9l-5 5"/><path d="M17 9l5 5"/>',
+  star:     '<path d="M12 3.5l2.6 5.3 5.9.9-4.25 4.1 1 5.8L12 17l-5.25 2.6 1-5.8L3.5 9.7l5.9-.9z"/>',
+  flame:    '<path d="M13 3c.6 3-1.6 4.3-2.7 5.9C9.4 10.2 9 11.5 9 13a3 3 0 0 0 6 .3c0-.8-.2-1.5-.5-2.1 1.5.7 2.5 2.2 2.5 3.9A5 5 0 0 1 7 15.2C7 11 10.5 9.4 13 3z"/>',
+  trophy:   '<path d="M7 5h10v4a5 5 0 0 1-10 0z"/><path d="M7 6H4v1.4A3.6 3.6 0 0 0 7.6 11"/><path d="M17 6h3v1.4A3.6 3.6 0 0 1 16.4 11"/><path d="M12 14v3"/><path d="M8.5 20h7"/><path d="M9.5 20l.5-3h4l.5 3"/>',
+  target:   '<circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1"/>',
+  medal:    '<circle cx="12" cy="14.5" r="5.5"/><path d="M8.5 3.5 12 9l3.5-5.5"/>',
 };
 
 // Per-skill icon name + stroke + tile background, matching the design.

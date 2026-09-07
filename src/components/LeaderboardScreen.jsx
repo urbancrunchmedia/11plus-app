@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import { getProfile, getLeaderboard, addFriendByCode, removeFriend, syncProfile } from "../utils/cloudScores";
+import Icon from "./Icon";
 
-const MEDALS = ["🥇", "🥈", "🥉"];
+// Gold / silver / bronze for the top three (line-icon medals, colour = rank).
+const MEDAL_COLOURS = ["#e0a400", "#9aa4ad", "#c77b3b"];
 
 function initials(name) {
   return (name || "?").trim().slice(0, 1).toUpperCase();
@@ -48,7 +50,7 @@ export default function LeaderboardScreen({ onPlay }) {
   const myIdx = rows.findIndex((p) => p.isMe);
   const gapLine =
     myIdx <= 0
-      ? "You're top of the board — hold it! 🏆"
+      ? "You're top of the board — hold it!"
       : `${((rows[myIdx - 1].points || 0) - (rows[myIdx].points || 0)).toLocaleString()} points behind ${rows[myIdx - 1].displayName || "them"}`;
 
   async function handleAdd(e) {
@@ -57,7 +59,7 @@ export default function LeaderboardScreen({ onPlay }) {
     setMsg(null); setAdding(true);
     const res = await addFriendByCode(user.uid, code);
     setAdding(false);
-    if (res.ok) { setMsg({ type: "ok", text: `Added ${res.friend.displayName}! 🎉` }); setCode(""); load(); }
+    if (res.ok) { setMsg({ type: "ok", text: `Added ${res.friend.displayName}!` }); setCode(""); load(); }
     else setMsg({ type: "err", text: res.error });
   }
 
@@ -87,7 +89,7 @@ export default function LeaderboardScreen({ onPlay }) {
     <div className="board">
       <div className="board-head">
         <div className="board-head-left">
-          <div className="board-icon">🏆</div>
+          <div className="board-icon"><Icon name="trophy" size={22} stroke="currentColor" strokeWidth={2} /></div>
           <div>
             <h1 className="board-title">Leaderboard</h1>
             <div className="board-sub">Friends · compete with your friends</div>
@@ -141,7 +143,7 @@ export default function LeaderboardScreen({ onPlay }) {
         <div className="board-rows">
           {rows.map((p, i) => (
             <div key={p.uid} className={`board-row ${p.isMe ? "me" : ""}`}>
-              <span className="board-rank">{MEDALS[i] || i + 1}</span>
+              <span className="board-rank">{i < 3 ? <Icon name="medal" size={20} stroke={MEDAL_COLOURS[i]} strokeWidth={2} /> : i + 1}</span>
               <span className={`board-avatar ${p.isMe ? "me" : ""}`}>{initials(p.displayName)}</span>
               <span className="board-name">
                 {p.displayName || "Player"}{p.isMe && <span className="board-you"> (you)</span>}
