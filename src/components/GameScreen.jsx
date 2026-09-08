@@ -77,6 +77,9 @@ export default function GameScreen({ level, gameType, totalQuestions = 20, onHom
 
   function buildGame() {
     const list = buildPrioritisedList(allPairs, performance.current);
+    // No words for this level/type (or an emptied practice queue): there's no
+    // round to build, so hand back an empty board and leave rather than crash.
+    if (!list.length) return { board: [], queue: [], rightOrder: [] };
     // Cycle list if fewer words than the round length
     const full = Array.from({ length: roundLength }, (_, i) => list[i % list.length]);
     // Greedily seat a starting board whose left words AND right matches are all
@@ -118,6 +121,9 @@ export default function GameScreen({ level, gameType, totalQuestions = 20, onHom
     }, 1000);
     return () => clearInterval(id);
   }, [gameComplete]);
+
+  const noRound = game.board.length === 0;
+  useEffect(() => { if (noRound) onHome(); }, [noRound, onHome]);
 
   const { board, queue, rightOrder } = game;
 
@@ -233,6 +239,8 @@ export default function GameScreen({ level, gameType, totalQuestions = 20, onHom
       />
     );
   }
+
+  if (noRound) return null;
 
   function requestExit() {
     if (results.length > 0 || totalWrong > 0) setConfirmLeave(true);
