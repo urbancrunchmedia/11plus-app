@@ -19,7 +19,6 @@ export default function LeaderboardScreen({ onPlay }) {
   const [me, setMe]           = useState(null);
   const [people, setPeople]   = useState([]);
   const [loading, setLoading] = useState(true);
-  const [showAdd, setShowAdd] = useState(false);
   const [removeTarget, setRemoveTarget] = useState(null);
   const [code, setCode]       = useState("");
   const [adding, setAdding]   = useState(false);
@@ -27,7 +26,8 @@ export default function LeaderboardScreen({ onPlay }) {
   const [copied, setCopied]   = useState(false);
   const [nameSheet, setNameSheet]     = useState(false);
   const [nameInput, setNameInput]     = useState("");
-  const autoOpened                    = useRef(false);
+  const [toast, setToast]             = useState(null);
+  const toastTimer                    = useRef(null);
 
   const myName = me?.displayName || user?.displayName || "Player";
   const codeChars = code.replace(/[^A-Z0-9]/g, "").length; // a full code is 7, e.g. WM-7H2K9
@@ -44,13 +44,14 @@ export default function LeaderboardScreen({ onPlay }) {
 
   useEffect(() => { load(); }, [load]);
 
-  // With nobody to compare against, adding someone IS the page. Open the panel
-  // once so the code and the input are right there — they can close it again.
-  useEffect(() => {
-    if (loading || autoOpened.current) return;
-    autoOpened.current = true;
-    if (people.length <= 1) setShowAdd(true);
-  }, [loading, people.length]);
+  // Successes announce themselves and get out of the way; errors stay put next
+  // to the field you have to fix.
+  const showToast = useCallback((text) => {
+    setToast(text);
+    clearTimeout(toastTimer.current);
+    toastTimer.current = setTimeout(() => setToast(null), 2600);
+  }, []);
+  useEffect(() => () => clearTimeout(toastTimer.current), []);
 
   const rows = [...people].sort((a, b) => (b.points || 0) - (a.points || 0));
   const myIdx = rows.findIndex((p) => p.isMe);
@@ -65,7 +66,7 @@ export default function LeaderboardScreen({ onPlay }) {
     setMsg(null); setAdding(true);
     const res = await addFriendByCode(user.uid, code);
     setAdding(false);
-    if (res.ok) { setMsg({ type: "ok", text: `Added ${res.friend.displayName}!` }); setCode(""); load(); }
+    if (res.ok) { showToast(`Added ${res.friend.displayName}`); setCode(""); load(); }
     else setMsg({ type: "err", text: res.error });
   }
 
@@ -82,7 +83,7 @@ export default function LeaderboardScreen({ onPlay }) {
     if (!n) return;
     setNameSheet(false);
     await updateDisplayName(n);
-    setMsg({ type: "ok", text: `Name changed to ${n}` });
+    showToast(`Name changed to ${n}`);
     load();
   }
 
@@ -91,7 +92,7 @@ export default function LeaderboardScreen({ onPlay }) {
     try {
       await navigator.clipboard.writeText(me.code);
       setCopied(true);
-      setMsg({ type: "ok", text: "Code copied — send it to your friend" });
+      showToast("Code copied — send it to your friend");
       setTimeout(() => setCopied(false), 1800);
     } catch {
       // No clipboard (older browser, or not on https) — show the code to type out.
@@ -111,72 +112,67 @@ export default function LeaderboardScreen({ onPlay }) {
         </div>
       </div>
 
-      <div className="board-list">
-        <div className="board-listtop">
-          <button className={`board-listcta ${showAdd ? "open" : ""}`} onClick={() => setShowAdd((v) => !v)}>
-            {showAdd ? "Done" : "+ Add friend"}
-          </button>
+      <div className="board-body">
+        <div className="board-list">
+          {loading ? (
+            <div className="board-loading">Loading leaderboard…</div>
+          ) : (
+            <div className="board-rows">
+              {rows.map((p, i) => (
+                <div key={p.uid} className={`board-row ${p.isMe ? "me" : ""} ${i === 0 ? "board-row--first" : ""}`}>
+                  <span className="board-rank">{i + 1}</span>
+                  <span className={`board-avatar ${p.isMe ? "me" : ""}`}>{initials(p.displayName)}</span>
+                  <span className="board-name">
+                    {p.displayName || "Player"}{p.isMe && <span className="board-you"> (you)</span>}
+                  </span>
+                  <span className="board-pts">{(p.points || 0).toLocaleString()}</span>
+                  {!p.isMe && (
+                    <button className="board-remove" onClick={() => setRemoveTarget(p)} aria-label={`Remove ${p.displayName || "friend"}`} title={`Remove ${p.displayName || "friend"}`}>
+                      <Icon name="trash" size={16} stroke="currentColor" strokeWidth={2} />
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+
+          {!loading && rows.length <= 1 && (
+            <div className="board-nofriends">
+              It's just you so far — add a friend's code to see who's ahead each week.
+            </div>
+          )}
         </div>
 
-        {showAdd && (
-          <div className="board-addpanel">
-            <div className="board-addrow">
-              <span className="board-code-lbl">Your code</span>
-              <span className="board-codewrap">
-                <span className="board-code">{me?.code || "…"}</span>
-                <button className={`board-iconbtn ${copied ? "copied" : ""}`} onClick={copyCode} disabled={!me?.code} aria-label={copied ? "Code copied" : "Copy your code"} title={copied ? "Copied!" : "Copy code"}>
-                  <Icon name={copied ? "check" : "copy"} size={16} stroke="currentColor" strokeWidth={2} />
-                </button>
-              </span>
-            </div>
-            <form className="board-addrow" onSubmit={handleAdd}>
-              <input
-                className="board-input"
-                placeholder="Friend code e.g. WM-7H2K9"
-                value={code}
-                onChange={(e) => setCode(formatCode(e.target.value))}
-                inputMode="text" autoCapitalize="characters" autoCorrect="off" spellCheck={false}
-              />
-              <button className="board-go" type="submit" disabled={adding || codeChars < 7}>{adding ? "…" : "Add"}</button>
-            </form>
-            {msg && <div className={msg.type === "ok" ? "board-msg ok" : "board-msg err"}>{msg.text}</div>}
-            <button className="board-editname" onClick={() => { setNameInput(myName); setNameSheet(true); }}>
-              Playing as <b>{myName}</b> — edit
-            </button>
-            {rows.length > 1 && (
-              <div className="board-hint">While this is open you can remove anyone from your board.</div>
-            )}
-          </div>
-        )}
+        <div className="board-invite">
+          <div className="board-invite-title">Add a friend</div>
 
-        {loading ? (
-          <div className="board-loading">Loading leaderboard…</div>
-        ) : (
-          <div className="board-rows">
-          {rows.map((p, i) => (
-            <div key={p.uid} className={`board-row ${p.isMe ? "me" : ""} ${i === 0 ? "board-row--first" : ""}`}>
-              <span className="board-rank">{i + 1}</span>
-              <span className={`board-avatar ${p.isMe ? "me" : ""}`}>{initials(p.displayName)}</span>
-              <span className="board-name">
-                {p.displayName || "Player"}{p.isMe && <span className="board-you"> (you)</span>}
-              </span>
-              <span className="board-pts">{(p.points || 0).toLocaleString()}</span>
-              {!p.isMe && showAdd && (
-                <button className="board-remove" onClick={() => setRemoveTarget(p)} aria-label={`Remove ${p.displayName || "friend"}`} title={`Remove ${p.displayName || "friend"}`}>
-                  <Icon name="trash" size={16} stroke="currentColor" strokeWidth={2} />
-                </button>
-              )}
-            </div>
-          ))}
+          <div className="board-invite-lbl">Share your code</div>
+          <div className="board-addrow">
+            <span className="board-codewrap">
+              <span className="board-code">{me?.code || "…"}</span>
+              <button className={`board-iconbtn ${copied ? "copied" : ""}`} onClick={copyCode} disabled={!me?.code} aria-label={copied ? "Code copied" : "Copy your code"} title={copied ? "Copied!" : "Copy code"}>
+                <Icon name={copied ? "check" : "copy"} size={16} stroke="currentColor" strokeWidth={2} />
+              </button>
+            </span>
           </div>
-        )}
 
-        {!loading && rows.length <= 1 && (
-          <div className="board-nofriends">
-            It's just you so far — add a friend's code to see who's ahead each week.
-          </div>
-        )}
+          <div className="board-invite-lbl">Enter their code</div>
+          <form className="board-addrow" onSubmit={handleAdd}>
+            <input
+              className="board-input"
+              placeholder="e.g. WM-7H2K9"
+              value={code}
+              onChange={(e) => setCode(formatCode(e.target.value))}
+              inputMode="text" autoCapitalize="characters" autoCorrect="off" spellCheck={false}
+            />
+            <button className="board-go" type="submit" disabled={adding || codeChars < 7}>{adding ? "…" : "Add"}</button>
+          </form>
+          {msg?.type === "err" && <div className="board-msg err">{msg.text}</div>}
 
+          <button className="board-editname" onClick={() => { setNameInput(myName); setNameSheet(true); }}>
+            Playing as <b>{myName}</b> — edit
+          </button>
+        </div>
       </div>
 
       {!loading && rows.length > 1 && (
@@ -188,6 +184,8 @@ export default function LeaderboardScreen({ onPlay }) {
           {onPlay && <button className="board-foot-cta" onClick={onPlay}>Play a round</button>}
         </div>
       )}
+
+      {toast && <div className="set-toast">{toast}</div>}
 
       {nameSheet && (
         <div className="set-sheet-overlay" onClick={() => setNameSheet(false)}>

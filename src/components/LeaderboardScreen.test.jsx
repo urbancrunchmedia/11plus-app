@@ -39,19 +39,20 @@ describe("LeaderboardScreen", () => {
     const el = await render();
     expect(el.textContent).toContain("Leaderboard");
     expect(el.textContent).toContain("Sam");
-    expect(el.querySelector(".board-listcta")).toBeTruthy();
+    expect(el.querySelector(".board-invite")).toBeTruthy();
   });
 
-  it("keeps the add panel closed when there are friends to compare against", async () => {
+  it("keeps the invite fields on screen without a toggle", async () => {
     const el = await render();
-    expect(el.querySelector(".board-addpanel")).toBeNull();
+    expect(el.querySelector(".board-invite")).toBeTruthy();
+    expect(el.querySelector(".board-input")).toBeTruthy();
+    expect(el.querySelector(".board-code").textContent).toBe("WM-7H2K9");
   });
 
   // Copy and Remove are icon-only, so their accessible name is the only label
   // a screen reader — or a hovering parent — ever gets.
   it("labels its icon-only buttons", async () => {
     const el = await render();
-    await act(async () => { el.querySelector(".board-listcta").click(); });
 
     const copy = el.querySelector(".board-iconbtn");
     expect(copy.getAttribute("aria-label")).toMatch(/copy/i);
@@ -64,16 +65,27 @@ describe("LeaderboardScreen", () => {
     const writeText = vi.fn(async () => {});
     Object.defineProperty(navigator, "clipboard", { value: { writeText }, configurable: true });
     const el = await render();
-    await act(async () => { el.querySelector(".board-listcta").click(); });
     await act(async () => { el.querySelector(".board-iconbtn").click(); });
     expect(writeText).toHaveBeenCalledWith("WM-7H2K9");
-    expect(el.textContent).toContain("Code copied");
+    // Transient toast, not text wedged into the card.
+    expect(document.querySelector(".set-toast").textContent).toContain("Code copied");
+  });
+
+  it("clears the toast on its own", async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    const writeText = vi.fn(async () => {});
+    Object.defineProperty(navigator, "clipboard", { value: { writeText }, configurable: true });
+    const el = await render();
+    await act(async () => { el.querySelector(".board-iconbtn").click(); });
+    expect(document.querySelector(".set-toast")).toBeTruthy();
+    await act(async () => { vi.advanceTimersByTime(3000); });
+    expect(document.querySelector(".set-toast")).toBeNull();
+    vi.useRealTimers();
   });
 
   it("shows the code to type out when the clipboard is unavailable", async () => {
     Object.defineProperty(navigator, "clipboard", { value: undefined, configurable: true });
     const el = await render();
-    await act(async () => { el.querySelector(".board-listcta").click(); });
     await act(async () => { el.querySelector(".board-iconbtn").click(); });
     expect(el.textContent).toContain("WM-7H2K9");
   });

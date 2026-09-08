@@ -2244,21 +2244,19 @@ body {
    white head pill = a header action (.dash-pill)
    brand fill = the main action inside a card (.pw-cta / .spot-next)
    surface-2 = secondary (.set-ghost) · bare text = tertiary */
-/* Sits inside the ink card, exactly like the dashboard's .dash-side-cta. */
-.board-listtop { display: flex; justify-content: flex-end; margin-bottom: 12px; }
-.board-listcta { border: none; cursor: pointer; background: var(--accent); color: var(--ink); border-radius: var(--r-full); padding: 11px 20px; font-weight: 800; font-size: 0.88rem; flex: none; transition: transform 0.1s; }
-.board-listcta:hover { transform: translateY(-2px); }
-/* Panel open: the primary has moved into the panel ("Add"), so the trigger calms down. */
-.board-listcta.open { background: rgba(255,255,255,0.12); color: rgba(255,255,255,0.75); font-weight: 700; transform: none; }
+/* Board and invite side by side, mirroring .dash-body's split and its collapse. */
+.board-body { display: grid; gap: 18px; align-items: start; grid-template-columns: 1.35fr 1fr; }
+.board-invite { background: #fff; border-radius: 24px; padding: 20px; box-shadow: var(--shadow-xs); display: flex; flex-direction: column; gap: 8px; }
+.board-invite-title { font-weight: 800; font-size: 1.05rem; color: var(--ink); margin-bottom: 2px; }
+.board-invite-lbl { font-weight: 700; font-size: 0.75rem; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); margin-top: 6px; }
 
-.board-addpanel { background: #fff; border-radius: 20px; padding: 16px; margin-bottom: 12px; box-shadow: var(--shadow-xs); display: flex; flex-direction: column; gap: 10px; }
 .board-addrow { display: flex; align-items: center; gap: 10px; }
 .board-code-lbl { font-weight: 700; font-size: 0.78rem; color: var(--muted, #6b7a8c); }
-.board-codewrap { display: inline-flex; align-items: center; gap: 6px; margin-right: auto; }
+.board-codewrap { display: inline-flex; align-items: center; gap: 8px; background: var(--surface-2, #f4f9ff); border-radius: 12px; padding: 7px 8px 7px 14px; }
 .board-code { font-weight: 800; font-size: 1.05rem; letter-spacing: 1px; color: var(--brand-ink); }
 .board-input { flex: 1; min-width: 0; background: var(--surface-2, #f4f9ff); border: 2px solid var(--border); border-radius: 12px; padding: 11px 14px; font: inherit; font-weight: 600; color: var(--ink); }
 .board-input:focus { outline: none; border-color: var(--brand); }
-.board-iconbtn { border: none; cursor: pointer; background: var(--surface-2, #f4f9ff); color: var(--brand-ink); border-radius: 10px; width: 32px; height: 32px; display: grid; place-items: center; flex: none; transition: background 0.12s, color 0.12s; }
+.board-iconbtn { border: none; cursor: pointer; background: #fff; color: var(--brand-ink); border-radius: 10px; width: 32px; height: 32px; display: grid; place-items: center; flex: none; transition: background 0.12s, color 0.12s; }
 .board-iconbtn:hover { background: #e4f6ff; }
 .board-iconbtn.copied { background: var(--correct-bg, #e8f9ec); color: var(--correct); }
 .board-iconbtn:disabled { opacity: 0.45; }
@@ -2267,7 +2265,6 @@ body {
 .board-go { border: none; cursor: pointer; background: var(--brand); color: #fff; border-radius: 12px; padding: 12px 22px; font-weight: 800; font-size: 0.85rem; flex: none; transition: background 0.12s; }
 .board-go:hover { background: var(--brand-ink); }
 .board-go:disabled { opacity: 0.45; }
-.board-hint { font-weight: 500; font-size: 0.78rem; color: var(--muted); line-height: 1.45; }
 .board-msg { font-weight: 700; font-size: 0.8rem; }
 .board-msg.ok { color: var(--correct); }
 .board-msg.err { color: var(--wrong); }
@@ -2288,8 +2285,8 @@ body {
 .board-you { font-weight: 500; color: rgba(18,165,255,0.7); }
 .board-pts { font-weight: 800; font-size: 1rem; color: #fff; }
 .board-row.me .board-pts { color: var(--brand); }
-.board-remove { border: none; cursor: pointer; background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.75); border-radius: 50%; width: 32px; height: 32px; display: grid; place-items: center; flex: none; margin-left: 10px; transition: background 0.12s, color 0.12s; }
-.board-remove:hover { background: var(--wrong); color: #fff; }
+.board-remove { border: none; cursor: pointer; background: transparent; color: rgba(255,255,255,0.32); border-radius: 50%; width: 32px; height: 32px; display: grid; place-items: center; flex: none; margin-left: 10px; transition: background 0.12s, color 0.12s; }
+.board-remove:hover, .board-remove:focus-visible { background: var(--wrong); color: #fff; }
 
 
 .board-foot { background: transparent; padding: 0 6px; display: flex; align-items: center; gap: 14px; }
@@ -2297,6 +2294,10 @@ body {
 .board-foot-sub { font-weight: 500; font-size: 0.78rem; color: var(--muted); margin-top: 2px; }
 .board-foot-cta { cursor: pointer; background: #fff; color: var(--ink); border: 1.5px solid var(--border); border-radius: var(--r-full); padding: 11px 20px; font-weight: 700; font-size: 0.85rem; flex: none; margin-left: auto; transition: border-color 0.12s, background 0.12s; }
 .board-foot-cta:hover { background: var(--surface-2, #f4f9ff); border-color: var(--brand); }
+
+@media (max-width: 1023px) {
+  .board-body { grid-template-columns: 1fr; }
+}
 
 @media (max-width: 640px) {
   .board-title { font-size: 1.4rem; }
