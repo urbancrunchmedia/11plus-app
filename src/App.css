@@ -2245,18 +2245,19 @@ body {
    brand fill = the main action inside a card (.pw-cta / .spot-next)
    surface-2 = secondary (.set-ghost) · bare text = tertiary */
 /* Sits inside the ink card, exactly like the dashboard's .dash-side-cta. */
-.board-listcta { width: 100%; border: none; cursor: pointer; background: var(--accent); color: var(--ink); border-radius: var(--r-full); padding: 14px; text-align: center; font-weight: 800; font-size: 0.95rem; margin-top: 12px; transition: transform 0.1s; }
+.board-listcta { width: 100%; border: none; cursor: pointer; background: var(--accent); color: var(--ink); border-radius: var(--r-full); padding: 14px; text-align: center; font-weight: 800; font-size: 0.95rem; margin-bottom: 12px; transition: transform 0.1s; }
 .board-listcta:hover { transform: translateY(-2px); }
 /* Panel open: the primary has moved into the panel ("Add"), so the trigger calms down. */
 .board-listcta.open { background: rgba(255,255,255,0.12); color: rgba(255,255,255,0.75); font-weight: 700; transform: none; }
 
-.board-addpanel { background: #fff; border-radius: 20px; padding: 16px; box-shadow: var(--shadow-xs); display: flex; flex-direction: column; gap: 10px; }
+.board-addpanel { background: #fff; border-radius: 20px; padding: 16px; margin-bottom: 12px; box-shadow: var(--shadow-xs); display: flex; flex-direction: column; gap: 10px; }
 .board-addrow { display: flex; align-items: center; gap: 10px; }
 .board-code-lbl { font-weight: 700; font-size: 0.78rem; color: var(--muted, #6b7a8c); }
-.board-code { font-weight: 800; font-size: 1.05rem; letter-spacing: 1px; color: var(--brand-ink); flex: 1; }
+.board-codewrap { display: inline-flex; align-items: center; gap: 6px; margin-right: auto; }
+.board-code { font-weight: 800; font-size: 1.05rem; letter-spacing: 1px; color: var(--brand-ink); }
 .board-input { flex: 1; min-width: 0; background: var(--surface-2, #f4f9ff); border: 2px solid var(--border); border-radius: 12px; padding: 11px 14px; font: inherit; font-weight: 600; color: var(--ink); }
 .board-input:focus { outline: none; border-color: var(--brand); }
-.board-iconbtn { border: none; cursor: pointer; background: var(--surface-2, #f4f9ff); color: var(--brand-ink); border-radius: 11px; width: 38px; height: 38px; display: grid; place-items: center; flex: none; transition: background 0.12s, color 0.12s; }
+.board-iconbtn { border: none; cursor: pointer; background: var(--surface-2, #f4f9ff); color: var(--brand-ink); border-radius: 10px; width: 32px; height: 32px; display: grid; place-items: center; flex: none; transition: background 0.12s, color 0.12s; }
 .board-iconbtn:hover { background: #e4f6ff; }
 .board-iconbtn:disabled { opacity: 0.45; }
 .board-ghost { border: none; background: var(--surface-2, #f4f9ff); color: var(--muted); border-radius: 12px; padding: 11px 16px; font-weight: 700; font-size: 0.82rem; flex: none; }

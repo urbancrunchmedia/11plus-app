@@ -104,6 +104,41 @@ export default function LeaderboardScreen({ onPlay }) {
       </div>
 
       <div className="board-list">
+        <button className={`board-listcta ${showAdd ? "open" : ""}`} onClick={() => setShowAdd((v) => !v)}>
+          {showAdd ? "Done" : "+ Add friend"}
+        </button>
+
+        {showAdd && (
+          <div className="board-addpanel">
+            <div className="board-addrow">
+              <span className="board-code-lbl">Your code</span>
+              <span className="board-codewrap">
+                <span className="board-code">{me?.code || "…"}</span>
+                <button className="board-iconbtn" onClick={copyCode} disabled={!me?.code} aria-label={copied ? "Code copied" : "Copy your code"} title={copied ? "Copied!" : "Copy code"}>
+                  <Icon name={copied ? "check" : "copy"} size={16} stroke="currentColor" strokeWidth={2} />
+                </button>
+              </span>
+            </div>
+            <form className="board-addrow" onSubmit={handleAdd}>
+              <input
+                className="board-input"
+                placeholder="Friend code e.g. WM-7H2K9"
+                value={code}
+                onChange={(e) => setCode(formatCode(e.target.value))}
+                inputMode="text" autoCapitalize="characters" autoCorrect="off" spellCheck={false}
+              />
+              <button className="board-go" type="submit" disabled={adding || codeChars < 7}>{adding ? "…" : "Add"}</button>
+            </form>
+            {msg && <div className={msg.type === "ok" ? "board-msg ok" : "board-msg err"}>{msg.text}</div>}
+            <button className="board-editname" onClick={() => { setNameInput(myName); setNameSheet(true); }}>
+              Playing as <b>{myName}</b> — edit
+            </button>
+            {rows.length > 1 && (
+              <div className="board-hint">While this is open you can remove anyone from your board.</div>
+            )}
+          </div>
+        )}
+
         {loading ? (
           <div className="board-loading">Loading leaderboard…</div>
         ) : (
@@ -132,40 +167,7 @@ export default function LeaderboardScreen({ onPlay }) {
           </div>
         )}
 
-        <button className={`board-listcta ${showAdd ? "open" : ""}`} onClick={() => setShowAdd((v) => !v)}>
-          {showAdd ? "Done" : "+ Add friend"}
-        </button>
       </div>
-
-      {showAdd && (
-        <div className="board-addpanel">
-          <div className="board-addrow">
-            <span className="board-code-lbl">Your code</span>
-            <span className="board-code">{me?.code || "…"}</span>
-            <button className="board-iconbtn" onClick={copyCode} disabled={!me?.code} aria-label={copied ? "Code copied" : "Copy your code"} title={copied ? "Copied!" : "Copy code"}>
-              <Icon name={copied ? "check" : "copy"} size={17} stroke="currentColor" strokeWidth={2} />
-            </button>
-          </div>
-          <form className="board-addrow" onSubmit={handleAdd}>
-            <input
-              className="board-input"
-              placeholder="Friend code e.g. WM-7H2K9"
-              value={code}
-              onChange={(e) => setCode(formatCode(e.target.value))}
-              inputMode="text" autoCapitalize="characters" autoCorrect="off" spellCheck={false}
-            />
-            <button className="board-go" type="submit" disabled={adding || codeChars < 7}>{adding ? "…" : "Add"}</button>
-          </form>
-          {msg && <div className={msg.type === "ok" ? "board-msg ok" : "board-msg err"}>{msg.text}</div>}
-          <button className="board-editname" onClick={() => { setNameInput(myName); setNameSheet(true); }}>
-            Playing as <b>{myName}</b> — edit
-          </button>
-          {rows.length > 1 && (
-            <div className="board-hint">While this is open you can remove anyone from your board.</div>
-          )}
-        </div>
-      )}
-
 
       {!loading && rows.length > 1 && (
         <div className="board-foot">
