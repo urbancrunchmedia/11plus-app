@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import { getProfile, getLeaderboard, addFriendByCode, removeFriend, syncProfile } from "../utils/cloudScores";
 import Icon from "./Icon";
@@ -27,6 +27,7 @@ export default function LeaderboardScreen({ onPlay }) {
   const [copied, setCopied]   = useState(false);
   const [nameSheet, setNameSheet]     = useState(false);
   const [nameInput, setNameInput]     = useState("");
+  const autoOpened                    = useRef(false);
 
   const myName = me?.displayName || user?.displayName || "Player";
   const codeChars = code.replace(/[^A-Z0-9]/g, "").length; // a full code is 7, e.g. WM-7H2K9
@@ -42,6 +43,14 @@ export default function LeaderboardScreen({ onPlay }) {
   }, [user]);
 
   useEffect(() => { load(); }, [load]);
+
+  // With nobody to compare against, adding someone IS the page. Open the panel
+  // once so the code and the input are right there — they can close it again.
+  useEffect(() => {
+    if (loading || autoOpened.current) return;
+    autoOpened.current = true;
+    if (rows.length <= 1) setShowAdd(true);
+  }, [loading, rows.length]);
 
   const rows = [...people].sort((a, b) => (b.points || 0) - (a.points || 0));
   const myIdx = rows.findIndex((p) => p.isMe);
@@ -145,7 +154,7 @@ export default function LeaderboardScreen({ onPlay }) {
       {!loading && rows.length <= 1 && (
         <div className="board-empty">
           <div className="board-empty-title">No friends yet</div>
-          <div className="board-empty-sub">Tap <b>+ Add friend</b> at the top and swap codes to start comparing scores.</div>
+          <div className="board-empty-sub">Swap codes with a friend to see who's ahead each week.</div>
         </div>
       )}
 

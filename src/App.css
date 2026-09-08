@@ -2244,8 +2244,10 @@ body {
    white head pill = a header action (.dash-pill)
    brand fill = the main action inside a card (.pw-cta / .spot-next)
    surface-2 = secondary (.set-ghost) · bare text = tertiary */
-.board-headbtn { border: none; background: #fff; color: var(--ink); border-radius: var(--r-full); padding: 12px 18px; font-weight: 700; font-size: 0.85rem; box-shadow: var(--shadow-xs); flex: none; }
-.board-headbtn.open { background: var(--surface-2, #f4f9ff); color: var(--muted); box-shadow: none; }
+.board-headbtn { border: none; cursor: pointer; background: var(--accent); color: var(--ink); border-radius: var(--r-full); padding: 12px 20px; font-weight: 800; font-size: 0.88rem; flex: none; box-shadow: 0 8px 20px rgba(140,170,0,0.35); transition: transform 0.1s; }
+.board-headbtn:hover { transform: translateY(-2px); }
+/* Panel open: the primary has moved into the panel ("Add"), so the trigger calms down. */
+.board-headbtn.open { background: var(--surface-2, #f4f9ff); color: var(--muted); font-weight: 700; box-shadow: none; transform: none; }
 
 .board-addpanel { background: #fff; border-radius: 20px; padding: 16px; box-shadow: var(--shadow-xs); display: flex; flex-direction: column; gap: 10px; }
 .board-addrow { display: flex; align-items: center; gap: 10px; }
@@ -2285,8 +2287,8 @@ body {
 .board-foot { background: var(--ink); border-radius: 24px; padding: 20px 22px; display: flex; align-items: center; gap: 16px; }
 .board-foot-title { font-weight: 800; font-size: 1rem; color: #fff; }
 .board-foot-sub { font-weight: 500; font-size: 0.82rem; color: rgba(255,255,255,0.6); margin-top: 3px; }
-.board-foot-cta { cursor: pointer; background: var(--accent); color: var(--ink); border: none; border-radius: var(--r-full); padding: 13px 24px; font-weight: 800; font-size: 0.9rem; flex: none; margin-left: auto; transition: transform 0.1s; }
-.board-foot-cta:hover { transform: translateY(-2px); }
+.board-foot-cta { cursor: pointer; background: rgba(255,255,255,0.18); color: #fff; border: 1.5px solid rgba(255,255,255,0.5); border-radius: var(--r-full); padding: 12px 22px; font-weight: 800; font-size: 0.9rem; flex: none; margin-left: auto; transition: background 0.12s; }
+.board-foot-cta:hover { background: rgba(255,255,255,0.3); }
 
 @media (max-width: 640px) {
   .board-title { font-size: 1.4rem; }
