@@ -49,8 +49,8 @@ export default function LeaderboardScreen({ onPlay }) {
   useEffect(() => {
     if (loading || autoOpened.current) return;
     autoOpened.current = true;
-    if (rows.length <= 1) setShowAdd(true);
-  }, [loading, rows.length]);
+    if (people.length <= 1) setShowAdd(true);
+  }, [loading, people.length]);
 
   const rows = [...people].sort((a, b) => (b.points || 0) - (a.points || 0));
   const myIdx = rows.findIndex((p) => p.isMe);
