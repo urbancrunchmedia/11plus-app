@@ -69,4 +69,23 @@ describe("game screens", () => {
     expect(onHome).toHaveBeenCalled();
     expect(el.querySelector(".game-screen")).toBeNull();
   });
+
+  // The question list moved from a ref into state; "Play again" has to rebuild
+  // a real round rather than leaving the results on screen.
+  it("Punctuation replays a fresh round from the results screen", async () => {
+    const onHome = vi.fn();
+    const el = await mount(<PunctuationGame level="A" totalQuestions={2} onHome={onHome} />);
+
+    for (let i = 0; i < 2; i++) {
+      await act(async () => { el.querySelector(".spot-ans").click(); });      // answer
+      await act(async () => { el.querySelector(".spot-next").click(); });     // next / see results
+    }
+    expect(el.querySelector(".gc-again")).toBeTruthy();      // results screen
+    expect(el.querySelector(".game-screen")).toBeNull();
+
+    await act(async () => { el.querySelector(".gc-again").click(); });
+    expect(el.querySelector(".game-screen")).toBeTruthy();   // playing again
+    expect(el.querySelectorAll(".ig-pip.done").length).toBe(0);
+    expect(onHome).not.toHaveBeenCalled();
+  });
 });

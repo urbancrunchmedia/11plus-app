@@ -39,8 +39,8 @@ function buildQuestions(level, totalQuestions, practice) {
 }
 
 export default function FillInBlanksGame({ level, totalQuestions = 20, onHome, muted: mutedProp, practice = false }) {
-  const questions = useRef(buildQuestions(level, totalQuestions, practice));
-  const total = questions.current.length;
+  const [questions, setQuestions] = useState(() => buildQuestions(level, totalQuestions, practice));
+  const total = questions.length;
   const [current, setCurrent]       = useState(0);
   const [wrongCount, setWrongCount] = useState(0);
   const [results, setResults]       = useState([]);
@@ -51,17 +51,17 @@ export default function FillInBlanksGame({ level, totalQuestions = 20, onHome, m
   const [muted, setMuted]           = useState(mutedProp ?? false);
   const [confirmLeave, setConfirmLeave] = useState(false);
   const [elapsed, setElapsed]       = useState(0);
-  const startTimeRef                = useRef(Date.now());
+  const [startTime, setStartTime] = useState(() => Date.now());
 
   useEffect(() => {
     if (gameComplete) return;
-    const id = setInterval(() => setElapsed(Math.floor((Date.now() - startTimeRef.current) / 1000)), 1000);
+    const id = setInterval(() => setElapsed(Math.floor((Date.now() - startTime) / 1000)), 1000);
     return () => clearInterval(id);
-  }, [gameComplete]);
+  }, [gameComplete, startTime]);
 
   function handleAnswer(idx) {
     if (flash !== null) return;
-    const q = questions.current[current];
+    const q = questions[current];
     const correct = q.options[idx] === q.word;
     const id = q.word.toLowerCase();
     if (correct) {
@@ -93,8 +93,8 @@ export default function FillInBlanksGame({ level, totalQuestions = 20, onHome, m
     const next = buildQuestions(level, totalQuestions, practice);
     // In practice mode the queue can be empty once everything's fixed.
     if (!next.length) { onHome(); return; }
-    questions.current = next;
-    startTimeRef.current = Date.now();
+    setQuestions(next);
+    setStartTime(Date.now());
     setCurrent(0);
     setWrongCount(0);
     setResults([]);
@@ -112,7 +112,7 @@ export default function FillInBlanksGame({ level, totalQuestions = 20, onHome, m
     );
   }
 
-  const q = questions.current[current];
+  const q = questions[current];
   const flashCls = (i) => `${flash?.type === "correct" && flash.idx === i ? "correct" : ""} ${flash?.type === "wrong" && flash.idx === i ? "wrong" : ""}`;
   const parts = q.sentence.split("_____");
   // Reveal the word in the sentence on a correct answer.
@@ -129,7 +129,7 @@ export default function FillInBlanksGame({ level, totalQuestions = 20, onHome, m
       <div className="ig-top">
         <button className="ig-back" onClick={requestExit} aria-label="Home">←</button>
         <div className="ig-pips">
-          {questions.current.map((_, i) => <span key={i} className={`ig-pip ${i < results.length ? "done" : ""}`} />)}
+          {questions.map((_, i) => <span key={i} className={`ig-pip ${i < results.length ? "done" : ""}`} />)}
         </div>
         <button className="ig-mute" onClick={() => setMuted((m) => !m)} aria-label={muted ? "Unmute" : "Mute"}><Icon name={muted ? "volumeOff" : "volumeOn"} size={18} stroke="currentColor" strokeWidth={2} /></button>
       </div>

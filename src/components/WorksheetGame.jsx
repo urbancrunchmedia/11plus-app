@@ -25,15 +25,15 @@ export default function WorksheetGame({
   const [confirmLeave, setConfirmLeave] = useState(false);
   const [elapsed, setElapsed]     = useState(0);
   const [done, setDone]           = useState(false);
-  const startTimeRef              = useRef(Date.now());
+  const [startTime, setStartTime] = useState(() => Date.now());
 
   useEffect(() => {
     if (done) return;
     const id = setInterval(() => {
-      setElapsed(Math.floor((Date.now() - startTimeRef.current) / 1000));
+      setElapsed(Math.floor((Date.now() - startTime) / 1000));
     }, 1000);
     return () => clearInterval(id);
-  }, [done]);
+  }, [done, startTime]);
 
   function pick(qIdx, side, word) {
     if (checked) return;
@@ -59,7 +59,7 @@ export default function WorksheetGame({
   }
 
   function handlePlayAgain() {
-    startTimeRef.current = Date.now();
+    setStartTime(Date.now());
     setElapsed(0);
     setQuestions(makeQuestions(totalQuestions));
     setAnswers({});

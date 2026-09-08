@@ -71,9 +71,10 @@ export default function SettingsScreen({ onOpenReport }) {
   const isComp     = subscription?.status === "comp";
   const endingSoon = isPremium && !!subscription?.cancelAtPeriodEnd;
   const endsOn     = formatDate(subscription?.currentPeriodEnd);
+  const [now]      = useState(() => Date.now()); // one clock reading per mount, not per render
   const renewsOn   = isComp ? null : formatDate(subscription?.currentPeriodEnd);
   const daysLeft   = subscription?.currentPeriodEnd
-    ? Math.max(0, Math.ceil((subscription.currentPeriodEnd - Date.now()) / 86400000))
+    ? Math.max(0, Math.ceil((subscription.currentPeriodEnd - now) / 86400000))
     : null;
 
   return (

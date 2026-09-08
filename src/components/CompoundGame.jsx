@@ -29,14 +29,14 @@ export default function CompoundGame({ level, totalQuestions = 20, onHome, pract
   const [muted, setMuted]     = useState(false);
   const [confirmLeave, setConfirmLeave] = useState(false);
   const [done, setDone]       = useState(false);
-  const startRef = useRef(Date.now());
+  const [startTime, setStartTime] = useState(() => Date.now());
   const locked   = useRef(false);
 
   useEffect(() => {
     if (done) return;
-    const id = setInterval(() => setElapsed(Math.floor((Date.now() - startRef.current) / 1000)), 1000);
+    const id = setInterval(() => setElapsed(Math.floor((Date.now() - startTime) / 1000)), 1000);
     return () => clearInterval(id);
-  }, [done]);
+  }, [done, startTime]);
 
   const q = questions[idx];
 
@@ -72,7 +72,7 @@ export default function CompoundGame({ level, totalQuestions = 20, onHome, pract
   }
 
   function playAgain() {
-    startRef.current = Date.now();
+    setStartTime(Date.now());
     setQuestions(build());
     setIdx(0); setWrong(0); setFlash(null); setJustRight(null);
     setResults([]); setTotalWrong(0); setStreak(0); setElapsed(0); setDone(false);

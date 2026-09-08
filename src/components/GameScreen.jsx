@@ -75,8 +75,10 @@ export default function GameScreen({ level, gameType, totalQuestions = 20, onHom
   const roundLength = practice ? Math.max(1, allPairs.length) : totalQuestions;
   const performance  = useRef({});  // word → last stars, persists across replays
 
-  function buildGame() {
-    const list = buildPrioritisedList(allPairs, performance.current);
+  // `perf` is passed in rather than read from the ref, so the first board can
+  // be built during render without touching a ref (there's no history yet).
+  function buildGame(perf = {}) {
+    const list = buildPrioritisedList(allPairs, perf);
     // No words for this level/type (or an emptied practice queue): there's no
     // round to build, so hand back an empty board and leave rather than crash.
     if (!list.length) return { board: [], queue: [], rightOrder: [] };
@@ -112,15 +114,15 @@ export default function GameScreen({ level, gameType, totalQuestions = 20, onHom
   const [muted, setMuted]             = useState(false);
   const [confirmLeave, setConfirmLeave] = useState(false);
   const [elapsed, setElapsed]         = useState(0);
-  const startTimeRef                  = useRef(Date.now());
+  const [startTime, setStartTime] = useState(() => Date.now());
 
   useEffect(() => {
     if (gameComplete) return;
     const id = setInterval(() => {
-      setElapsed(Math.floor((Date.now() - startTimeRef.current) / 1000));
+      setElapsed(Math.floor((Date.now() - startTime) / 1000));
     }, 1000);
     return () => clearInterval(id);
-  }, [gameComplete]);
+  }, [gameComplete, startTime]);
 
   const noRound = game.board.length === 0;
   useEffect(() => { if (noRound) onHome(); }, [noRound, onHome]);
@@ -210,9 +212,12 @@ export default function GameScreen({ level, gameType, totalQuestions = 20, onHom
   }
 
   function handlePlayAgain() {
-    startTimeRef.current = Date.now();
+    // Only ever reached from the "Play again" click in GameComplete, so reading
+    // the clock here is an event, not a render.
+    // eslint-disable-next-line react-hooks/purity
+    setStartTime(Date.now());
     setElapsed(0);
-    setGame(buildGame());
+    setGame(buildGame(performance.current));
     setResults([]);
     setSelectedLeft(null);
     setJustMatched(null);

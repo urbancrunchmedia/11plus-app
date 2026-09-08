@@ -30,8 +30,8 @@ function prepareQuestions(level, count, practice) {
 }
 
 export default function PunctuationGame({ level, totalQuestions = 20, onHome, muted: mutedProp, practice = false }) {
-  const questions = useRef(prepareQuestions(level, totalQuestions, practice));
-  const total = questions.current.length;
+  const [questions, setQuestions] = useState(() => prepareQuestions(level, totalQuestions, practice));
+  const total = questions.length;
   const [current, setCurrent]       = useState(0);
   const [answered, setAnswered]     = useState(null); // chosen index, or null
   const [results, setResults]       = useState([]);
@@ -42,15 +42,15 @@ export default function PunctuationGame({ level, totalQuestions = 20, onHome, mu
   const [muted, setMuted]           = useState(mutedProp ?? false);
   const [confirmLeave, setConfirmLeave] = useState(false);
   const [elapsed, setElapsed]       = useState(0);
-  const startTimeRef                = useRef(Date.now());
+  const [startTime, setStartTime] = useState(() => Date.now());
 
   useEffect(() => {
     if (gameComplete) return;
-    const id = setInterval(() => setElapsed(Math.floor((Date.now() - startTimeRef.current) / 1000)), 1000);
+    const id = setInterval(() => setElapsed(Math.floor((Date.now() - startTime) / 1000)), 1000);
     return () => clearInterval(id);
-  }, [gameComplete]);
+  }, [gameComplete, startTime]);
 
-  const q = questions.current[current];
+  const q = questions[current];
   const isLast    = current >= total - 1;
   const isCorrect = answered !== null && answered === q.answer;
 
@@ -83,8 +83,8 @@ export default function PunctuationGame({ level, totalQuestions = 20, onHome, mu
     const next = prepareQuestions(level, totalQuestions, practice);
     // In practice mode the queue can be empty once everything's fixed.
     if (!next.length) { onHome(); return; }
-    questions.current = next;
-    startTimeRef.current = Date.now();
+    setQuestions(next);
+    setStartTime(Date.now());
     setCurrent(0);
     setAnswered(null);
     setResults([]);
@@ -115,7 +115,7 @@ export default function PunctuationGame({ level, totalQuestions = 20, onHome, mu
       <div className="ig-top">
         <button className="ig-back" onClick={requestExit} aria-label="Home">←</button>
         <div className="ig-pips">
-          {questions.current.map((_, i) => <span key={i} className={`ig-pip ${i < results.length ? "done" : ""}`} />)}
+          {questions.map((_, i) => <span key={i} className={`ig-pip ${i < results.length ? "done" : ""}`} />)}
         </div>
         <button className="ig-mute" onClick={() => setMuted((m) => !m)} aria-label={muted ? "Unmute" : "Mute"}><Icon name={muted ? "volumeOff" : "volumeOn"} size={18} stroke="currentColor" strokeWidth={2} /></button>
       </div>
