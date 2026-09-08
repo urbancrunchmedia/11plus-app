@@ -10,8 +10,9 @@ vi.mock("../utils/cloudScores", () => ({
   syncProfile: vi.fn(async () => {}),
   getProfile: vi.fn(async () => ({ code: "WM-7H2K9", displayName: "Ava" })),
   getLeaderboard: vi.fn(async () => [
-    { uid: "u1", displayName: "Ava", points: 120, isMe: true },
-    { uid: "u2", displayName: "Sam", points: 90 },
+    // Sam has the bigger all-time total but a quieter week, so Ava leads.
+    { uid: "u1", displayName: "Ava", points: 120, weekPoints: 40, isMe: true },
+    { uid: "u2", displayName: "Sam", points: 900, weekPoints: 12 },
   ]),
   addFriendByCode: vi.fn(),
   removeFriend: vi.fn(),
@@ -93,5 +94,16 @@ describe("LeaderboardScreen", () => {
     await act(async () => { el.querySelector(".board-addbtn").click(); });
     await act(async () => { document.querySelector(".board-copybtn").click(); });
     expect(document.querySelector(".board-msg.err").textContent).toContain("WM-7H2K9");
+  });
+
+  it("ranks on this week and says when the week turns over", async () => {
+    const el = await render();
+    expect(el.querySelector(".board-sub").textContent).toMatch(/resets in \d+[dhm]/);
+    const names = [...el.querySelectorAll(".board-name")].map((n) => n.textContent);
+    expect(names[0]).toContain("Ava");   // 40 this week beats Sam's 12…
+    expect(names[1]).toContain("Sam");   // …despite Sam's larger all-time total
+    const points = [...el.querySelectorAll(".board-pts")].map((n) => n.textContent);
+    expect(points).toEqual(["40", "12"]);
+    expect(el.textContent).toContain("You're top of the board");
   });
 });

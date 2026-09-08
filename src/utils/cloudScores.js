@@ -3,6 +3,7 @@ import {
   collection, query, where, getDocs, limit,
 } from "firebase/firestore";
 import { db } from "../firebase";
+import { getWeeklyPoints, weekKey, weeklyPointsOf } from "./weekly";
 
 // A friendship is one shared doc both people can read, so it's mutual.
 // ID is the two uids sorted + joined, so either party computes the same id.
@@ -114,6 +115,8 @@ export async function syncProfile(user) {
       displayName: user.displayName || "Player",
       code,
       points: total,
+      weekPoints: getWeeklyPoints(),
+      weekKey: weekKey(),
       byGame,
       updatedAt: new Date().toISOString(),
     }, { merge: true });
@@ -186,8 +189,10 @@ export async function getLeaderboard(uid) {
     const profiles = await Promise.all(uids.map((u) => getProfile(u)));
     return profiles
       .filter(Boolean)
-      .map((p) => ({ ...p, isMe: p.uid === uid }))
-      .sort((a, b) => (b.points || 0) - (a.points || 0));
+      // weekPoints is what the board ranks on; a profile last written in an
+      // earlier week counts as zero without anyone having to open the app.
+      .map((p) => ({ ...p, isMe: p.uid === uid, weekPoints: weeklyPointsOf(p) }))
+      .sort((a, b) => (b.weekPoints || 0) - (a.weekPoints || 0) || (b.points || 0) - (a.points || 0));
   } catch (e) {
     console.error("getLeaderboard:", e);
     return [];

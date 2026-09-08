@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { saveIfBest, saveRun, getBest, formatTime } from "../utils/leaderboard";
 import { xpToRunReward, getLevelInfo, getStreak } from "../utils/gamify";
 import { pushToCloud } from "../utils/cloudScores";
+import { addWeeklyPoints } from "../utils/weekly";
 import { useAuth } from "../contexts/AuthContext";
 import Icon from "./Icon";
 
@@ -18,6 +19,8 @@ export default function GameComplete({ results, totalWrong, timeTaken, onPlayAga
   const [isNewBest] = useState(() => {
     saveRun(level, gameType, totalQuestions, totalStars, totalWrong, timeTaken, user?.displayName);
     const newBest = saveIfBest(level, gameType, totalQuestions, totalStars, totalWrong, timeTaken);
+    // Every round counts towards this week, whether or not it beat a best.
+    addWeeklyPoints(totalStars);
     if (user) pushToCloud(user);
     return newBest;
   });

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import { getProfile, getLeaderboard, addFriendByCode, removeFriend, syncProfile } from "../utils/cloudScores";
 import Icon from "./Icon";
+import { msUntilReset, formatResetIn } from "../utils/weekly";
 
 function initials(name) {
   return (name || "?").trim().slice(0, 1).toUpperCase();
@@ -33,6 +34,7 @@ export default function LeaderboardScreen({ onPlay }) {
 
   const myName = me?.displayName || user?.displayName || "Player";
   const codeChars = code.replace(/[^A-Z0-9]/g, "").length; // a full code is 7, e.g. WM-7H2K9
+  const [resetsIn] = useState(() => formatResetIn(msUntilReset()));
 
   const load = useCallback(async () => {
     if (!user) return;
@@ -55,12 +57,12 @@ export default function LeaderboardScreen({ onPlay }) {
   }, []);
   useEffect(() => () => clearTimeout(toastTimer.current), []);
 
-  const rows = [...people].sort((a, b) => (b.points || 0) - (a.points || 0));
+  const rows = [...people].sort((a, b) => (b.weekPoints || 0) - (a.weekPoints || 0) || (b.points || 0) - (a.points || 0));
   const myIdx = rows.findIndex((p) => p.isMe);
   const gapLine =
     myIdx <= 0
       ? "You're top of the board — hold it!"
-      : `${((rows[myIdx - 1].points || 0) - (rows[myIdx].points || 0)).toLocaleString()} points behind ${rows[myIdx - 1].displayName || "them"}`;
+      : `${((rows[myIdx - 1].weekPoints || 0) - (rows[myIdx].weekPoints || 0)).toLocaleString()} points behind ${rows[myIdx - 1].displayName || "them"}`;
 
   async function handleAdd(e) {
     e.preventDefault();
@@ -109,7 +111,7 @@ export default function LeaderboardScreen({ onPlay }) {
           <div className="board-icon"><Icon name="trophy" size={22} stroke="currentColor" strokeWidth={2} /></div>
           <div>
             <h1 className="board-title">Leaderboard</h1>
-            <div className="board-sub">Friends · compete with your friends</div>
+            <div className="board-sub">Friends · resets in {resetsIn}</div>
           </div>
         </div>
         <div className="board-head-actions">
@@ -136,7 +138,7 @@ export default function LeaderboardScreen({ onPlay }) {
               {p.isMe && (
                 <button className="board-rename" onClick={() => { setNameInput(myName); setNameSheet(true); }}>Rename</button>
               )}
-              <span className="board-pts">{(p.points || 0).toLocaleString()}</span>
+              <span className="board-pts">{(p.weekPoints || 0).toLocaleString()}</span>
               {!p.isMe && managing && (
                 <button className="board-remove" onClick={() => setRemoveTarget(p)} aria-label={`Remove ${p.displayName || "friend"}`} title={`Remove ${p.displayName || "friend"}`}>✕</button>
               )}

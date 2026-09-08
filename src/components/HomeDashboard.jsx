@@ -108,7 +108,7 @@ export default function HomeDashboard({ onPlaySkill, onOpenBoard }) {
                 <span className="dash-friend-rank">{i + 1}</span>
                 <span className={`dash-friend-av ${i === 0 ? "gold" : ""} ${f.isMe ? "me" : ""}`}>{initial(f.displayName)}</span>
                 <span className="dash-friend-name">{f.displayName || "Player"}{f.isMe ? " (you)" : ""}</span>
-                <span className="dash-friend-pts">{(f.points || 0).toLocaleString()}</span>
+                <span className="dash-friend-pts">{(f.weekPoints || 0).toLocaleString()}</span>
               </div>
             ))}
           </div>
