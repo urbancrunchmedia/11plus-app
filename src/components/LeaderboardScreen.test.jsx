@@ -2,7 +2,6 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import React, { act } from "react";
 import { createRoot } from "react-dom/client";
 
-// The leaderboard talks to Firebase; stub the edges so this stays a render test.
 // One stable object: the real provider hands down a stable value, and a fresh
 // one per call would re-fire the loader effect forever.
 const AUTH = { user: { uid: "u1", displayName: "Ava" }, updateDisplayName: vi.fn() };
@@ -39,44 +38,44 @@ describe("LeaderboardScreen", () => {
     const el = await render();
     expect(el.textContent).toContain("Leaderboard");
     expect(el.textContent).toContain("Sam");
-    expect(el.querySelector(".board-invite")).toBeTruthy();
+    expect(el.querySelector(".board-addbtn")).toBeTruthy();
   });
 
-  it("keeps the invite fields on screen without a toggle", async () => {
+  it("opens the add-a-friend sheet with your code in it", async () => {
     const el = await render();
-    expect(el.querySelector(".board-invite")).toBeTruthy();
-    expect(el.querySelector(".board-input")).toBeTruthy();
-    expect(el.querySelector(".board-code").textContent).toBe("WM-7H2K9");
+    expect(document.querySelector(".board-codeval")).toBeNull();
+    await act(async () => { el.querySelector(".board-addbtn").click(); });
+    expect(document.querySelector(".board-codeval").textContent).toBe("WM-7H2K9");
+    expect(document.querySelector(".board-sheet-input")).toBeTruthy();
   });
 
-  // Copy and Remove are icon-only, so their accessible name is the only label
-  // a screen reader — or a hovering parent — ever gets.
-  it("labels its icon-only buttons", async () => {
+  it("reveals remove buttons only while managing, each naming its friend", async () => {
     const el = await render();
-
-    const copy = el.querySelector(".board-iconbtn");
-    expect(copy.getAttribute("aria-label")).toMatch(/copy/i);
-
+    expect(el.querySelector(".board-remove")).toBeNull();
+    await act(async () => { el.querySelector(".board-manage").click(); });
     const remove = el.querySelector(".board-remove");
     expect(remove.getAttribute("aria-label")).toBe("Remove Sam");
-    expect(remove.textContent.trim()).toBe(""); // icon only
+    // Your own row is renamed, never removed.
+    expect(el.querySelectorAll(".board-remove").length).toBe(1);
+    expect(el.querySelector(".board-rename")).toBeTruthy();
   });
+
   it("says out loud that the code was copied", async () => {
     const writeText = vi.fn(async () => {});
     Object.defineProperty(navigator, "clipboard", { value: { writeText }, configurable: true });
     const el = await render();
-    await act(async () => { el.querySelector(".board-iconbtn").click(); });
+    await act(async () => { el.querySelector(".board-addbtn").click(); });
+    await act(async () => { document.querySelector(".board-copybtn").click(); });
     expect(writeText).toHaveBeenCalledWith("WM-7H2K9");
-    // Transient toast, not text wedged into the card.
     expect(document.querySelector(".set-toast").textContent).toContain("Code copied");
   });
 
   it("clears the toast on its own", async () => {
     vi.useFakeTimers({ shouldAdvanceTime: true });
-    const writeText = vi.fn(async () => {});
-    Object.defineProperty(navigator, "clipboard", { value: { writeText }, configurable: true });
+    Object.defineProperty(navigator, "clipboard", { value: { writeText: vi.fn(async () => {}) }, configurable: true });
     const el = await render();
-    await act(async () => { el.querySelector(".board-iconbtn").click(); });
+    await act(async () => { el.querySelector(".board-addbtn").click(); });
+    await act(async () => { document.querySelector(".board-copybtn").click(); });
     expect(document.querySelector(".set-toast")).toBeTruthy();
     await act(async () => { vi.advanceTimersByTime(3000); });
     expect(document.querySelector(".set-toast")).toBeNull();
@@ -86,7 +85,8 @@ describe("LeaderboardScreen", () => {
   it("shows the code to type out when the clipboard is unavailable", async () => {
     Object.defineProperty(navigator, "clipboard", { value: undefined, configurable: true });
     const el = await render();
-    await act(async () => { el.querySelector(".board-iconbtn").click(); });
-    expect(el.textContent).toContain("WM-7H2K9");
+    await act(async () => { el.querySelector(".board-addbtn").click(); });
+    await act(async () => { document.querySelector(".board-copybtn").click(); });
+    expect(document.querySelector(".board-msg.err").textContent).toContain("WM-7H2K9");
   });
 });

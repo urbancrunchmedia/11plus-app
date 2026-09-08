@@ -19,6 +19,8 @@ export default function LeaderboardScreen({ onPlay }) {
   const [me, setMe]           = useState(null);
   const [people, setPeople]   = useState([]);
   const [loading, setLoading] = useState(true);
+  const [managing, setManaging]       = useState(false);
+  const [addSheet, setAddSheet]       = useState(false);
   const [removeTarget, setRemoveTarget] = useState(null);
   const [code, setCode]       = useState("");
   const [adding, setAdding]   = useState(false);
@@ -66,7 +68,7 @@ export default function LeaderboardScreen({ onPlay }) {
     setMsg(null); setAdding(true);
     const res = await addFriendByCode(user.uid, code);
     setAdding(false);
-    if (res.ok) { showToast(`Added ${res.friend.displayName}`); setCode(""); load(); }
+    if (res.ok) { showToast(`Added ${res.friend.displayName}`); setCode(""); setAddSheet(false); load(); }
     else setMsg({ type: "err", text: res.error });
   }
 
@@ -110,70 +112,45 @@ export default function LeaderboardScreen({ onPlay }) {
             <div className="board-sub">Friends · compete with your friends</div>
           </div>
         </div>
-      </div>
-
-      <div className="board-body">
-        <div className="board-list">
-          {loading ? (
-            <div className="board-loading">Loading leaderboard…</div>
-          ) : (
-            <div className="board-rows">
-              {rows.map((p, i) => (
-                <div key={p.uid} className={`board-row ${p.isMe ? "me" : ""} ${i === 0 ? "board-row--first" : ""}`}>
-                  <span className="board-rank">{i + 1}</span>
-                  <span className={`board-avatar ${p.isMe ? "me" : ""}`}>{initials(p.displayName)}</span>
-                  <span className="board-name">
-                    {p.displayName || "Player"}{p.isMe && <span className="board-you"> (you)</span>}
-                  </span>
-                  <span className="board-pts">{(p.points || 0).toLocaleString()}</span>
-                  {!p.isMe && (
-                    <button className="board-remove" onClick={() => setRemoveTarget(p)} aria-label={`Remove ${p.displayName || "friend"}`} title={`Remove ${p.displayName || "friend"}`}>
-                      <Icon name="trash" size={16} stroke="currentColor" strokeWidth={2} />
-                    </button>
-                  )}
-                </div>
-              ))}
-            </div>
+        <div className="board-head-actions">
+          {!loading && rows.length > 1 && (
+            <button className={`board-manage ${managing ? "on" : ""}`} onClick={() => setManaging((v) => !v)}>
+              {managing ? "Done" : "Manage"}
+            </button>
           )}
-
-          {!loading && rows.length <= 1 && (
-            <div className="board-nofriends">
-              It's just you so far — add a friend's code to see who's ahead each week.
-            </div>
-          )}
-        </div>
-
-        <div className="board-invite">
-          <div className="board-invite-title">Add a friend</div>
-
-          <div className="board-invite-lbl">Share your code</div>
-          <div className="board-addrow">
-            <span className="board-codewrap">
-              <span className="board-code">{me?.code || "…"}</span>
-              <button className={`board-iconbtn ${copied ? "copied" : ""}`} onClick={copyCode} disabled={!me?.code} aria-label={copied ? "Code copied" : "Copy your code"} title={copied ? "Copied!" : "Copy code"}>
-                <Icon name={copied ? "check" : "copy"} size={16} stroke="currentColor" strokeWidth={2} />
-              </button>
-            </span>
-          </div>
-
-          <div className="board-invite-lbl">Enter their code</div>
-          <form className="board-addrow" onSubmit={handleAdd}>
-            <input
-              className="board-input"
-              placeholder="e.g. WM-7H2K9"
-              value={code}
-              onChange={(e) => setCode(formatCode(e.target.value))}
-              inputMode="text" autoCapitalize="characters" autoCorrect="off" spellCheck={false}
-            />
-            <button className="board-go" type="submit" disabled={adding || codeChars < 7}>{adding ? "…" : "Add"}</button>
-          </form>
-          {msg?.type === "err" && <div className="board-msg err">{msg.text}</div>}
-
-          <button className="board-editname" onClick={() => { setNameInput(myName); setNameSheet(true); }}>
-            Playing as <b>{myName}</b> — edit
-          </button>
+          <button className="board-addbtn" onClick={() => { setMsg(null); setAddSheet(true); }}>+ Add friend</button>
         </div>
       </div>
+
+      {loading ? (
+        <div className="board-empty">Loading leaderboard…</div>
+      ) : (
+        <div className="board-rows">
+          {rows.map((p, i) => (
+            <div key={p.uid} className={`board-row ${p.isMe ? "me" : ""}`}>
+              <span className={`board-rank ${i < 3 ? `board-rank--${i + 1}` : ""}`}>{i + 1}</span>
+              <span className={`board-avatar ${p.isMe ? "me" : ""}`}>{initials(p.displayName)}</span>
+              <span className="board-name">
+                {p.displayName || "Player"}{p.isMe && <span className="board-you"> (you)</span>}
+              </span>
+              {p.isMe && (
+                <button className="board-rename" onClick={() => { setNameInput(myName); setNameSheet(true); }}>Rename</button>
+              )}
+              <span className="board-pts">{(p.points || 0).toLocaleString()}</span>
+              {!p.isMe && managing && (
+                <button className="board-remove" onClick={() => setRemoveTarget(p)} aria-label={`Remove ${p.displayName || "friend"}`} title={`Remove ${p.displayName || "friend"}`}>✕</button>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {!loading && rows.length <= 1 && (
+        <div className="board-empty">
+          <div className="board-empty-title">No friends yet</div>
+          <div className="board-empty-sub">Swap codes with a friend to see each other on the leaderboard.</div>
+        </div>
+      )}
 
       {!loading && rows.length > 1 && (
         <div className="board-foot">
@@ -185,15 +162,49 @@ export default function LeaderboardScreen({ onPlay }) {
         </div>
       )}
 
+      {addSheet && (
+        <div className="set-sheet-overlay" onClick={() => setAddSheet(false)}>
+          <div className="set-sheet board-sheet" onClick={(e) => e.stopPropagation()}>
+            <div className="set-sheet-title">Add a friend</div>
+            <div className="set-sheet-sub">Swap codes with a friend to see each other on the leaderboard.</div>
+
+            <div className="board-fieldlbl">Your code</div>
+            <div className="board-codebox">
+              <span className="board-codeval">{me?.code || "…"}</span>
+              <button className="board-copybtn" onClick={copyCode} disabled={!me?.code} aria-label={copied ? "Code copied" : "Copy your code"}>
+                {copied ? "Copied" : "Copy"}
+              </button>
+            </div>
+
+            <form onSubmit={handleAdd}>
+              <div className="board-fieldlbl">Friend's code</div>
+              <input
+                className="board-sheet-input"
+                placeholder="e.g. WM-7H2K9"
+                value={code}
+                onChange={(e) => setCode(formatCode(e.target.value))}
+                inputMode="text" autoCapitalize="characters" autoCorrect="off" spellCheck={false}
+                autoFocus
+              />
+              {msg?.type === "err" && <div className="board-msg err">{msg.text}</div>}
+              <button className="set-sheet-confirm" type="submit" disabled={adding || codeChars < 7}>
+                {adding ? "Adding…" : "Add friend"}
+              </button>
+            </form>
+            <button className="set-sheet-cancel" onClick={() => setAddSheet(false)}>Close</button>
+          </div>
+        </div>
+      )}
+
       {toast && <div className="set-toast">{toast}</div>}
 
       {nameSheet && (
         <div className="set-sheet-overlay" onClick={() => setNameSheet(false)}>
-          <div className="set-sheet" onClick={(e) => e.stopPropagation()}>
-            <div className="set-sheet-title">Learner's name</div>
-            <div className="set-sheet-sub">This shows on the leaderboard and at the end of every round.</div>
+          <div className="set-sheet board-sheet" onClick={(e) => e.stopPropagation()}>
+            <div className="set-sheet-title">Change name</div>
+            <div className="set-sheet-sub">This is the name friends see on the leaderboard and at the end of a round.</div>
             <input
-              className="set-name-input"
+              className="board-sheet-input"
               value={nameInput}
               onChange={(e) => setNameInput(e.target.value)}
               placeholder="e.g. Amu"
@@ -209,10 +220,10 @@ export default function LeaderboardScreen({ onPlay }) {
 
       {removeTarget && (
         <div className="set-sheet-overlay" onClick={() => setRemoveTarget(null)}>
-          <div className="set-sheet" onClick={(e) => e.stopPropagation()}>
+          <div className="set-sheet board-sheet" onClick={(e) => e.stopPropagation()}>
             <div className="set-sheet-title">Remove {removeTarget.displayName || "this friend"}?</div>
             <div className="set-sheet-sub">They'll disappear from your leaderboard. You can add them back later with their code.</div>
-            <button className="set-sheet-confirm" onClick={confirmRemove}>Remove friend</button>
+            <button className="set-sheet-confirm board-danger" onClick={confirmRemove}>Remove friend</button>
             <button className="set-sheet-cancel" onClick={() => setRemoveTarget(null)}>Keep them</button>
           </div>
         </div>

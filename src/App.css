@@ -2236,71 +2236,78 @@ body {
 .board { width: 100%; max-width: 1000px; display: flex; flex-direction: column; gap: 14px; }
 .board-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
 .board-head-left { display: flex; align-items: center; gap: 14px; }
+.board-head-actions { display: flex; align-items: center; gap: 10px; flex: none; }
 .board-icon { width: 52px; height: 52px; border-radius: 17px; background: #fff6d6; display: grid; place-items: center; font-size: 1.5rem; flex: none; }
 .board-title { font-weight: 800; font-size: 1.7rem; color: var(--ink); letter-spacing: -0.02em; }
 .board-sub { font-weight: 600; font-size: 0.85rem; color: var(--muted, #6b7a8c); margin-top: 3px; }
-/* Board button ladder, matching the rest of the app:
-   lime pill = the page's one primary (.landing-start / .dash-hero-cta)
-   white head pill = a header action (.dash-pill)
-   brand fill = the main action inside a card (.pw-cta / .spot-next)
-   surface-2 = secondary (.set-ghost) · bare text = tertiary */
-/* Board and invite side by side, mirroring .dash-body's split and its collapse. */
-.board-body { display: grid; gap: 18px; align-items: start; grid-template-columns: 1.35fr 1fr; }
-.board-invite { background: #fff; border-radius: 24px; padding: 20px; box-shadow: var(--shadow-xs); display: flex; flex-direction: column; gap: 8px; }
-.board-invite-title { font-weight: 800; font-size: 1.05rem; color: var(--ink); margin-bottom: 2px; }
-.board-invite-lbl { font-weight: 700; font-size: 0.75rem; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); margin-top: 6px; }
 
-.board-addrow { display: flex; align-items: center; gap: 10px; }
-.board-code-lbl { font-weight: 700; font-size: 0.78rem; color: var(--muted, #6b7a8c); }
-.board-codewrap { display: inline-flex; align-items: center; gap: 8px; background: var(--surface-2, #f4f9ff); border-radius: 12px; padding: 7px 8px 7px 14px; }
-.board-code { font-weight: 800; font-size: 1.05rem; letter-spacing: 1px; color: var(--brand-ink); }
-.board-input { flex: 1; min-width: 0; background: var(--surface-2, #f4f9ff); border: 2px solid var(--border); border-radius: 12px; padding: 11px 14px; font: inherit; font-weight: 600; color: var(--ink); }
-.board-input:focus { outline: none; border-color: var(--brand); }
-.board-iconbtn { border: none; cursor: pointer; background: #fff; color: var(--brand-ink); border-radius: 10px; width: 32px; height: 32px; display: grid; place-items: center; flex: none; transition: background 0.12s, color 0.12s; }
-.board-iconbtn:hover { background: #e4f6ff; }
-.board-iconbtn.copied { background: var(--correct-bg, #e8f9ec); color: var(--correct); }
-.board-iconbtn:disabled { opacity: 0.45; }
-.board-ghost { border: none; background: var(--surface-2, #f4f9ff); color: var(--muted); border-radius: 12px; padding: 11px 16px; font-weight: 700; font-size: 0.82rem; flex: none; }
-.board-ghost:disabled { opacity: 0.5; }
-.board-go { border: none; cursor: pointer; background: var(--brand); color: #fff; border-radius: 12px; padding: 12px 22px; font-weight: 800; font-size: 0.85rem; flex: none; transition: background 0.12s; }
-.board-go:hover { background: var(--brand-ink); }
-.board-go:disabled { opacity: 0.45; }
-.board-msg { font-weight: 700; font-size: 0.8rem; }
+/* Header actions: white "Manage" that turns black while managing, lime primary. */
+.board-manage { border: none; cursor: pointer; background: #fff; color: var(--ink); border-radius: var(--r-full); padding: 12px 22px; font-weight: 800; font-size: 0.88rem; box-shadow: var(--shadow-xs); flex: none; transition: background 0.12s, color 0.12s; }
+.board-manage.on { background: var(--ink); color: #fff; box-shadow: none; }
+.board-addbtn { border: none; cursor: pointer; background: var(--accent); color: var(--ink); border-radius: var(--r-full); padding: 12px 22px; font-weight: 800; font-size: 0.88rem; flex: none; transition: transform 0.1s; }
+.board-addbtn:hover { transform: translateY(-2px); }
+
+.board-rows { display: flex; flex-direction: column; gap: 12px; }
+.board-row { display: flex; align-items: center; gap: 14px; background: #fff; border-radius: 22px; padding: 16px 20px; box-shadow: var(--shadow-xs); }
+.board-row.me { background: var(--brand); box-shadow: none; }
+
+/* Rank: gold, silver and bronze discs for the top three, plain beyond. */
+.board-rank { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; background: var(--surface-2, #f4f9ff); font-weight: 800; font-size: 0.95rem; color: var(--muted, #9aa8b6); flex: none; }
+.board-rank--1 { background: #edb731; color: #3d2c05; }
+.board-rank--2 { background: #d3dbe4; color: #2b3440; }
+.board-rank--3 { background: #c89469; color: #33210f; }
+.board-row.me .board-rank { color: rgba(255,255,255,0.9); background: rgba(255,255,255,0.22); }
+.board-row.me .board-rank--1 { background: #edb731; color: #3d2c05; }
+.board-row.me .board-rank--2 { background: #d3dbe4; color: #2b3440; }
+.board-row.me .board-rank--3 { background: #c89469; color: #33210f; }
+
+.board-avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--track, #e7eef5); color: var(--ink); display: grid; place-items: center; font-weight: 800; font-size: 0.95rem; flex: none; }
+.board-avatar.me { background: #fff; color: var(--brand); }
+.board-name { flex: 1; font-weight: 700; font-size: 1.05rem; color: var(--ink); min-width: 0; }
+.board-row.me .board-name { color: #fff; }
+.board-you { font-weight: 500; color: rgba(255,255,255,0.75); }
+.board-pts { font-weight: 800; font-size: 1.05rem; color: var(--ink); }
+.board-row.me .board-pts { color: var(--accent); }
+
+/* Rename rides inside your own row, next to your score. */
+.board-rename { border: none; cursor: pointer; background: rgba(255,255,255,0.22); color: #fff; border-radius: var(--r-full); padding: 7px 15px; font-weight: 700; font-size: 0.8rem; flex: none; transition: background 0.12s; }
+.board-rename:hover { background: rgba(255,255,255,0.34); }
+
+.board-remove { border: none; cursor: pointer; background: #fbe3d8; color: #d1622c; border-radius: 50%; width: 32px; height: 32px; display: grid; place-items: center; font-size: 0.85rem; font-weight: 800; flex: none; margin-left: 4px; transition: background 0.12s, color 0.12s; }
+.board-remove:hover { background: #d1622c; color: #fff; }
+
+.board-empty { background: #fff; border-radius: 22px; padding: 28px; text-align: center; font-weight: 600; color: var(--muted, #6b7a8c); box-shadow: var(--shadow-xs); }
+.board-empty-title { font-weight: 800; font-size: 1.05rem; color: var(--ink); }
+.board-empty-sub { font-weight: 500; font-size: 0.85rem; color: var(--muted); margin-top: 4px; }
+
+.board-foot { background: var(--ink); border-radius: 24px; padding: 20px 22px; display: flex; align-items: center; gap: 16px; }
+.board-foot-title { font-weight: 800; font-size: 1rem; color: #fff; }
+.board-foot-sub { font-weight: 500; font-size: 0.82rem; color: rgba(255,255,255,0.6); margin-top: 3px; }
+.board-foot-cta { cursor: pointer; background: var(--accent); color: var(--ink); border: none; border-radius: var(--r-full); padding: 13px 26px; font-weight: 800; font-size: 0.92rem; flex: none; margin-left: auto; transition: transform 0.1s; }
+.board-foot-cta:hover { transform: translateY(-2px); }
+
+/* Sheets on this page are left-aligned, like the prototype's dialogs. */
+.board-sheet { text-align: left; max-width: 420px; }
+.board-sheet .set-sheet-title { font-size: 1.5rem; }
+.board-sheet .set-sheet-sub { margin: 8px 0 4px; }
+.board-fieldlbl { font-weight: 800; font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin: 18px 0 8px; }
+.board-codebox { display: flex; align-items: center; justify-content: space-between; gap: 12px; background: var(--surface-2, #f4f9ff); border-radius: 16px; padding: 9px 9px 9px 18px; }
+.board-codeval { font-weight: 800; font-size: 1.25rem; letter-spacing: 3px; color: var(--ink); }
+.board-copybtn { border: none; cursor: pointer; background: var(--ink); color: #fff; border-radius: var(--r-full); padding: 12px 24px; font-weight: 800; font-size: 0.88rem; flex: none; }
+.board-copybtn:disabled { opacity: 0.5; }
+.board-sheet-input { width: 100%; background: var(--surface-2, #f4f9ff); border: 2px solid transparent; border-radius: 16px; padding: 15px 18px; font: inherit; font-weight: 700; letter-spacing: 2px; color: var(--ink); }
+.board-sheet-input:focus { outline: none; background: #fff; border-color: var(--brand); }
+.board-sheet .set-sheet-confirm { margin-top: 14px; }
+.board-danger { background: #d1622c; }
+.board-msg { font-weight: 700; font-size: 0.8rem; margin-top: 10px; }
 .board-msg.ok { color: var(--correct); }
 .board-msg.err { color: var(--wrong); }
-.board-editname { border: none; background: transparent; color: var(--muted, #6b7a8c); font-weight: 600; font-size: 0.8rem; text-align: left; padding: 0; }
-
-.board-list { background: var(--ink); border-radius: 28px; padding: 12px; }
-.board-loading { padding: 26px 14px; text-align: center; font-weight: 600; font-size: 0.9rem; color: rgba(255,255,255,0.6); }
-.board-nofriends { padding: 14px; text-align: center; font-weight: 500; font-size: 0.85rem; line-height: 1.5; color: rgba(255,255,255,0.6); }
-.board-rows { display: flex; flex-direction: column; gap: 4px; }
-.board-row { display: flex; align-items: center; gap: 14px; background: transparent; border-radius: 19px; padding: 13px 14px; box-shadow: none; }
-.board-row.me { background: transparent; box-shadow: none; }
-.board-rank { width: 26px; text-align: center; font-weight: 800; font-size: 1rem; color: rgba(255,255,255,0.45); flex: none; }
-.board-row.me .board-rank { color: rgba(18,165,255,0.75); }
-.board-avatar { width: 38px; height: 38px; border-radius: 50%; background: rgba(255,255,255,0.14); color: #fff; display: grid; place-items: center; font-weight: 800; font-size: 0.95rem; flex: none; }
-.board-avatar.me { background: rgba(18,165,255,0.18); color: var(--brand); }
-.board-name { flex: 1; font-weight: 700; font-size: 1rem; color: rgba(255,255,255,0.92); min-width: 0; }
-.board-row.me .board-name { color: var(--brand); font-weight: 800; }
-.board-you { font-weight: 500; color: rgba(18,165,255,0.7); }
-.board-pts { font-weight: 800; font-size: 1rem; color: #fff; }
-.board-row.me .board-pts { color: var(--brand); }
-.board-remove { border: none; cursor: pointer; background: transparent; color: rgba(255,255,255,0.32); border-radius: 50%; width: 32px; height: 32px; display: grid; place-items: center; flex: none; margin-left: 10px; transition: background 0.12s, color 0.12s; }
-.board-remove:hover, .board-remove:focus-visible { background: var(--wrong); color: #fff; }
-
-
-.board-foot { background: transparent; padding: 0 6px; display: flex; align-items: center; gap: 14px; }
-.board-foot-title { font-weight: 700; font-size: 0.88rem; color: var(--ink); }
-.board-foot-sub { font-weight: 500; font-size: 0.78rem; color: var(--muted); margin-top: 2px; }
-.board-foot-cta { cursor: pointer; background: #fff; color: var(--ink); border: 1.5px solid var(--border); border-radius: var(--r-full); padding: 11px 20px; font-weight: 700; font-size: 0.85rem; flex: none; margin-left: auto; transition: border-color 0.12s, background 0.12s; }
-.board-foot-cta:hover { background: var(--surface-2, #f4f9ff); border-color: var(--brand); }
-
-@media (max-width: 1023px) {
-  .board-body { grid-template-columns: 1fr; }
-}
 
 @media (max-width: 640px) {
   .board-title { font-size: 1.4rem; }
+  .board-head { flex-wrap: wrap; }
+  .board-head-actions { width: 100%; }
+  .board-manage, .board-addbtn { flex: 1; }
   .board-foot { flex-direction: column; align-items: stretch; }
   .board-foot-cta { margin-left: 0; }
 }
@@ -3049,9 +3056,6 @@ body {
 }
 
 /* Rank #1 = the winner: a subtle gold accent, whoever holds it. */
-.board-row--first { background: rgba(255,216,122,0.13); box-shadow: inset 0 0 0 1.5px rgba(239,215,132,0.3); }
-.board-row--first .board-rank { color: #ffd766; }
-.board-row--first.me .board-rank { color: #ffd766; } /* first place keeps its gold, even when it's you */
 
 /* ============================================================
    Landing actions reordered: choices (Level/Length) → Start (primary) →
