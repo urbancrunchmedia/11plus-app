@@ -68,6 +68,9 @@ describe("LeaderboardScreen", () => {
     await act(async () => { document.querySelector(".board-copybtn").click(); });
     expect(writeText).toHaveBeenCalledWith("WM-7H2K9");
     expect(document.querySelector(".set-toast").textContent).toContain("Code copied");
+    // Icon-only, so the accessible name is the only label it has.
+    expect(document.querySelector(".board-copybtn").textContent.trim()).toBe("");
+    expect(document.querySelector(".board-copybtn").getAttribute("aria-label")).toMatch(/copy/i);
   });
 
   it("clears the toast on its own", async () => {

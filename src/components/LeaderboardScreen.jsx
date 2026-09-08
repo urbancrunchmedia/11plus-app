@@ -171,15 +171,15 @@ export default function LeaderboardScreen({ onPlay }) {
             <div className="board-fieldlbl">Your code</div>
             <div className="board-codebox">
               <span className="board-codeval">{me?.code || "…"}</span>
-              <button className="board-copybtn" onClick={copyCode} disabled={!me?.code} aria-label={copied ? "Code copied" : "Copy your code"}>
-                {copied ? "Copied" : "Copy"}
+              <button className={`board-copybtn ${copied ? "copied" : ""}`} onClick={copyCode} disabled={!me?.code} aria-label={copied ? "Code copied" : "Copy your code"} title={copied ? "Copied!" : "Copy code"}>
+                <Icon name={copied ? "check" : "copy"} size={18} stroke="currentColor" strokeWidth={2} />
               </button>
             </div>
 
             <form onSubmit={handleAdd}>
               <div className="board-fieldlbl">Friend's code</div>
               <input
-                className="board-sheet-input"
+                className="board-sheet-input board-sheet-input--code"
                 placeholder="e.g. WM-7H2K9"
                 value={code}
                 onChange={(e) => setCode(formatCode(e.target.value))}

@@ -2293,9 +2293,12 @@ body {
 .board-fieldlbl { font-weight: 800; font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin: 18px 0 8px; }
 .board-codebox { display: flex; align-items: center; justify-content: space-between; gap: 12px; background: var(--surface-2, #f4f9ff); border-radius: 16px; padding: 9px 9px 9px 18px; }
 .board-codeval { font-weight: 800; font-size: 1.25rem; letter-spacing: 3px; color: var(--ink); }
-.board-copybtn { border: none; cursor: pointer; background: var(--ink); color: #fff; border-radius: var(--r-full); padding: 12px 24px; font-weight: 800; font-size: 0.88rem; flex: none; }
+.board-copybtn { cursor: pointer; background: #fff; color: var(--ink); border: 1.5px solid var(--border); border-radius: 12px; width: 42px; height: 42px; display: grid; place-items: center; flex: none; transition: border-color 0.12s, color 0.12s, background 0.12s; }
+.board-copybtn:hover { border-color: var(--brand); color: var(--brand-ink); }
+.board-copybtn.copied { border-color: var(--correct); color: var(--correct); background: var(--correct-bg); }
 .board-copybtn:disabled { opacity: 0.5; }
-.board-sheet-input { width: 100%; background: var(--surface-2, #f4f9ff); border: 2px solid transparent; border-radius: 16px; padding: 15px 18px; font: inherit; font-weight: 700; letter-spacing: 2px; color: var(--ink); }
+.board-sheet-input { width: 100%; background: var(--surface-2, #f4f9ff); border: 2px solid transparent; border-radius: 16px; padding: 15px 18px; font: inherit; font-weight: 700; color: var(--ink); }
+.board-sheet-input--code { letter-spacing: 2px; }
 .board-sheet-input:focus { outline: none; background: #fff; border-color: var(--brand); }
 .board-sheet .set-sheet-confirm { margin-top: 14px; }
 .board-danger { background: #d1622c; }

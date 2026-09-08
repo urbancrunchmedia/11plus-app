@@ -83,10 +83,13 @@ function AppInner() {
     "home", "me", "wordMatch", "compoundWords",
     "punctuation", "spelling", "fillInBlanks", "wordList", "leaderboard", "report",
   ];
+  // Settings and the report are grown-up screens: opening the app on one is
+  // wrong after a sign-in, and hands a child the parent's section on a refresh.
+  const RESTORABLE = VALID_SCREENS.filter((v) => v !== "me" && v !== "report");
   const [selectedGame, setSelectedGame] = useState(() => {
     try {
       const last = localStorage.getItem("11plus_last_screen");
-      return VALID_SCREENS.includes(last) ? last : "home";
+      return RESTORABLE.includes(last) ? last : "home";
     } catch { return "home"; }
   });
   // Remember the current section so a refresh stays on the same page
