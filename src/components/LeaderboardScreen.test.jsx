@@ -46,4 +46,18 @@ describe("LeaderboardScreen", () => {
     const el = await render();
     expect(el.querySelector(".board-addpanel")).toBeNull();
   });
+
+  // Copy and Remove are icon-only, so their accessible name is the only label
+  // a screen reader — or a hovering parent — ever gets.
+  it("labels its icon-only buttons", async () => {
+    const el = await render();
+    await act(async () => { el.querySelector(".board-headbtn").click(); });
+
+    const copy = el.querySelector(".board-iconbtn");
+    expect(copy.getAttribute("aria-label")).toMatch(/copy/i);
+
+    const remove = el.querySelector(".board-remove");
+    expect(remove.getAttribute("aria-label")).toBe("Remove Sam");
+    expect(remove.textContent.trim()).toBe(""); // icon only
+  });
 });

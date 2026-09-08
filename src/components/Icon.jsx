@@ -20,6 +20,9 @@ const ICONS = {
   trophy:   '<path d="M7 5h10v4a5 5 0 0 1-10 0z"/><path d="M7 6H4v1.4A3.6 3.6 0 0 0 7.6 11"/><path d="M17 6h3v1.4A3.6 3.6 0 0 1 16.4 11"/><path d="M12 14v3"/><path d="M8.5 20h7"/><path d="M9.5 20l.5-3h4l.5 3"/>',
   target:   '<circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1"/>',
   medal:    '<circle cx="12" cy="14.5" r="5.5"/><path d="M8.5 3.5 12 9l3.5-5.5"/>',
+  copy:     '<rect x="9" y="9" width="11" height="11" rx="2.5"/><path d="M5.8 15H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h9a1 1 0 0 1 1 1v.8"/>',
+  check:    '<path d="M5 12.5l4.5 4.5L19 7"/>',
+  trash:    '<path d="M4.5 7h15"/><path d="M9.5 7V4.8h5V7"/><path d="M6.6 7l1 12.2h8.8L17.4 7"/>',
   chart:    '<path d="M4 4v16h16"/><rect x="7.5" y="11" width="3" height="6" rx="1"/><rect x="12.5" y="7" width="3" height="10" rx="1"/><rect x="17.5" y="13" width="3" height="4" rx="1"/>',
 };
 

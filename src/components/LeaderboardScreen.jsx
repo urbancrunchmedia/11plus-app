@@ -109,7 +109,9 @@ export default function LeaderboardScreen({ onPlay }) {
           <div className="board-addrow">
             <span className="board-code-lbl">Your code</span>
             <span className="board-code">{me?.code || "…"}</span>
-            <button className="board-ghost" onClick={copyCode} disabled={!me?.code}>{copied ? "Copied!" : "Copy"}</button>
+            <button className="board-iconbtn" onClick={copyCode} disabled={!me?.code} aria-label={copied ? "Code copied" : "Copy your code"} title={copied ? "Copied!" : "Copy code"}>
+              <Icon name={copied ? "check" : "copy"} size={17} stroke="currentColor" strokeWidth={2} />
+            </button>
           </div>
           <form className="board-addrow" onSubmit={handleAdd}>
             <input
@@ -134,7 +136,8 @@ export default function LeaderboardScreen({ onPlay }) {
       {loading ? (
         <div className="board-empty">Loading leaderboard…</div>
       ) : (
-        <div className="board-rows">
+        <div className="board-list">
+          <div className="board-rows">
           {rows.map((p, i) => (
             <div key={p.uid} className={`board-row ${p.isMe ? "me" : ""} ${i === 0 ? "board-row--first" : ""}`}>
               <span className="board-rank">{i + 1}</span>
@@ -142,12 +145,15 @@ export default function LeaderboardScreen({ onPlay }) {
               <span className="board-name">
                 {p.displayName || "Player"}{p.isMe && <span className="board-you"> (you)</span>}
               </span>
-              {!(showAdd && !p.isMe) && <span className="board-pts">{(p.points || 0).toLocaleString()}</span>}
+              <span className="board-pts">{(p.points || 0).toLocaleString()}</span>
               {!p.isMe && showAdd && (
-                <button className="board-remove" onClick={() => setRemoveTarget(p)} aria-label={`Remove ${p.displayName || "friend"}`}>Remove</button>
+                <button className="board-remove" onClick={() => setRemoveTarget(p)} aria-label={`Remove ${p.displayName || "friend"}`} title={`Remove ${p.displayName || "friend"}`}>
+                  <Icon name="trash" size={16} stroke="currentColor" strokeWidth={2} />
+                </button>
               )}
             </div>
           ))}
+          </div>
         </div>
       )}
 
