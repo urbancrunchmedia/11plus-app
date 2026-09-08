@@ -65,12 +65,14 @@ describe("LeaderboardScreen", () => {
     Object.defineProperty(navigator, "clipboard", { value: { writeText }, configurable: true });
     const el = await render();
     await act(async () => { el.querySelector(".board-addbtn").click(); });
-    await act(async () => { document.querySelector(".board-copybtn").click(); });
+    // Icon-only, so the accessible name is the only label it has.
+    const btn = document.querySelector(".board-copybtn");
+    expect(btn.textContent.trim()).toBe("");
+    expect(btn.getAttribute("aria-label")).toBe("Copy your code");
+    await act(async () => { btn.click(); });
     expect(writeText).toHaveBeenCalledWith("WM-7H2K9");
     expect(document.querySelector(".set-toast").textContent).toContain("Code copied");
-    // Icon-only, so the accessible name is the only label it has.
-    expect(document.querySelector(".board-copybtn").textContent.trim()).toBe("");
-    expect(document.querySelector(".board-copybtn").getAttribute("aria-label")).toMatch(/copy/i);
+    expect(document.querySelector(".board-copybtn").getAttribute("aria-label")).toBe("Code copied");
   });
 
   it("clears the toast on its own", async () => {
