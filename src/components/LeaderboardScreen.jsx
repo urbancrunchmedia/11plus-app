@@ -101,7 +101,40 @@ export default function LeaderboardScreen({ onPlay }) {
             <div className="board-sub">Friends · compete with your friends</div>
           </div>
         </div>
-        <button className={`board-headbtn ${showAdd ? "open" : ""}`} onClick={() => setShowAdd((v) => !v)}>{showAdd ? "Done" : "+ Add friend"}</button>
+      </div>
+
+      <div className="board-list">
+        {loading ? (
+          <div className="board-loading">Loading leaderboard…</div>
+        ) : (
+          <div className="board-rows">
+          {rows.map((p, i) => (
+            <div key={p.uid} className={`board-row ${p.isMe ? "me" : ""} ${i === 0 ? "board-row--first" : ""}`}>
+              <span className="board-rank">{i + 1}</span>
+              <span className={`board-avatar ${p.isMe ? "me" : ""}`}>{initials(p.displayName)}</span>
+              <span className="board-name">
+                {p.displayName || "Player"}{p.isMe && <span className="board-you"> (you)</span>}
+              </span>
+              <span className="board-pts">{(p.points || 0).toLocaleString()}</span>
+              {!p.isMe && showAdd && (
+                <button className="board-remove" onClick={() => setRemoveTarget(p)} aria-label={`Remove ${p.displayName || "friend"}`} title={`Remove ${p.displayName || "friend"}`}>
+                  <Icon name="trash" size={16} stroke="currentColor" strokeWidth={2} />
+                </button>
+              )}
+            </div>
+          ))}
+          </div>
+        )}
+
+        {!loading && rows.length <= 1 && (
+          <div className="board-nofriends">
+            It's just you so far — add a friend's code to see who's ahead each week.
+          </div>
+        )}
+
+        <button className={`board-listcta ${showAdd ? "open" : ""}`} onClick={() => setShowAdd((v) => !v)}>
+          {showAdd ? "Done" : "+ Add friend"}
+        </button>
       </div>
 
       {showAdd && (
@@ -133,36 +166,6 @@ export default function LeaderboardScreen({ onPlay }) {
         </div>
       )}
 
-      {loading ? (
-        <div className="board-empty">Loading leaderboard…</div>
-      ) : (
-        <div className="board-list">
-          <div className="board-rows">
-          {rows.map((p, i) => (
-            <div key={p.uid} className={`board-row ${p.isMe ? "me" : ""} ${i === 0 ? "board-row--first" : ""}`}>
-              <span className="board-rank">{i + 1}</span>
-              <span className={`board-avatar ${p.isMe ? "me" : ""}`}>{initials(p.displayName)}</span>
-              <span className="board-name">
-                {p.displayName || "Player"}{p.isMe && <span className="board-you"> (you)</span>}
-              </span>
-              <span className="board-pts">{(p.points || 0).toLocaleString()}</span>
-              {!p.isMe && showAdd && (
-                <button className="board-remove" onClick={() => setRemoveTarget(p)} aria-label={`Remove ${p.displayName || "friend"}`} title={`Remove ${p.displayName || "friend"}`}>
-                  <Icon name="trash" size={16} stroke="currentColor" strokeWidth={2} />
-                </button>
-              )}
-            </div>
-          ))}
-          </div>
-        </div>
-      )}
-
-      {!loading && rows.length <= 1 && (
-        <div className="board-empty">
-          <div className="board-empty-title">No friends yet</div>
-          <div className="board-empty-sub">Swap codes with a friend to see who's ahead each week.</div>
-        </div>
-      )}
 
       {!loading && rows.length > 1 && (
         <div className="board-foot">

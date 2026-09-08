@@ -39,7 +39,7 @@ describe("LeaderboardScreen", () => {
     const el = await render();
     expect(el.textContent).toContain("Leaderboard");
     expect(el.textContent).toContain("Sam");
-    expect(el.querySelector(".board-headbtn")).toBeTruthy();
+    expect(el.querySelector(".board-listcta")).toBeTruthy();
   });
 
   it("keeps the add panel closed when there are friends to compare against", async () => {
@@ -51,7 +51,7 @@ describe("LeaderboardScreen", () => {
   // a screen reader — or a hovering parent — ever gets.
   it("labels its icon-only buttons", async () => {
     const el = await render();
-    await act(async () => { el.querySelector(".board-headbtn").click(); });
+    await act(async () => { el.querySelector(".board-listcta").click(); });
 
     const copy = el.querySelector(".board-iconbtn");
     expect(copy.getAttribute("aria-label")).toMatch(/copy/i);
