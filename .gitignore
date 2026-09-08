@@ -25,3 +25,7 @@ dist-ssr
 *.sln
 *.sw?
 .vercel
+
+# Firebase auth exports — contains emails and password hashes
+users.json
+*.users.json
