@@ -13,11 +13,25 @@ function GoogleIcon() {
   );
 }
 
+function EyeIcon({ off }) {
+  return (
+    <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+         strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z" />
+      <circle cx="12" cy="12" r="3.2" />
+      {off && <path d="M4 20 20 4" />}
+    </svg>
+  );
+}
+
 function friendlyError(code, message) {
   switch (code) {
     case "auth/user-not-found":
     case "auth/wrong-password":
-    case "auth/invalid-credential":    return "Incorrect email or password.";
+    case "auth/invalid-credential":
+      // Accounts created with Google have no password at all, so a saved
+      // password from the browser will always be rejected here.
+      return "That email and password didn't match. If you normally use Google, sign in with the button below — accounts created with Google don't have a password.";
     case "auth/email-already-in-use":  return "An account with this email already exists.";
     case "auth/weak-password":         return "Password must be at least 6 characters.";
     case "auth/invalid-email":         return "Please enter a valid email address.";
@@ -42,6 +56,8 @@ export default function LoginScreen() {
   const [error, setError]       = useState("");
   const [loading, setLoading]   = useState(false);
   const [notice, setNotice]     = useState("");
+  const [showPw, setShowPw]     = useState(false);
+  const [credFail, setCredFail] = useState(false);
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -51,6 +67,7 @@ export default function LoginScreen() {
       else await signInWithEmail(email, password);
     } catch (err) {
       const msg = friendlyError(err.code, err.message);
+      setCredFail(["auth/user-not-found", "auth/wrong-password", "auth/invalid-credential"].includes(err.code));
       if (msg) setError(msg);
     }
     setLoading(false);
@@ -68,7 +85,7 @@ export default function LoginScreen() {
   }
 
   async function handleGoogle() {
-    setError("");
+    setError(""); setCredFail(false);
     try { await signInWithGoogle(); }
     catch (err) { const msg = friendlyError(err.code, err.message); if (msg) setError(msg); }
   }
@@ -123,7 +140,25 @@ export default function LoginScreen() {
                 </label>
                 <label className="login2-field">
                   <span>PASSWORD</span>
-                  <input type="password" placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} required autoComplete={mode === "signup" ? "new-password" : "current-password"} />
+                  <span className="login2-pw">
+                    <input
+                      type={showPw ? "text" : "password"}
+                      placeholder="••••••••"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                      autoComplete={mode === "signup" ? "new-password" : "current-password"}
+                    />
+                    <button
+                      type="button"
+                      className="login2-eye"
+                      onClick={() => setShowPw((v) => !v)}
+                      aria-label={showPw ? "Hide password" : "Show password"}
+                      title={showPw ? "Hide password" : "Show password"}
+                    >
+                      <EyeIcon off={showPw} />
+                    </button>
+                  </span>
                 </label>
 
                 {mode === "signin" && (
@@ -131,7 +166,14 @@ export default function LoginScreen() {
                 )}
 
                 {(error || redirectError) && (
-                  <div className="login2-error">{error || friendlyError(redirectError) || "Sign-in error"}</div>
+                  <div className="login2-error">
+                    {error || friendlyError(redirectError) || "Sign-in error"}
+                    {credFail && (
+                      <button type="button" className="login2-error-cta" onClick={handleGoogle}>
+                        <GoogleIcon /> Continue with Google
+                      </button>
+                    )}
+                  </div>
                 )}
                 {notice && <div className="login2-notice">{notice}</div>}
 

@@ -2497,7 +2497,12 @@ body {
 .login2-field span { font-weight: 800; font-size: 0.66rem; letter-spacing: 0.09em; color: var(--muted); }
 .login2-field input { border: 2px solid var(--border); border-radius: 14px; padding: 14px 16px; font: inherit; font-size: 0.95rem; font-weight: 600; color: var(--ink); background: #fff; }
 .login2-field input:focus { outline: none; border-color: var(--brand); box-shadow: 0 0 0 4px rgba(18,165,255,0.15); }
-.login2-error { background: var(--wrong-bg); color: var(--wrong); border-radius: 12px; padding: 11px 14px; font-weight: 600; font-size: 0.85rem; }
+.login2-pw { position: relative; display: block; }
+.login2-pw input { width: 100%; padding-right: 50px; }
+.login2-eye { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); display: grid; place-items: center; width: 38px; height: 38px; border: none; background: none; cursor: pointer; color: var(--muted); border-radius: 10px; }
+.login2-eye:hover { color: var(--brand-ink); background: var(--surface-2, #f4f9ff); }
+.login2-error { background: var(--wrong-bg); color: var(--wrong); border-radius: 12px; padding: 11px 14px; font-weight: 600; font-size: 0.85rem; line-height: 1.5; }
+.login2-error-cta { width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 10px; border: 1.5px solid var(--border); background: #fff; border-radius: var(--r-full); padding: 11px; font-weight: 700; font-size: 0.88rem; color: var(--ink); cursor: pointer; }
 .login2-submit { border: none; background: var(--brand); color: #fff; border-radius: var(--r-full); padding: 16px; font-weight: 800; font-size: 1rem; margin-top: 4px; transition: transform 0.1s; }
 .login2-submit:hover:not(:disabled) { transform: translateY(-2px); }
 .login2-submit:disabled { opacity: 0.6; }
