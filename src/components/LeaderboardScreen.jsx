@@ -29,6 +29,7 @@ export default function LeaderboardScreen({ onPlay }) {
   const [copied, setCopied]   = useState(false);
   const [nameSheet, setNameSheet]     = useState(false);
   const [nameInput, setNameInput]     = useState("");
+  const [nameError, setNameError]     = useState("");
   const [toast, setToast]             = useState(null);
   const toastTimer                    = useRef(null);
 
@@ -85,8 +86,14 @@ export default function LeaderboardScreen({ onPlay }) {
   async function saveName() {
     const n = nameInput.trim();
     if (!n) return;
+    setNameError("");
+    try {
+      await updateDisplayName(n);
+    } catch (e) {
+      setNameError(e.message || "Please choose a different name.");
+      return; // keep the sheet open so they can fix it
+    }
     setNameSheet(false);
-    await updateDisplayName(n);
     showToast(`Name changed to ${n}`);
     load();
   }
@@ -136,7 +143,7 @@ export default function LeaderboardScreen({ onPlay }) {
                 {p.displayName || "Player"}{p.isMe && <span className="board-you"> (you)</span>}
               </span>
               {p.isMe && (
-                <button className="board-rename" onClick={() => { setNameInput(myName); setNameSheet(true); }}>Rename</button>
+                <button className="board-rename" onClick={() => { setNameInput(myName); setNameError(""); setNameSheet(true); }}>Rename</button>
               )}
               <span className="board-pts">{(p.weekPoints || 0).toLocaleString()}</span>
               {!p.isMe && managing && (
@@ -214,6 +221,7 @@ export default function LeaderboardScreen({ onPlay }) {
               autoFocus
               onKeyDown={(e) => { if (e.key === "Enter") saveName(); }}
             />
+            {nameError && <div className="board-msg err">{nameError}</div>}
             <button className="set-sheet-confirm" onClick={saveName} disabled={!nameInput.trim()}>Save name</button>
             <button className="set-sheet-cancel" onClick={() => setNameSheet(false)}>Cancel</button>
           </div>

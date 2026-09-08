@@ -7,13 +7,21 @@ export default function OnboardingScreen({ onDone }) {
   const { updateDisplayName } = useAuth();
   const [name, setName]   = useState("");
   const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
   const clean   = name.trim();
   const initial = clean.charAt(0).toUpperCase() || "?";
 
   async function create() {
     if (!clean || saving) return;
+    setError("");
     setSaving(true);
-    try { await updateDisplayName(clean); } catch { /* ignore */ }
+    try {
+      await updateDisplayName(clean);
+    } catch (e) {
+      setError(e.message || "Please choose a different name.");
+      setSaving(false);
+      return;
+    }
     onDone();
   }
 
@@ -36,6 +44,8 @@ export default function OnboardingScreen({ onDone }) {
           <div className="onb-avatar">{initial}</div>
           <div className="onb-preview-txt">On the board they'll show as <strong>{clean || "their name"}</strong></div>
         </div>
+
+        {error && <div className="onb-error">{error}</div>}
 
         <button className="onb-create" onClick={create} disabled={!clean || saving}>
           {saving ? "Creating…" : "Create profile"}

@@ -61,9 +61,14 @@ export default function SettingsScreen({ onOpenReport }) {
     const n = nameDraft.trim();
     if (!n || savingName) return;
     setSavingName(true);
-    setNameSheet(false); // close immediately — the update is optimistic
-    try { await updateDisplayName(n); setToast(`Name updated to ${n} ✓`); }
-    catch { setToast("Couldn't save name — please try again"); }
+    try {
+      await updateDisplayName(n);
+      setNameSheet(false);
+      setToast(`Name updated to ${n} ✓`);
+    } catch (e) {
+      // Say what was wrong with the name, and leave the sheet open to fix it.
+      setToast(e.message || "Couldn't save name — please try again");
+    }
     setSavingName(false);
     setTimeout(() => setToast(null), 2200);
   }

@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
+import { checkDisplayName } from "../utils/nameCheck";
 import {
   GoogleAuthProvider,
   signInWithPopup,
@@ -78,8 +79,12 @@ export function AuthProvider({ children }) {
   }
 
   async function signUpWithEmail(email, password, name) {
+    // Check the name before the account exists, so a rejected name doesn't
+    // leave someone signed up under nothing.
+    const check = checkDisplayName(name);
+    if (!check.ok) throw new Error(check.reason);
     const cred = await createUserWithEmailAndPassword(auth, email, password);
-    if (name) await updateProfile(cred.user, { displayName: name });
+    await updateProfile(cred.user, { displayName: check.value });
   }
 
   async function handleSignOut() {
@@ -89,8 +94,12 @@ export function AuthProvider({ children }) {
   // Set/change the child's display name (used on the leaderboard).
   async function updateDisplayName(name) {
     const u = auth.currentUser;
-    const clean = (name || "").trim();
-    if (!u || !clean) return;
+    // Every rename in the app comes through here — Settings, the leaderboard
+    // and onboarding — so this is the one place the rules have to hold.
+    const check = checkDisplayName(name);
+    if (!check.ok) throw new Error(check.reason);
+    const clean = check.value;
+    if (!u) return;
     // Optimistic: show the new name instantly (Firebase mutates currentUser in
     // place, so build a plain object the app's data-only reads can use).
     setUser({ uid: u.uid, displayName: clean, photoURL: u.photoURL, email: u.email });

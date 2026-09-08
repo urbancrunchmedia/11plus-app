@@ -1,10 +1,18 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import React, { act } from "react";
 import { createRoot } from "react-dom/client";
+import { checkDisplayName } from "../utils/nameCheck";
 
 // One stable object: the real provider hands down a stable value, and a fresh
 // one per call would re-fire the loader effect forever.
-const AUTH = { user: { uid: "u1", displayName: "Ava" }, updateDisplayName: vi.fn() };
+const AUTH = {
+  user: { uid: "u1", displayName: "Ava" },
+  // Mirrors the real context, which validates the name and throws the reason.
+  updateDisplayName: vi.fn(async (n) => {
+    const c = checkDisplayName(n);
+    if (!c.ok) throw new Error(c.reason);
+  }),
+};
 vi.mock("../contexts/AuthContext", () => ({ useAuth: () => AUTH }));
 vi.mock("../utils/cloudScores", () => ({
   syncProfile: vi.fn(async () => {}),
@@ -105,5 +113,20 @@ describe("LeaderboardScreen", () => {
     const points = [...el.querySelectorAll(".board-pts")].map((n) => n.textContent);
     expect(points).toEqual(["40", "12"]);
     expect(el.textContent).toContain("You're top of the board");
+  });
+
+  it("refuses an unacceptable name and keeps the dialog open to fix it", async () => {
+    const el = await render();
+    await act(async () => { el.querySelector(".board-rename").click(); });
+    const input = document.querySelector(".board-sheet-input");
+    await act(async () => {
+      Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value").set.call(input, "fuck");
+      input.dispatchEvent(new Event("input", { bubbles: true }));
+    });
+    await act(async () => { document.querySelector(".set-sheet-confirm").click(); });
+
+    expect(document.querySelector(".board-msg.err").textContent).toMatch(/isn't allowed/);
+    expect(document.querySelector(".board-sheet-input")).toBeTruthy(); // still open
+    expect(document.querySelector(".set-toast")).toBeNull();           // nothing claimed saved
   });
 });
