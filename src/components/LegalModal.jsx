@@ -2,7 +2,7 @@ import React from "react";
 
 // Simple in-app Privacy Policy / Terms. Plain, honest, UK-oriented. Have a
 // solicitor review before scaling — placeholders marked need your real details.
-export const CONTACT = "hello@11pluslab.com"; // TODO: confirm your real support email
+export const CONTACT = "hello@11pluslab.com"; // live mailbox (Hostinger)
 const APP = "11 Plus Lab";
 const ENTITY = "Urban Crunch Media Private Limited";
 const UPDATED = "September 2026";
