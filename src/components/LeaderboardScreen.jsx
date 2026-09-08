@@ -86,9 +86,17 @@ export default function LeaderboardScreen({ onPlay }) {
     load();
   }
 
-  function copyCode() {
-    if (!me?.code || !navigator.clipboard) return;
-    navigator.clipboard.writeText(me.code).then(() => { setCopied(true); setTimeout(() => setCopied(false), 1500); });
+  async function copyCode() {
+    if (!me?.code) return;
+    try {
+      await navigator.clipboard.writeText(me.code);
+      setCopied(true);
+      setMsg({ type: "ok", text: "Code copied — send it to your friend" });
+      setTimeout(() => setCopied(false), 1800);
+    } catch {
+      // No clipboard (older browser, or not on https) — show the code to type out.
+      setMsg({ type: "err", text: `Couldn't copy automatically — your code is ${me.code}` });
+    }
   }
 
   return (
@@ -104,9 +112,11 @@ export default function LeaderboardScreen({ onPlay }) {
       </div>
 
       <div className="board-list">
-        <button className={`board-listcta ${showAdd ? "open" : ""}`} onClick={() => setShowAdd((v) => !v)}>
-          {showAdd ? "Done" : "+ Add friend"}
-        </button>
+        <div className="board-listtop">
+          <button className={`board-listcta ${showAdd ? "open" : ""}`} onClick={() => setShowAdd((v) => !v)}>
+            {showAdd ? "Done" : "+ Add friend"}
+          </button>
+        </div>
 
         {showAdd && (
           <div className="board-addpanel">
@@ -114,7 +124,7 @@ export default function LeaderboardScreen({ onPlay }) {
               <span className="board-code-lbl">Your code</span>
               <span className="board-codewrap">
                 <span className="board-code">{me?.code || "…"}</span>
-                <button className="board-iconbtn" onClick={copyCode} disabled={!me?.code} aria-label={copied ? "Code copied" : "Copy your code"} title={copied ? "Copied!" : "Copy code"}>
+                <button className={`board-iconbtn ${copied ? "copied" : ""}`} onClick={copyCode} disabled={!me?.code} aria-label={copied ? "Code copied" : "Copy your code"} title={copied ? "Copied!" : "Copy code"}>
                   <Icon name={copied ? "check" : "copy"} size={16} stroke="currentColor" strokeWidth={2} />
                 </button>
               </span>

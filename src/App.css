@@ -2245,7 +2245,8 @@ body {
    brand fill = the main action inside a card (.pw-cta / .spot-next)
    surface-2 = secondary (.set-ghost) · bare text = tertiary */
 /* Sits inside the ink card, exactly like the dashboard's .dash-side-cta. */
-.board-listcta { width: 100%; border: none; cursor: pointer; background: var(--accent); color: var(--ink); border-radius: var(--r-full); padding: 14px; text-align: center; font-weight: 800; font-size: 0.95rem; margin-bottom: 12px; transition: transform 0.1s; }
+.board-listtop { display: flex; justify-content: flex-end; margin-bottom: 12px; }
+.board-listcta { border: none; cursor: pointer; background: var(--accent); color: var(--ink); border-radius: var(--r-full); padding: 11px 20px; font-weight: 800; font-size: 0.88rem; flex: none; transition: transform 0.1s; }
 .board-listcta:hover { transform: translateY(-2px); }
 /* Panel open: the primary has moved into the panel ("Add"), so the trigger calms down. */
 .board-listcta.open { background: rgba(255,255,255,0.12); color: rgba(255,255,255,0.75); font-weight: 700; transform: none; }
@@ -2259,12 +2260,13 @@ body {
 .board-input:focus { outline: none; border-color: var(--brand); }
 .board-iconbtn { border: none; cursor: pointer; background: var(--surface-2, #f4f9ff); color: var(--brand-ink); border-radius: 10px; width: 32px; height: 32px; display: grid; place-items: center; flex: none; transition: background 0.12s, color 0.12s; }
 .board-iconbtn:hover { background: #e4f6ff; }
+.board-iconbtn.copied { background: var(--correct-bg, #e8f9ec); color: var(--correct); }
 .board-iconbtn:disabled { opacity: 0.45; }
 .board-ghost { border: none; background: var(--surface-2, #f4f9ff); color: var(--muted); border-radius: 12px; padding: 11px 16px; font-weight: 700; font-size: 0.82rem; flex: none; }
 .board-ghost:disabled { opacity: 0.5; }
-.board-go { border: none; cursor: pointer; background: var(--brand); color: #fff; border-radius: 14px; padding: 11px 20px; font-weight: 800; font-size: 0.85rem; flex: none; box-shadow: 0 8px 20px rgba(18,165,255,0.32); transition: transform 0.1s; }
-.board-go:hover { transform: translateY(-1px); }
-.board-go:disabled { opacity: 0.45; box-shadow: none; transform: none; }
+.board-go { border: none; cursor: pointer; background: var(--brand); color: #fff; border-radius: 12px; padding: 12px 22px; font-weight: 800; font-size: 0.85rem; flex: none; transition: background 0.12s; }
+.board-go:hover { background: var(--brand-ink); }
+.board-go:disabled { opacity: 0.45; }
 .board-hint { font-weight: 500; font-size: 0.78rem; color: var(--muted); line-height: 1.45; }
 .board-msg { font-weight: 700; font-size: 0.8rem; }
 .board-msg.ok { color: var(--correct); }

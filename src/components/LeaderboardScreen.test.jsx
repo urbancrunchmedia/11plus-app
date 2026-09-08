@@ -60,4 +60,21 @@ describe("LeaderboardScreen", () => {
     expect(remove.getAttribute("aria-label")).toBe("Remove Sam");
     expect(remove.textContent.trim()).toBe(""); // icon only
   });
+  it("says out loud that the code was copied", async () => {
+    const writeText = vi.fn(async () => {});
+    Object.defineProperty(navigator, "clipboard", { value: { writeText }, configurable: true });
+    const el = await render();
+    await act(async () => { el.querySelector(".board-listcta").click(); });
+    await act(async () => { el.querySelector(".board-iconbtn").click(); });
+    expect(writeText).toHaveBeenCalledWith("WM-7H2K9");
+    expect(el.textContent).toContain("Code copied");
+  });
+
+  it("shows the code to type out when the clipboard is unavailable", async () => {
+    Object.defineProperty(navigator, "clipboard", { value: undefined, configurable: true });
+    const el = await render();
+    await act(async () => { el.querySelector(".board-listcta").click(); });
+    await act(async () => { el.querySelector(".board-iconbtn").click(); });
+    expect(el.textContent).toContain("WM-7H2K9");
+  });
 });
