@@ -2239,8 +2239,13 @@ body {
 .board-icon { width: 52px; height: 52px; border-radius: 17px; background: #fff6d6; display: grid; place-items: center; font-size: 1.5rem; flex: none; }
 .board-title { font-weight: 800; font-size: 1.7rem; color: var(--ink); letter-spacing: -0.02em; }
 .board-sub { font-weight: 600; font-size: 0.85rem; color: var(--muted, #6b7a8c); margin-top: 3px; }
-.board-add { border: none; background: var(--accent); color: var(--ink); border-radius: var(--r-full); padding: 12px 18px; font-weight: 800; font-size: 0.85rem; flex: none; }
-.board-add.open { background: transparent; color: var(--muted); box-shadow: inset 0 0 0 1.5px var(--border); }
+/* Board button ladder, matching the rest of the app:
+   lime pill = the page's one primary (.landing-start / .dash-hero-cta)
+   white head pill = a header action (.dash-pill)
+   brand fill = the main action inside a card (.pw-cta / .spot-next)
+   surface-2 = secondary (.set-ghost) · bare text = tertiary */
+.board-headbtn { border: none; background: #fff; color: var(--ink); border-radius: var(--r-full); padding: 12px 18px; font-weight: 700; font-size: 0.85rem; box-shadow: var(--shadow-xs); flex: none; }
+.board-headbtn.open { background: var(--surface-2, #f4f9ff); color: var(--muted); box-shadow: none; }
 
 .board-addpanel { background: #fff; border-radius: 20px; padding: 16px; box-shadow: var(--shadow-xs); display: flex; flex-direction: column; gap: 10px; }
 .board-addrow { display: flex; align-items: center; gap: 10px; }
@@ -2248,13 +2253,12 @@ body {
 .board-code { font-weight: 800; font-size: 1.05rem; letter-spacing: 1px; color: var(--brand-ink); flex: 1; }
 .board-input { flex: 1; min-width: 0; background: var(--surface-2, #f4f9ff); border: 2px solid var(--border); border-radius: 12px; padding: 11px 14px; font: inherit; font-weight: 600; color: var(--ink); }
 .board-input:focus { outline: none; border-color: var(--brand); }
-/* One primary per panel: --go is the lime accent used for primaries app-wide;
-   everything else in the panel is a quiet secondary. */
-.board-mini-btn { border: none; background: var(--surface-2, #f4f9ff); color: var(--brand-ink); box-shadow: inset 0 0 0 1.5px var(--border); border-radius: 12px; padding: 11px 16px; font-weight: 700; font-size: 0.82rem; flex: none; }
-.board-mini-btn:disabled { opacity: 0.5; }
-.board-mini-btn--go { background: var(--accent); color: var(--ink); box-shadow: none; font-weight: 800; }
-.board-mini-btn--go:disabled { opacity: 0.45; }
-.board-cancel { border: none; background: none; color: var(--muted); font-weight: 600; font-size: 0.8rem; padding: 0 2px; flex: none; }
+.board-ghost { border: none; background: var(--surface-2, #f4f9ff); color: var(--muted); border-radius: 12px; padding: 11px 16px; font-weight: 700; font-size: 0.82rem; flex: none; }
+.board-ghost:disabled { opacity: 0.5; }
+.board-go { border: none; cursor: pointer; background: var(--brand); color: #fff; border-radius: 14px; padding: 11px 20px; font-weight: 800; font-size: 0.85rem; flex: none; box-shadow: 0 8px 20px rgba(18,165,255,0.32); transition: transform 0.1s; }
+.board-go:hover { transform: translateY(-1px); }
+.board-go:disabled { opacity: 0.45; box-shadow: none; transform: none; }
+.board-hint { font-weight: 500; font-size: 0.78rem; color: var(--muted); line-height: 1.45; }
 .board-msg { font-weight: 700; font-size: 0.8rem; }
 .board-msg.ok { color: var(--correct); }
 .board-msg.err { color: var(--wrong); }
@@ -2272,9 +2276,7 @@ body {
 .board-you { font-weight: 500; color: rgba(255,255,255,0.75); }
 .board-pts { font-weight: 800; font-size: 1rem; color: var(--ink); }
 .board-row.me .board-pts { color: var(--accent); }
-.board-remove { border: none; background: var(--wrong-bg); color: var(--wrong); border-radius: var(--r-full); padding: 8px 15px; font-weight: 800; font-size: 0.8rem; flex: none; margin-left: auto; }
-.board-managebar { display: flex; justify-content: flex-end; margin: -2px 2px 0; }
-.board-manage { border: none; background: none; color: var(--brand-ink); font-weight: 700; font-size: 0.82rem; padding: 4px 2px; }
+.board-remove { border: none; background: var(--wrong-bg); color: var(--wrong); border-radius: var(--r-full); padding: 8px 15px; font-weight: 700; font-size: 0.78rem; flex: none; margin-left: auto; }
 .board-empty-title { font-weight: 800; font-size: 1.05rem; color: var(--ink); }
 .board-empty-sub { font-weight: 500; font-size: 0.85rem; color: var(--muted); margin-top: 4px; }
 
@@ -2283,8 +2285,8 @@ body {
 .board-foot { background: var(--ink); border-radius: 24px; padding: 20px 22px; display: flex; align-items: center; gap: 16px; }
 .board-foot-title { font-weight: 800; font-size: 1rem; color: #fff; }
 .board-foot-sub { font-weight: 500; font-size: 0.82rem; color: rgba(255,255,255,0.6); margin-top: 3px; }
-.board-foot-cta { cursor: pointer; background: transparent; color: #fff; border: 1.5px solid rgba(255,255,255,0.45); border-radius: var(--r-full); padding: 12px 22px; font-weight: 800; font-size: 0.9rem; flex: none; margin-left: auto; transition: background 0.12s; }
-.board-foot-cta:hover { background: rgba(255,255,255,0.12); }
+.board-foot-cta { cursor: pointer; background: var(--accent); color: var(--ink); border: none; border-radius: var(--r-full); padding: 13px 24px; font-weight: 800; font-size: 0.9rem; flex: none; margin-left: auto; transition: transform 0.1s; }
+.board-foot-cta:hover { transform: translateY(-2px); }
 
 @media (max-width: 640px) {
   .board-title { font-size: 1.4rem; }

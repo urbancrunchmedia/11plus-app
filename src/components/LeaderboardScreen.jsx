@@ -20,13 +20,12 @@ export default function LeaderboardScreen({ onPlay }) {
   const [people, setPeople]   = useState([]);
   const [loading, setLoading] = useState(true);
   const [showAdd, setShowAdd] = useState(false);
-  const [managing, setManaging]     = useState(false);
   const [removeTarget, setRemoveTarget] = useState(null);
   const [code, setCode]       = useState("");
   const [adding, setAdding]   = useState(false);
   const [msg, setMsg]         = useState(null);
   const [copied, setCopied]   = useState(false);
-  const [editingName, setEditingName] = useState(false);
+  const [nameSheet, setNameSheet]     = useState(false);
   const [nameInput, setNameInput]     = useState("");
 
   const myName = me?.displayName || user?.displayName || "Player";
@@ -69,11 +68,10 @@ export default function LeaderboardScreen({ onPlay }) {
     load();
   }
 
-  async function saveName(e) {
-    e.preventDefault();
+  async function saveName() {
     const n = nameInput.trim();
     if (!n) return;
-    setEditingName(false);
+    setNameSheet(false);
     await updateDisplayName(n);
     setMsg({ type: "ok", text: `Name changed to ${n}` });
     load();
@@ -94,7 +92,7 @@ export default function LeaderboardScreen({ onPlay }) {
             <div className="board-sub">Friends · compete with your friends</div>
           </div>
         </div>
-        <button className={`board-add ${showAdd ? "open" : ""}`} onClick={() => setShowAdd((v) => !v)}>{showAdd ? "Close" : "+ Add friend"}</button>
+        <button className={`board-headbtn ${showAdd ? "open" : ""}`} onClick={() => setShowAdd((v) => !v)}>{showAdd ? "Done" : "+ Add friend"}</button>
       </div>
 
       {showAdd && (
@@ -102,7 +100,7 @@ export default function LeaderboardScreen({ onPlay }) {
           <div className="board-addrow">
             <span className="board-code-lbl">Your code</span>
             <span className="board-code">{me?.code || "…"}</span>
-            <button className="board-mini-btn" onClick={copyCode} disabled={!me?.code}>{copied ? "Copied!" : "Copy"}</button>
+            <button className="board-ghost" onClick={copyCode} disabled={!me?.code}>{copied ? "Copied!" : "Copy"}</button>
           </div>
           <form className="board-addrow" onSubmit={handleAdd}>
             <input
@@ -112,28 +110,15 @@ export default function LeaderboardScreen({ onPlay }) {
               onChange={(e) => setCode(formatCode(e.target.value))}
               inputMode="text" autoCapitalize="characters" autoCorrect="off" spellCheck={false}
             />
-            <button className="board-mini-btn board-mini-btn--go" type="submit" disabled={adding || codeChars < 7}>{adding ? "…" : "Add"}</button>
+            <button className="board-go" type="submit" disabled={adding || codeChars < 7}>{adding ? "…" : "Add"}</button>
           </form>
           {msg && <div className={msg.type === "ok" ? "board-msg ok" : "board-msg err"}>{msg.text}</div>}
-          {!editingName ? (
-            <button className="board-editname" onClick={() => { setNameInput(myName); setEditingName(true); }}>
-              Playing as <b>{myName}</b> — edit
-            </button>
-          ) : (
-            <form className="board-addrow" onSubmit={saveName}>
-              <input className="board-input" value={nameInput} onChange={(e) => setNameInput(e.target.value)} maxLength={20} placeholder="Child's name" autoFocus />
-              <button className="board-mini-btn" type="submit" disabled={!nameInput.trim()}>Save</button>
-              <button className="board-cancel" type="button" onClick={() => setEditingName(false)}>Cancel</button>
-            </form>
-          )}
-        </div>
-      )}
-
-      {!loading && rows.length > 1 && (
-        <div className="board-managebar">
-          <button className="board-manage" onClick={() => setManaging((m) => !m)}>
-            {managing ? "Done" : "Manage friends"}
+          <button className="board-editname" onClick={() => { setNameInput(myName); setNameSheet(true); }}>
+            Playing as <b>{myName}</b> — edit
           </button>
+          {rows.length > 1 && (
+            <div className="board-hint">While this is open you can remove anyone from your board.</div>
+          )}
         </div>
       )}
 
@@ -148,8 +133,8 @@ export default function LeaderboardScreen({ onPlay }) {
               <span className="board-name">
                 {p.displayName || "Player"}{p.isMe && <span className="board-you"> (you)</span>}
               </span>
-              {!(managing && !p.isMe) && <span className="board-pts">{(p.points || 0).toLocaleString()}</span>}
-              {!p.isMe && managing && (
+              {!(showAdd && !p.isMe) && <span className="board-pts">{(p.points || 0).toLocaleString()}</span>}
+              {!p.isMe && showAdd && (
                 <button className="board-remove" onClick={() => setRemoveTarget(p)} aria-label={`Remove ${p.displayName || "friend"}`}>Remove</button>
               )}
             </div>
@@ -160,7 +145,7 @@ export default function LeaderboardScreen({ onPlay }) {
       {!loading && rows.length <= 1 && (
         <div className="board-empty">
           <div className="board-empty-title">No friends yet</div>
-          <div className="board-empty-sub">Add a friend with their code to start comparing scores.</div>
+          <div className="board-empty-sub">Tap <b>+ Add friend</b> at the top and swap codes to start comparing scores.</div>
         </div>
       )}
 
@@ -171,6 +156,26 @@ export default function LeaderboardScreen({ onPlay }) {
             <div className="board-foot-sub">Every round you play counts towards this week</div>
           </div>
           {onPlay && <button className="board-foot-cta" onClick={onPlay}>Play a round</button>}
+        </div>
+      )}
+
+      {nameSheet && (
+        <div className="set-sheet-overlay" onClick={() => setNameSheet(false)}>
+          <div className="set-sheet" onClick={(e) => e.stopPropagation()}>
+            <div className="set-sheet-title">Learner's name</div>
+            <div className="set-sheet-sub">This shows on the leaderboard and at the end of every round.</div>
+            <input
+              className="set-name-input"
+              value={nameInput}
+              onChange={(e) => setNameInput(e.target.value)}
+              placeholder="e.g. Amu"
+              maxLength={20}
+              autoFocus
+              onKeyDown={(e) => { if (e.key === "Enter") saveName(); }}
+            />
+            <button className="set-sheet-confirm" onClick={saveName} disabled={!nameInput.trim()}>Save name</button>
+            <button className="set-sheet-cancel" onClick={() => setNameSheet(false)}>Cancel</button>
+          </div>
         </div>
       )}
 
