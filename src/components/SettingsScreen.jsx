@@ -45,6 +45,7 @@ export default function SettingsScreen({ onOpenReport }) {
   const [nameDraft, setNameDraft] = useState("");
   const [savingName, setSavingName] = useState(false);
   const [toast, setToast] = useState(null);
+  const [confirmPinOff, setConfirmPinOff] = useState(false);
   const [legal, setLegal] = useState(null); // "privacy" | "terms" | null
 
   function update(key, value) {
@@ -140,11 +141,21 @@ export default function SettingsScreen({ onOpenReport }) {
         <div className="set-divider" />
 
         <div className="set-row">
-          <div className="set-row-txt"><div className="set-row-label">Default difficulty</div><div className="set-row-sub">New rounds start at this level</div></div>
+          <div className="set-row-txt"><div className="set-row-label">Default difficulty</div><div className="set-row-sub">{isPremium ? "New rounds start at this level" : "Levels B and C need Full Access"}</div></div>
           <div className="set-seg">
-            {DIFFS.map((d) => (
-              <button key={d.id} className={`set-seg-btn ${s.defaultDifficulty === d.id ? "active" : ""}`} onClick={() => update("defaultDifficulty", d.id)}>{d.id}</button>
-            ))}
+            {DIFFS.map((d) => {
+              const locked = !isPremium && d.id !== "A";
+              return (
+                <button
+                  key={d.id}
+                  className={`set-seg-btn ${s.defaultDifficulty === d.id ? "active" : ""} ${locked ? "locked" : ""}`}
+                  onClick={() => (locked ? openPaywall("level") : update("defaultDifficulty", d.id))}
+                >
+                  {d.id}
+                  {locked && <Icon name="lock" size={10} stroke="currentColor" strokeWidth={2.4} />}
+                </button>
+              );
+            })}
           </div>
         </div>
         <div className="set-divider" />
@@ -198,7 +209,7 @@ export default function SettingsScreen({ onOpenReport }) {
               {s.childPin ? (
                 <>
                   <button className="set-ghost" onClick={() => { setPinInput(""); setEditingPin(true); }}>Change</button>
-                  <button className="set-ghost" onClick={() => update("childPin", "")}>Turn off</button>
+                  <button className="set-ghost" onClick={() => setConfirmPinOff(true)}>Turn off</button>
                 </>
               ) : (
                 <button className="set-ghost" onClick={() => { setPinInput(""); setEditingPin(true); }}>Set PIN</button>
@@ -233,6 +244,19 @@ export default function SettingsScreen({ onOpenReport }) {
       </div>
 
       {legal && <LegalModal doc={legal} onClose={() => setLegal(null)} />}
+      {confirmPinOff && (
+        <div className="set-sheet-overlay" onClick={() => setConfirmPinOff(false)}>
+          <div className="set-sheet" onClick={(e) => e.stopPropagation()}>
+            <div className="set-sheet-title">Turn off the Child PIN?</div>
+            <div className="set-sheet-sub">
+              The app will open without a PIN, and any lock that relies on it will switch off too.
+            </div>
+            <button className="set-sheet-confirm" onClick={() => { update("childPin", ""); update("parentPinLock", false); setConfirmPinOff(false); setToast("Child PIN turned off"); }}>Turn it off</button>
+            <button className="set-sheet-cancel" onClick={() => setConfirmPinOff(false)}>Keep the PIN</button>
+          </div>
+        </div>
+      )}
+
       {toast && <div className="set-toast">{toast}</div>}
 
       {sheet && (

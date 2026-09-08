@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
+import LeaveRoundConfirm from "./LeaveRoundConfirm";
 import { wordData } from "../data/words";
 import { bookletWordData } from "../data/bookletWords";
 import GameComplete from "./GameComplete";
@@ -106,6 +107,7 @@ export default function GameScreen({ level, gameType, totalQuestions = 20, onHom
   const [totalWrong, setTotalWrong]   = useState(0);
   const [gameComplete, setGameComplete] = useState(false);
   const [muted, setMuted]             = useState(false);
+  const [confirmLeave, setConfirmLeave] = useState(false);
   const [elapsed, setElapsed]         = useState(0);
   const startTimeRef                  = useRef(Date.now());
 
@@ -232,11 +234,17 @@ export default function GameScreen({ level, gameType, totalQuestions = 20, onHom
     );
   }
 
+  function requestExit() {
+    if (results.length > 0 || totalWrong > 0) setConfirmLeave(true);
+    else onHome();
+  }
+
   return (
     <div className="game-screen">
+      {confirmLeave && <LeaveRoundConfirm onLeave={onHome} onStay={() => setConfirmLeave(false)} />}
       {/* Top: back · progress pips · mute */}
       <div className="ig-top">
-        <button className="ig-back" onClick={onHome} aria-label="Home">←</button>
+        <button className="ig-back" onClick={requestExit} aria-label="Home">←</button>
         <div className="ig-pips">
           {Array.from({ length: roundLength }, (_, i) => (
             <span key={i} className={`ig-pip ${i < results.length ? "done" : ""}`} />

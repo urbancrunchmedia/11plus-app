@@ -74,6 +74,7 @@ export default function LeaderboardScreen({ onPlay }) {
     if (!n) return;
     setEditingName(false);
     await updateDisplayName(n);
+    setMsg({ type: "ok", text: `Name changed to ${n}` });
     load();
   }
 

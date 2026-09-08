@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
+import LeaveRoundConfirm from "./LeaveRoundConfirm";
 import GameComplete from "./GameComplete";
 import { playCorrect, playWrong } from "../utils/feedback";
 
@@ -21,6 +22,7 @@ export default function WorksheetGame({
   const [answers, setAnswers]     = useState({}); // qIdx -> { left, right }
   const [checked, setChecked]     = useState(false);
   const [muted, setMuted]         = useState(false);
+  const [confirmLeave, setConfirmLeave] = useState(false);
   const [elapsed, setElapsed]     = useState(0);
   const [done, setDone]           = useState(false);
   const startTimeRef              = useRef(Date.now());
@@ -88,10 +90,16 @@ export default function WorksheetGame({
     );
   }
 
+  function requestExit() {
+    if (Object.keys(answers).length > 0) setConfirmLeave(true);
+    else onHome();
+  }
+
   return (
     <div className="game-screen">
+      {confirmLeave && <LeaveRoundConfirm onLeave={onHome} onStay={() => setConfirmLeave(false)} />}
       <div className="ig-top">
-        <button className="ig-back" onClick={onHome} aria-label="Home">←</button>
+        <button className="ig-back" onClick={requestExit} aria-label="Home">←</button>
         <div className="ws-head-title">
           <span className="ws-head-name">{typeLabel}</span>
           {level !== "all" && <span className="ws-head-level">Level {level}</span>}

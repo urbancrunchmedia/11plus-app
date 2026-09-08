@@ -9,6 +9,7 @@ export default function ChildGate({
   resetLabel = "Forgot your PIN? Grown-up reset",
 }) {
   const [entry, setEntry] = useState("");
+  const [confirmReset, setConfirmReset] = useState(false);
   const [shake, setShake] = useState(false);
   const initial = name ? name.trim().charAt(0).toUpperCase() : "A";
   const len = pin.length || 4;
@@ -50,9 +51,22 @@ export default function ChildGate({
           )}
         </div>
 
-        <button className="cgate-reset" onClick={onReset}>{resetLabel}</button>
-        {onCancel && <button className="cgate-reset" onClick={onCancel}>Back</button>}
+        {onCancel && <button className="cgate-back" onClick={onCancel}>Back</button>}
+        <button className="cgate-reset" onClick={() => setConfirmReset(true)}>{resetLabel}</button>
       </div>
+
+      {confirmReset && (
+        <div className="set-sheet-overlay" onClick={() => setConfirmReset(false)}>
+          <div className="set-sheet" onClick={(e) => e.stopPropagation()}>
+            <div className="set-sheet-title">Turn the lock off?</div>
+            <div className="set-sheet-sub">
+              Anyone using this device will be able to get in without the PIN. You can turn it back on in Settings.
+            </div>
+            <button className="set-sheet-confirm" onClick={onReset}>Turn the lock off</button>
+            <button className="set-sheet-cancel" onClick={() => setConfirmReset(false)}>Keep it on</button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

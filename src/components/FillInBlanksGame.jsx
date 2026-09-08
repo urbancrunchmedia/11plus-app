@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
+import LeaveRoundConfirm from "./LeaveRoundConfirm";
 import { fillInBlanksData } from "../data/fillInBlanks";
 import GameComplete from "./GameComplete";
 import Icon from "./Icon";
@@ -48,6 +49,7 @@ export default function FillInBlanksGame({ level, totalQuestions = 20, onHome, m
   const [flash, setFlash]           = useState(null); // { idx, type }
   const [gameComplete, setGameComplete] = useState(false);
   const [muted, setMuted]           = useState(mutedProp ?? false);
+  const [confirmLeave, setConfirmLeave] = useState(false);
   const [elapsed, setElapsed]       = useState(0);
   const startTimeRef                = useRef(Date.now());
 
@@ -87,10 +89,26 @@ export default function FillInBlanksGame({ level, totalQuestions = 20, onHome, m
     }
   }
 
+  function handlePlayAgain() {
+    const next = buildQuestions(level, totalQuestions, practice);
+    // In practice mode the queue can be empty once everything's fixed.
+    if (!next.length) { onHome(); return; }
+    questions.current = next;
+    startTimeRef.current = Date.now();
+    setCurrent(0);
+    setWrongCount(0);
+    setResults([]);
+    setTotalWrong(0);
+    setStreak(0);
+    setFlash(null);
+    setElapsed(0);
+    setGameComplete(false);
+  }
+
   if (gameComplete) {
     return (
       <GameComplete results={results} totalWrong={totalWrong} timeTaken={elapsed}
-        onPlayAgain={onHome} onHome={onHome} level={level} gameType="fillInBlanks" totalQuestions={total} />
+        onPlayAgain={handlePlayAgain} onHome={onHome} level={level} gameType="fillInBlanks" totalQuestions={total} />
     );
   }
 
@@ -100,10 +118,16 @@ export default function FillInBlanksGame({ level, totalQuestions = 20, onHome, m
   // Reveal the word in the sentence on a correct answer.
   const revealed = flash?.type === "correct";
 
+  function requestExit() {
+    if (results.length > 0 || wrongCount > 0) setConfirmLeave(true);
+    else onHome();
+  }
+
   return (
     <div className="game-screen">
+      {confirmLeave && <LeaveRoundConfirm onLeave={onHome} onStay={() => setConfirmLeave(false)} />}
       <div className="ig-top">
-        <button className="ig-back" onClick={onHome} aria-label="Home">←</button>
+        <button className="ig-back" onClick={requestExit} aria-label="Home">←</button>
         <div className="ig-pips">
           {questions.current.map((_, i) => <span key={i} className={`ig-pip ${i < results.length ? "done" : ""}`} />)}
         </div>

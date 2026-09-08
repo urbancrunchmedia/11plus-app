@@ -19,6 +19,17 @@ const BENEFITS = [
   "Cancel anytime",
 ];
 
+function friendlyError(message) {
+  const m = (message || "").toLowerCase();
+  if (m.includes("failed to fetch") || m.includes("networkerror") || m.includes("load failed"))
+    return "We couldn't reach the payment page — check your connection and try again.";
+  if (m.includes("sign") || m.includes("token") || m.includes("unauthor") || m.includes("401"))
+    return "Your session expired. Please sign out, sign back in and try again.";
+  if (m.includes("price") || m.includes("no such"))
+    return "That plan isn't available right now. Please try the other plan, or come back shortly.";
+  return "Something went wrong starting checkout — no payment was taken. Please try again.";
+}
+
 export default function Paywall({ reason = "feature", onClose }) {
   const { user } = useAuth();
   const { subscription } = usePremium();
@@ -39,7 +50,7 @@ export default function Paywall({ reason = "feature", onClose }) {
       await startCheckout(priceId);
       // On success the browser redirects to Stripe; keep the spinner until then.
     } catch (e) {
-      setErr(e.message || "Something went wrong. Please try again.");
+      setErr(friendlyError(e.message));
       setBusy(false);
     }
   }

@@ -162,7 +162,8 @@ function AppInner() {
   }
 
   function handleSelectGame(id) {
-    if (id !== "me") setParentUnlocked(false); // re-lock the grown-up area
+    // Re-lock only when leaving the grown-up area (Settings + Report) entirely.
+    if (id !== "me" && id !== "report") setParentUnlocked(false);
     setSelectedGame(id);
     setScreen("home");
   }
@@ -191,7 +192,8 @@ function AppInner() {
 
   const isDashboard      = selectedGame === "home";
   const isMe             = selectedGame === "me";
-  const needsParentPin   = isMe && !!childPin && getSetting("parentPinLock", false) && !parentUnlocked;
+  const isReport         = selectedGame === "report";
+  const needsParentPin   = (isMe || isReport) && !!childPin && getSetting("parentPinLock", false) && !parentUnlocked;
   const isWordMatch      = selectedGame === "wordMatch";
   const isCompoundWords  = selectedGame === "compoundWords";
   const isPunctuation    = selectedGame === "punctuation";
@@ -199,7 +201,6 @@ function AppInner() {
   const isFillInBlanks   = selectedGame === "fillInBlanks";
   const isWordList       = selectedGame === "wordList";
   const isLeaderboard    = selectedGame === "leaderboard";
-  const isReport         = selectedGame === "report";
   const isKnown =
     isDashboard || isMe || isWordMatch || isCompoundWords ||
     isPunctuation || isSpelling || isFillInBlanks || isWordList || isLeaderboard || isReport;
@@ -218,33 +219,31 @@ function AppInner() {
             />
           )}
 
-          {/* Me — profile & settings (optionally PIN-protected from the child) */}
-          {isMe && (
+          {/* Grown-up area — Settings and the progress report share one PIN gate,
+              so a reload straight into the report can't slip past the lock. */}
+          {(isMe || isReport) && (
             needsParentPin ? (
               <ChildGate
                 name={user.displayName}
                 pin={childPin}
                 title="Grown-ups only"
-                prompt="Enter the PIN to open Settings"
+                prompt={isMe ? "Enter the PIN to open Settings" : "Enter the PIN to open the progress report"}
                 resetLabel="Forgot the PIN? Turn the lock off"
                 onUnlock={() => setParentUnlocked(true)}
                 onReset={() => { setSetting("parentPinLock", false); setParentUnlocked(true); }}
                 onCancel={() => handleSelectGame("home")}
               />
-            ) : (
+            ) : isMe ? (
               <SettingsScreen
                 onHome={() => handleSelectGame("home")}
                 onOpenReport={() => handleSelectGame("report")}
               />
+            ) : (
+              <ProgressReport
+                onBack={() => handleSelectGame("me")}
+                onPractise={() => handleSelectGame("fillInBlanks")}
+              />
             )
-          )}
-
-          {/* Parent progress report */}
-          {isReport && (
-            <ProgressReport
-              onBack={() => handleSelectGame("me")}
-              onPractise={() => handleSelectGame("fillInBlanks")}
-            />
           )}
 
           {/* Word Match — synonyms/antonyms, in Match or Worksheet format */}

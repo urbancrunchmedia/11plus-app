@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
+import LeaveRoundConfirm from "./LeaveRoundConfirm";
 import GameComplete from "./GameComplete";
 import Icon from "./Icon";
 import { makeCompoundBuildQuestions, makeCompoundQuestionsFromTargets } from "../utils/worksheet";
@@ -26,6 +27,7 @@ export default function CompoundGame({ level, totalQuestions = 20, onHome, pract
   const [streak, setStreak]   = useState(0);
   const [elapsed, setElapsed] = useState(0);
   const [muted, setMuted]     = useState(false);
+  const [confirmLeave, setConfirmLeave] = useState(false);
   const [done, setDone]       = useState(false);
   const startRef = useRef(Date.now());
   const locked   = useRef(false);
@@ -92,10 +94,16 @@ export default function CompoundGame({ level, totalQuestions = 20, onHome, pract
     );
   }
 
+  function requestExit() {
+    if (results.length > 0 || totalWrong > 0) setConfirmLeave(true);
+    else onHome();
+  }
+
   return (
     <div className="game-screen">
+      {confirmLeave && <LeaveRoundConfirm onLeave={onHome} onStay={() => setConfirmLeave(false)} />}
       <div className="ig-top">
-        <button className="ig-back" onClick={onHome} aria-label="Home">←</button>
+        <button className="ig-back" onClick={requestExit} aria-label="Home">←</button>
         <div className="ig-pips">
           {questions.map((_, i) => (
             <span key={i} className={`ig-pip ${i < results.length ? "done" : ""}`} />

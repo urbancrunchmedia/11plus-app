@@ -42,7 +42,7 @@ export default function DetectiveScreen({ onPlay, onLearn, onExit }) {
         <div className="landing-icon" style={{ background: SKILL_ICON.fillInBlanks.bg }}><Icon name="detect" stroke={SKILL_ICON.fillInBlanks.stroke} size={26} /></div>
         <div className="landing-head-txt">
           <h1 className="landing-h1">Word Detective</h1>
-          <div className="landing-sub">Work out the missing word from clues{skillM.attempted ? ` · ${masteryPct}% accuracy` : ""}</div>
+          <div className="landing-sub">Words from every level, mixed together{skillM.attempted ? ` · ${masteryPct}% accuracy` : ""}</div>
         </div>
         <span className="landing-xp">{getXp().toLocaleString()} XP</span>
       </div>
