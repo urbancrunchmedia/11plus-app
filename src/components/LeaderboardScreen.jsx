@@ -30,6 +30,7 @@ export default function LeaderboardScreen({ onPlay }) {
   const [nameInput, setNameInput]     = useState("");
 
   const myName = me?.displayName || user?.displayName || "Player";
+  const codeChars = code.replace(/[^A-Z0-9]/g, "").length; // a full code is 7, e.g. WM-7H2K9
 
   const load = useCallback(async () => {
     if (!user) return;
@@ -93,7 +94,7 @@ export default function LeaderboardScreen({ onPlay }) {
             <div className="board-sub">Friends · compete with your friends</div>
           </div>
         </div>
-        <button className="board-add" onClick={() => setShowAdd((s) => !s)}>+ Add friend</button>
+        <button className={`board-add ${showAdd ? "open" : ""}`} onClick={() => setShowAdd((v) => !v)}>{showAdd ? "Close" : "+ Add friend"}</button>
       </div>
 
       {showAdd && (
@@ -111,7 +112,7 @@ export default function LeaderboardScreen({ onPlay }) {
               onChange={(e) => setCode(formatCode(e.target.value))}
               inputMode="text" autoCapitalize="characters" autoCorrect="off" spellCheck={false}
             />
-            <button className="board-mini-btn board-mini-btn--go" type="submit" disabled={adding}>{adding ? "…" : "Add"}</button>
+            <button className="board-mini-btn board-mini-btn--go" type="submit" disabled={adding || codeChars < 7}>{adding ? "…" : "Add"}</button>
           </form>
           {msg && <div className={msg.type === "ok" ? "board-msg ok" : "board-msg err"}>{msg.text}</div>}
           {!editingName ? (
@@ -121,7 +122,8 @@ export default function LeaderboardScreen({ onPlay }) {
           ) : (
             <form className="board-addrow" onSubmit={saveName}>
               <input className="board-input" value={nameInput} onChange={(e) => setNameInput(e.target.value)} maxLength={20} placeholder="Child's name" autoFocus />
-              <button className="board-mini-btn board-mini-btn--go" type="submit">Save</button>
+              <button className="board-mini-btn" type="submit" disabled={!nameInput.trim()}>Save</button>
+              <button className="board-cancel" type="button" onClick={() => setEditingName(false)}>Cancel</button>
             </form>
           )}
         </div>
