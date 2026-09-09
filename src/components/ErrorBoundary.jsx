@@ -23,7 +23,10 @@ export default class ErrorBoundary extends React.Component {
   handleReload = () => {
     // Clearing the remembered screen avoids reloading straight back into a
     // section that was mid-crash.
-    try { localStorage.removeItem("11plus_last_screen"); } catch { /* ignore */ }
+    try {
+      localStorage.removeItem("11plus_last_screen");
+      sessionStorage.removeItem("11plus_screen");
+    } catch { /* ignore */ }
     window.location.reload();
   };
 

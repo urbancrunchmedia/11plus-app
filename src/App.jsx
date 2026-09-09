@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { chooseStartScreen } from "./utils/startScreen";
 import AppNav from "./components/AppNav";
 import HomeDashboard from "./components/HomeDashboard";
 import SettingsScreen from "./components/SettingsScreen";
@@ -79,22 +80,16 @@ function AppInner() {
   // All hooks must run on every render (before any early return) — otherwise
   // the hook count changes when auth flips logged-out → logged-in and React
   // crashes the tree to a blank screen (only a refresh recovered it).
-  const VALID_SCREENS = [
-    "home", "me", "wordMatch", "compoundWords",
-    "punctuation", "spelling", "fillInBlanks", "wordList", "leaderboard", "report",
-  ];
-  // Settings and the report are grown-up screens: opening the app on one is
-  // wrong after a sign-in, and hands a child the parent's section on a refresh.
-  const RESTORABLE = VALID_SCREENS.filter((v) => v !== "me" && v !== "report");
   const [selectedGame, setSelectedGame] = useState(() => {
     try {
-      const last = localStorage.getItem("11plus_last_screen");
-      return RESTORABLE.includes(last) ? last : "home";
+      return chooseStartScreen(sessionStorage.getItem("11plus_screen"), localStorage.getItem("11plus_last_screen"));
     } catch { return "home"; }
   });
-  // Remember the current section so a refresh stays on the same page
   useEffect(() => {
-    try { localStorage.setItem("11plus_last_screen", selectedGame); } catch {}
+    try {
+      sessionStorage.setItem("11plus_screen", selectedGame);   // this visit
+      localStorage.setItem("11plus_last_screen", selectedGame); // later visits
+    } catch { /* private mode */ }
   }, [selectedGame]);
 
   const [screen, setScreen] = useState("home");
