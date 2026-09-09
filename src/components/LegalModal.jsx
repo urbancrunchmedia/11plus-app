@@ -1,14 +1,18 @@
 import React from "react";
 
-// Simple in-app Privacy Policy / Terms. Plain, honest, UK-oriented. Have a
-// solicitor review before scaling — placeholders marked need your real details.
+// Simple in-app Privacy Policy / Terms. Plain, honest, UK-oriented. All real
+// company details filled in; have a solicitor review before marketing to children at scale.
 export const CONTACT = "hello@11pluslab.com"; // live mailbox (Hostinger)
 const APP = "11 Plus Lab";
 const ENTITY = "Urban Crunch Media Limited";
+const COMPANY_NUMBER = "15899109";
+const REGISTERED_IN = "England and Wales";
+const REGISTERED_OFFICE = "16 Hoylake Road, Sale, England, M33 2XH";
 const UPDATED = "September 2026";
 
 const PRIVACY = [
   ["Who we are", `${APP} is an educational word-game app to help children practise for the 11+, operated by ${ENTITY}. This policy explains what we collect and why. Questions: ${CONTACT}.`],
+  ["Company details", `${ENTITY} is registered in ${REGISTERED_IN}, company number ${COMPANY_NUMBER}. Registered office: ${REGISTERED_OFFICE}.`],
   ["Who uses the app", "Accounts are created and managed by a parent or guardian. The app is designed to be used by a child under adult supervision. We ask parents not to enter more personal information about a child than the first name/nickname shown in the app."],
   ["What we collect", "• The account email address you sign in with (via Google or email/password).\n• The learner's display name you choose (shown on the leaderboard and results).\n• Gameplay data — scores, progress, streaks and which questions were answered — to save progress and show your stats.\n• If you subscribe, payment is handled by Stripe. We never see or store your card details."],
   ["How we use it", "To run the app, save and sync progress across your devices, show a friends leaderboard (only with people whose code you add), and manage subscriptions. We do not sell your data or use it for advertising."],
@@ -21,6 +25,7 @@ const PRIVACY = [
 
 const TERMS = [
   ["Agreement", `${APP} is operated by ${ENTITY}. By using the app you agree to these terms. If you don't agree, please don't use the app. A parent or guardian accepts these terms on behalf of the child using the app.`],
+  ["Company details", `${ENTITY} is registered in ${REGISTERED_IN}, company number ${COMPANY_NUMBER}. Registered office: ${REGISTERED_OFFICE}.`],
   ["The service", "The app provides educational games to practise 11+ vocabulary, spelling and punctuation. It's a study aid — it does not guarantee any particular exam result."],
   ["Accounts", "You're responsible for your account and for supervising the child who uses it. Keep your login details secure."],
   ["Subscriptions & billing", "Full Access is available as a subscription: £4.99/month or £34.99/year, each starting with a 7-day free trial. The free trial is available once per customer. After the trial it renews automatically until cancelled. You can cancel any time from Settings → Manage billing; access continues to the end of the paid period. Payments are processed by Stripe. Prices include applicable tax where required."],
