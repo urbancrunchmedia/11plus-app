@@ -182,15 +182,17 @@ export default function GameScreen({ level, gameType, totalQuestions = 20, onHom
           const qi        = pickNonColliding(queue, others);
           const nextPair  = queue[qi];
           const newQueue  = queue.filter((_, i) => i !== qi);
-          const newBoard = board.map((slot, i) =>
+          const refilled = board.map((slot, i) =>
             i === leftIdx ? makeItem(nextPair) : slot
           );
-          // Re-shuffle the right column so the row-to-row mapping changes every
-          // turn — otherwise kids learn the fixed positions and match without reading.
+          // Shuffle the left column too (not just the right) — otherwise the
+          // fresh word always lands in the same slot and kids just keep
+          // tapping that slot without reading it.
+          const newBoard = shuffle(refilled);
           setGame({ board: newBoard, queue: newQueue, rightOrder: derange(newBoard.length) });
         } else {
           // Queue exhausted — shrink the board for the final matches
-          const newBoard = board.filter((_, i) => i !== leftIdx);
+          const newBoard = shuffle(board.filter((_, i) => i !== leftIdx));
           setGame({ board: newBoard, queue: [], rightOrder: derange(newBoard.length) });
         }
 
