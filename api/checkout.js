@@ -26,6 +26,11 @@ export default async function handler(req, res) {
       ...(trialEligible ? { subscription_data: { trial_period_days: 7 } } : {}),
       allow_promotion_codes: true,
       client_reference_id: uid,
+      // Stripe Tax: turning it on in the Dashboard only configures it — a
+      // Checkout Session still has to opt in per-session, and needs a
+      // billing address to know which jurisdiction's tax applies.
+      automatic_tax: { enabled: true },
+      billing_address_collection: "required",
       success_url: `${origin}/?checkout=success`,
       cancel_url: `${origin}/?checkout=cancel`,
     });
