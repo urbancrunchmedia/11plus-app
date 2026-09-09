@@ -7,7 +7,7 @@ const AUTH = {
   signOut: vi.fn(),
   updateDisplayName: vi.fn(),
 };
-let premium = { isPremium: false, subscription: { status: "none" }, openPaywall: vi.fn() };
+let premium = { isPremium: false, subscription: { status: "none" }, openPaywall: vi.fn(), loading: false };
 vi.mock("../contexts/AuthContext", () => ({ useAuth: () => AUTH }));
 vi.mock("../contexts/PremiumContext", () => ({ usePremium: () => premium }));
 vi.mock("../utils/subscription", () => ({ openBillingPortal: vi.fn() }));
@@ -27,7 +27,7 @@ describe("SettingsScreen", () => {
   beforeEach(() => {
     document.body.innerHTML = "";
     localStorage.clear();
-    premium = { isPremium: false, subscription: { status: "none" }, openPaywall: vi.fn() };
+    premium = { isPremium: false, subscription: { status: "none" }, openPaywall: vi.fn(), loading: false };
   });
 
   it("mounts and shows the account", async () => {
@@ -48,7 +48,7 @@ describe("SettingsScreen", () => {
   });
 
   it("lets a paying account pick any level", async () => {
-    premium = { isPremium: true, subscription: { status: "active" }, openPaywall: vi.fn() };
+    premium = { isPremium: true, subscription: { status: "active" }, openPaywall: vi.fn(), loading: false };
     const el = await mount();
     const levelC = el.querySelectorAll(".set-seg")[1].querySelectorAll(".set-seg-btn")[2];
     expect(levelC.className).not.toContain("locked");
@@ -72,5 +72,29 @@ describe("SettingsScreen", () => {
 
     await act(async () => { [...el.querySelectorAll("button")].find((b) => b.textContent === "Turn off").click(); });
     expect(document.querySelector(".set-sheet-title").textContent).toContain("Turn off the Child PIN");
+  });
+
+  it("shows a neutral loading state instead of flashing the free plan", async () => {
+    premium = { isPremium: false, subscription: { status: "none" }, openPaywall: vi.fn(), loading: true };
+    const el = await mount();
+    expect(el.querySelector(".set-plan--loading")).toBeTruthy();
+    expect(el.textContent).not.toContain("FREE PLAN");
+    expect(el.textContent).not.toContain("Upgrade");
+  });
+
+  // The real bug: cancelled-but-still-active means isPremium is true, so
+  // Resubscribe has to reach the paywall despite that.
+  it("lets a cancelled (still-active) account reach Resubscribe", async () => {
+    premium = {
+      isPremium: true,
+      subscription: { status: "active", cancelAtPeriodEnd: true, currentPeriodEnd: Date.now() + 5 * 86400000 },
+      openPaywall: vi.fn(),
+      loading: false,
+    };
+    const el = await mount();
+    const resub = [...el.querySelectorAll("button")].find((b) => b.textContent === "Resubscribe");
+    expect(resub).toBeTruthy();
+    await act(async () => { resub.click(); });
+    expect(premium.openPaywall).toHaveBeenCalledWith("feature");
   });
 });

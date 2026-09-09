@@ -27,7 +27,7 @@ function initial(name) { return name ? name.trim().charAt(0).toUpperCase() : "A"
 
 export default function SettingsScreen({ onOpenReport }) {
   const { user, signOut, updateDisplayName } = useAuth();
-  const { isPremium, subscription, openPaywall } = usePremium();
+  const { isPremium, subscription, openPaywall, loading: subLoading } = usePremium();
   const stats = getStats();
   const [portalBusy, setPortalBusy] = useState(false);
 
@@ -97,7 +97,18 @@ export default function SettingsScreen({ onOpenReport }) {
         <button className="set-editname" onClick={openNameSheet}>Edit name</button>
       </div>
 
-      {/* Plan: free / full access / cancelling (ends on a date) */}
+      {/* Plan: free / full access / cancelling (ends on a date). Skip the card
+          entirely while the real answer is still loading — `sub` starts out
+          as free on every mount, so painting it early flashes the wrong plan
+          (and a cancelled trial the wrong colour) for whoever refreshes. */}
+      {subLoading ? (
+        <div className="set-plan set-plan--loading" aria-busy="true">
+          <div className="set-plan-txt">
+            <div className="set-plan-badge">CHECKING YOUR PLAN…</div>
+            <div className="set-plan-title">One moment</div>
+          </div>
+        </div>
+      ) : (
       <div className={`set-plan ${isPremium ? (endingSoon ? "ending" : "premium") : ""}`}>
         <div className="set-plan-txt">
           <div className="set-plan-badge">
@@ -137,6 +148,7 @@ export default function SettingsScreen({ onOpenReport }) {
           </button>
         )}
       </div>
+      )}
 
       {/* Your learning */}
       <div className="set-card">
