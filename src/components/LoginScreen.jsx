@@ -1,6 +1,15 @@
 import React, { useState } from "react";
 import { useAuth } from "../contexts/AuthContext";
-import Icon from "./Icon";
+import Icon, { SKILL_ICON } from "./Icon";
+
+// What the app actually contains, shown before anyone signs in.
+const GAME_STRIP = [
+  { skill: "wordMatch",     label: "Word Match",     hook: "Pair words with the same or opposite meaning" },
+  { skill: "fillInBlanks",  label: "Word Detective", hook: "Crack the clue to find the missing word" },
+  { skill: "punctuation",   label: "Punctuation",    hook: "Spot the punctuation mistake" },
+  { skill: "spelling",      label: "Spelling",       hook: "Spot the misspelled section" },
+  { skill: "compoundWords", label: "Compound Words", hook: "Join two words into one" },
+];
 
 function GoogleIcon() {
   return (
@@ -98,12 +107,24 @@ export default function LoginScreen() {
         <div className="login2-hero-bg2" />
         <div className="login2-logo">11</div>
         <div className="login2-hero-mid">
-          <div className="login2-tagline">Ten minutes a day beats an hour on Sunday.</div>
-          <div className="login2-blurb">Vocabulary, punctuation and compound words for the 11+ — as short daily rounds you'll actually want to finish.</div>
+          <div className="login2-tagline">Master the words. Ace the 11+.</div>
         </div>
-        <div className="login2-stats">
-          <div className="login2-stat">🔥 Build a daily streak</div>
-          <div className="login2-stat"><Icon className="inline-ico" name="book" size={14} stroke="currentColor" strokeWidth={2} /> 700+ words to master</div>
+        <div className="login2-games">
+          {GAME_STRIP.map((g, i) => {
+            const ic = SKILL_ICON[g.skill];
+            const last = i === GAME_STRIP.length - 1 && GAME_STRIP.length % 2 === 1;
+            return (
+              <div className={`login2-game${last ? " login2-game--wide" : ""}`} key={g.skill}>
+                <div className="login2-game-ic" style={{ background: ic.bg }}>
+                  <Icon name={ic.name} stroke={ic.stroke} size={17} strokeWidth={2} />
+                </div>
+                <div className="login2-game-text">
+                  <div className="login2-game-name">{g.label}</div>
+                  <div className="login2-game-hook">{g.hook}</div>
+                </div>
+              </div>
+            );
+          })}
         </div>
       </div>
 
