@@ -77,6 +77,10 @@ export default function SettingsScreen({ onOpenReport }) {
   const endingSoon = isPremium && !!subscription?.cancelAtPeriodEnd;
   const endsOn     = formatDate(subscription?.currentPeriodEnd);
   const [now]      = useState(() => Date.now()); // one clock reading per mount, not per render
+  // During a trial the card must say a charge is coming, and when.
+  const onTrial    = subscription?.status === "trialing";
+  const trialEnds  = formatDate(subscription?.trialEnd);
+  const trialPrice = subscription?.interval === "year" ? "£34.99" : "£4.99";
   const renewsOn   = isComp ? null : formatDate(subscription?.currentPeriodEnd);
   const daysLeft   = subscription?.currentPeriodEnd
     ? Math.max(0, Math.ceil((subscription.currentPeriodEnd - now) / 86400000))
@@ -97,7 +101,7 @@ export default function SettingsScreen({ onOpenReport }) {
       <div className={`set-plan ${isPremium ? (endingSoon ? "ending" : "premium") : ""}`}>
         <div className="set-plan-txt">
           <div className="set-plan-badge">
-            {!isPremium ? "FREE PLAN" : endingSoon ? "CANCELLED" : isComp ? "FULL ACCESS · COMPLIMENTARY" : "FULL ACCESS"}
+            {!isPremium ? "FREE PLAN" : endingSoon ? "CANCELLED" : isComp ? "FULL ACCESS · COMPLIMENTARY" : onTrial ? "FREE TRIAL" : "FULL ACCESS"}
           </div>
           <div className="set-plan-title">
             {!isPremium
@@ -111,9 +115,11 @@ export default function SettingsScreen({ onOpenReport }) {
               ? "Free is Level A with a daily limit. Full Access opens Levels B & C, unlimited rounds and the parent report."
               : endingSoon
                 ? `You still have Full Access${daysLeft != null ? ` for ${daysLeft} more ${daysLeft === 1 ? "day" : "days"}` : ""}${endsOn ? ` — until ${endsOn}` : ""}. Resubscribe any time to keep it.`
-                : renewsOn
-                  ? `All levels, unlimited rounds and the progress report are on. Renews ${renewsOn}.`
-                  : "All levels, unlimited rounds and the progress report are on."}
+                : onTrial
+                  ? `All levels, unlimited rounds and the progress report are on.${trialEnds ? ` Your free trial ends on ${trialEnds}, when the first payment of ${trialPrice} is taken.` : ""} Cancel any time before then and you won't be charged.`
+                  : renewsOn
+                    ? `All levels, unlimited rounds and the progress report are on. Renews ${renewsOn}.`
+                    : "All levels, unlimited rounds and the progress report are on."}
           </div>
         </div>
         {!isPremium ? (
