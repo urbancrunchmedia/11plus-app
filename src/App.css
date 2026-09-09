@@ -2350,9 +2350,13 @@ body {
 .gc-streak-title { font-weight: 700; font-size: 0.95rem; color: var(--ink); }
 .gc-streak-sub { font-weight: 500; font-size: 0.78rem; color: var(--muted); margin-top: 2px; }
 
-.gc-watch { width: 100%; background: rgba(255,255,255,0.16); border-radius: 22px; padding: 16px 18px; margin-top: 14px; display: flex; align-items: center; gap: 12px; color: #fff; font-weight: 600; font-size: 0.88rem; }
+.gc-watch { width: 100%; background: rgba(255,255,255,0.16); border-radius: 22px; padding: 16px 18px; margin-top: 14px; display: flex; align-items: center; flex-wrap: wrap; gap: 10px 12px; color: #fff; font-weight: 600; font-size: 0.88rem; }
 .gc-watch-ic { font-size: 1.2rem; }
+.gc-watch-txt { flex: 1; min-width: 0; }
 .gc-watch strong { font-weight: 800; }
+/* Secondary action, matching .board-manage's white-pill-on-colour-card treatment
+   — only "Play again" (.gc-again) should be the vibrant green primary CTA. */
+.gc-watch-cta { flex: none; background: #fff; color: var(--ink); border: none; border-radius: var(--r-full); padding: 8px 16px; font-weight: 800; font-size: 0.78rem; white-space: nowrap; box-shadow: var(--shadow-xs); }
 
 .gc-actions { width: 100%; display: flex; flex-direction: column; gap: 10px; margin-top: 22px; }
 .gc-again { background: var(--accent); color: var(--ink); border: none; border-radius: var(--r-full); padding: 18px; font-weight: 800; font-size: 1.1rem; transition: transform 0.1s; }

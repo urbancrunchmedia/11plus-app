@@ -67,23 +67,30 @@ function pickNonColliding(queue, boardItems) {
 export default function GameScreen({ level, gameType, totalQuestions = 20, onHome, pairs, instruction, typeLabel: typeLabelProp, practice = false }) {
   // Practice = only the pairs you've missed. Otherwise a caller can pass an
   // explicit `pairs` list, or we fall back to synonyms/antonyms by level+type.
-  const allPairs = practice ? getMisses(SKILL) : (pairs ?? [
+  const basePairs = practice ? getMisses(SKILL) : (pairs ?? [
     ...(wordData[level]?.[gameType] ?? []),
     ...(bookletWordData[level]?.[gameType] ?? []),
   ]);
   // In practice, the round is exactly the missed pairs (min 1 so the board works).
-  const roundLength = practice ? Math.max(1, allPairs.length) : totalQuestions;
+  const baseLength = practice ? Math.max(1, basePairs.length) : totalQuestions;
+  // Set by "Practice these" on the results screen to replay just this round's
+  // misses, overriding the normal level/practice pool until the next Play again.
+  const [overridePairs, setOverridePairs] = useState(null);
+  const allPairs    = overridePairs ?? basePairs;
+  const roundLength = overridePairs ? overridePairs.length : baseLength;
   const performance  = useRef({});  // word → last stars, persists across replays
 
   // `perf` is passed in rather than read from the ref, so the first board can
   // be built during render without touching a ref (there's no history yet).
-  function buildGame(perf = {}) {
-    const list = buildPrioritisedList(allPairs, perf);
+  // `srcPairs`/`srcLength` default to the current pool but can be passed
+  // explicitly so a caller can build from a fresh list before state updates.
+  function buildGame(perf = {}, srcPairs = allPairs, srcLength = roundLength) {
+    const list = buildPrioritisedList(srcPairs, perf);
     // No words for this level/type (or an emptied practice queue): there's no
     // round to build, so hand back an empty board and leave rather than crash.
     if (!list.length) return { board: [], queue: [], rightOrder: [] };
     // Cycle list if fewer words than the round length
-    const full = Array.from({ length: roundLength }, (_, i) => list[i % list.length]);
+    const full = Array.from({ length: srcLength }, (_, i) => list[i % list.length]);
     // Greedily seat a starting board whose left words AND right matches are all
     // distinct — otherwise two identical cards would make a match ambiguous
     // (common with compound words that share a half, e.g. Back-drop / Rain-drop).
@@ -217,7 +224,27 @@ export default function GameScreen({ level, gameType, totalQuestions = 20, onHom
     // eslint-disable-next-line react-hooks/purity
     setStartTime(Date.now());
     setElapsed(0);
-    setGame(buildGame(performance.current));
+    setOverridePairs(null);
+    setGame(buildGame(performance.current, basePairs, baseLength));
+    setResults([]);
+    setSelectedLeft(null);
+    setJustMatched(null);
+    setWrongFlash(null);
+    setStreak(0);
+    setTotalWrong(0);
+    setGameComplete(false);
+  }
+
+  // "Practice these" on the results screen — replay just the words that took
+  // more than one try this round, instead of the normal level/practice pool.
+  function handlePracticeMisses() {
+    const missed = results.filter((r) => r.stars < 3).map((r) => ({ word: r.word, match: r.match }));
+    if (!missed.length) return;
+    // eslint-disable-next-line react-hooks/purity
+    setStartTime(Date.now());
+    setElapsed(0);
+    setOverridePairs(missed);
+    setGame(buildGame(performance.current, missed, missed.length));
     setResults([]);
     setSelectedLeft(null);
     setJustMatched(null);
@@ -237,6 +264,7 @@ export default function GameScreen({ level, gameType, totalQuestions = 20, onHom
         totalWrong={totalWrong}
         timeTaken={elapsed}
         onPlayAgain={handlePlayAgain}
+        onPracticeMisses={handlePracticeMisses}
         onHome={onHome}
         level={level}
         gameType={gameType}
@@ -264,7 +292,7 @@ export default function GameScreen({ level, gameType, totalQuestions = 20, onHom
           ))}
         </div>
         <button className="ig-mute" onClick={() => setMuted((m) => !m)} aria-label={muted ? "Unmute" : "Mute"}>
-          <Icon name={muted ? "volumeOff" : "volumeOn"} size={18} stroke="currentColor" strokeWidth={2} />
+          <Icon name={muted ? "bellOff" : "bell"} size={18} stroke="currentColor" strokeWidth={2} />
         </button>
       </div>
 

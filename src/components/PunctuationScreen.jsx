@@ -97,7 +97,6 @@ export default function PunctuationScreen({ onPlay, onExit }) {
 
       <div className="landing-hero landing-hero--row">
         <div className="landing-hero-body">
-          <span className="dash-chip">PICKED FOR YOU</span>
           <div className="landing-hero-title">{setLabel} · {totalQuestions} questions</div>
           <div className="landing-hero-blurb">Find the section with the punctuation or capital-letter mistake — or spot when there's none.</div>
         </div>

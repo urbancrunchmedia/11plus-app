@@ -47,7 +47,6 @@ export default function HomeDashboard({ onPlaySkill, onOpenBoard }) {
         </div>
         <div className="dash-head-pills">
           <span className="dash-pill dash-pill--dark">🔥 {stats.streak} day streak</span>
-          <span className="dash-pill">{stats.badges} badges</span>
         </div>
       </div>
 

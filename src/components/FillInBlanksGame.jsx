@@ -105,10 +105,27 @@ export default function FillInBlanksGame({ level, totalQuestions = 20, onHome, m
     setGameComplete(false);
   }
 
+  // "Practice these" on the results screen — replay just this round's misses.
+  // `results` has one entry per question in order, so it lines up with `questions`.
+  function handlePracticeMisses() {
+    const missed = questions.filter((_, i) => results[i]?.stars < 3);
+    if (!missed.length) return;
+    setQuestions(missed);
+    setStartTime(Date.now());
+    setCurrent(0);
+    setWrongCount(0);
+    setResults([]);
+    setTotalWrong(0);
+    setStreak(0);
+    setFlash(null);
+    setElapsed(0);
+    setGameComplete(false);
+  }
+
   if (gameComplete) {
     return (
       <GameComplete results={results} totalWrong={totalWrong} timeTaken={elapsed}
-        onPlayAgain={handlePlayAgain} onHome={onHome} level={level} gameType="fillInBlanks" totalQuestions={total} />
+        onPlayAgain={handlePlayAgain} onPracticeMisses={handlePracticeMisses} onHome={onHome} level={level} gameType="fillInBlanks" totalQuestions={total} />
     );
   }
 
@@ -131,7 +148,7 @@ export default function FillInBlanksGame({ level, totalQuestions = 20, onHome, m
         <div className="ig-pips">
           {questions.map((_, i) => <span key={i} className={`ig-pip ${i < results.length ? "done" : ""}`} />)}
         </div>
-        <button className="ig-mute" onClick={() => setMuted((m) => !m)} aria-label={muted ? "Unmute" : "Mute"}><Icon name={muted ? "volumeOff" : "volumeOn"} size={18} stroke="currentColor" strokeWidth={2} /></button>
+        <button className="ig-mute" onClick={() => setMuted((m) => !m)} aria-label={muted ? "Unmute" : "Mute"}><Icon name={muted ? "bellOff" : "bell"} size={18} stroke="currentColor" strokeWidth={2} /></button>
       </div>
 
       <div className="ig-hud">

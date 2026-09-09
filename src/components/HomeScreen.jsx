@@ -151,7 +151,6 @@ export default function HomeScreen({ gameType, onPlay, onLearn, initialConfig, o
             </div>
           </div>
         )}
-        <span className="dash-chip">PICKED FOR YOU</span>
         <div className="landing-hero-title">
           {noLevel ? `All words · ${totalQuestions}` : `Level ${level} · ${totalQuestions} words`}
         </div>

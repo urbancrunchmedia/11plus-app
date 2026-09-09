@@ -15,6 +15,10 @@ const ICONS = {
   lock:     '<rect x="5" y="11" width="14" height="9" rx="2.2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>',
   volumeOn: '<path d="M11 5 6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 6a8.5 8.5 0 0 1 0 12"/>',
   volumeOff:'<path d="M11 5 6 9H3v6h3l5 4z"/><path d="M22 9l-5 5"/><path d="M17 9l5 5"/>',
+  // Sound-effects mute toggle (bell), kept visually distinct from `volumeOn` —
+  // that one means "read this aloud" (FlashcardScreen's text-to-speech).
+  bell:     '<path d="M7 16V11a5 5 0 0 1 10 0v5l1.5 2H5.5z"/><path d="M10 19.5a2 2 0 0 0 4 0"/>',
+  bellOff:  '<path d="M7 16V11a5 5 0 0 1 10 0v5l1.5 2H5.5z"/><path d="M10 19.5a2 2 0 0 0 4 0"/><path d="M22 9l-5 5"/><path d="M17 9l5 5"/>',
   star:     '<path d="M12 3.5l2.6 5.3 5.9.9-4.25 4.1 1 5.8L12 17l-5.25 2.6 1-5.8L3.5 9.7l5.9-.9z"/>',
   flame:    '<path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.07-2.14-.22-4.05 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.15.43-2.29 1-3a2.5 2.5 0 0 0 2.5 2.5z"/>',
   trophy:   '<path d="M7 5h10v4a5 5 0 0 1-10 0z"/><path d="M7 6H4v1.4A3.6 3.6 0 0 0 7.6 11"/><path d="M17 6h3v1.4A3.6 3.6 0 0 1 16.4 11"/><path d="M12 14v3"/><path d="M8.5 20h7"/><path d="M9.5 20l.5-3h4l.5 3"/>',

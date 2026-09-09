@@ -6,7 +6,7 @@ import { addWeeklyPoints } from "../utils/weekly";
 import { useAuth } from "../contexts/AuthContext";
 import Icon from "./Icon";
 
-export default function GameComplete({ results, totalWrong, timeTaken, onPlayAgain, onHome, level, gameType, totalQuestions }) {
+export default function GameComplete({ results, totalWrong, timeTaken, onPlayAgain, onPracticeMisses, onHome, level, gameType, totalQuestions }) {
   const totalStars = results.reduce((sum, r) => sum + r.stars, 0);
   // Correct = answers that earned stars (in one-shot games a wrong answer is 0).
   const correctCount = results.filter((r) => r.stars > 0).length;
@@ -69,7 +69,10 @@ export default function GameComplete({ results, totalWrong, timeTaken, onPlayAga
         {watch.length > 0 && (
           <div className="gc-watch">
             <span className="gc-watch-ic"><Icon name="target" size={18} stroke="currentColor" strokeWidth={2} /></span>
-            <span>Worth another look: <strong>{watch.slice(0, 4).join(", ")}</strong>{watch.length > 4 ? "…" : ""}</span>
+            <span className="gc-watch-txt">Worth another look: <strong>{watch.slice(0, 4).join(", ")}</strong>{watch.length > 4 ? "…" : ""}</span>
+            {onPracticeMisses && (
+              <button className="gc-watch-cta" onClick={onPracticeMisses}>Fix these {watch.length}</button>
+            )}
           </div>
         )}
 

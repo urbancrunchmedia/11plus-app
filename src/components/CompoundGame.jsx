@@ -79,6 +79,17 @@ export default function CompoundGame({ level, totalQuestions = 20, onHome, pract
     locked.current = false;
   }
 
+  // "Practice these" on the results screen — replay just this round's misses.
+  function practiceMisses() {
+    const missed = results.filter((r) => r.stars < 3).map((r) => ({ first: r.word, second: r.match }));
+    if (!missed.length) return;
+    setStartTime(Date.now());
+    setQuestions(makeCompoundQuestionsFromTargets(missed));
+    setIdx(0); setWrong(0); setFlash(null); setJustRight(null);
+    setResults([]); setTotalWrong(0); setStreak(0); setElapsed(0); setDone(false);
+    locked.current = false;
+  }
+
   if (done) {
     return (
       <GameComplete
@@ -86,6 +97,7 @@ export default function CompoundGame({ level, totalQuestions = 20, onHome, pract
         totalWrong={totalWrong}
         timeTaken={elapsed}
         onPlayAgain={playAgain}
+        onPracticeMisses={practiceMisses}
         onHome={onHome}
         level={level}
         gameType="compoundWords"
@@ -109,7 +121,7 @@ export default function CompoundGame({ level, totalQuestions = 20, onHome, pract
             <span key={i} className={`ig-pip ${i < results.length ? "done" : ""}`} />
           ))}
         </div>
-        <button className="ig-mute" onClick={() => setMuted((m) => !m)} aria-label={muted ? "Unmute" : "Mute"}><Icon name={muted ? "volumeOff" : "volumeOn"} size={18} stroke="currentColor" strokeWidth={2} /></button>
+        <button className="ig-mute" onClick={() => setMuted((m) => !m)} aria-label={muted ? "Unmute" : "Mute"}><Icon name={muted ? "bellOff" : "bell"} size={18} stroke="currentColor" strokeWidth={2} /></button>
       </div>
 
       <div className="ig-hud">
