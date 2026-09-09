@@ -27,7 +27,7 @@ service cloud.firestore {
     // friendship doc with them; nobody else, and never enumerable.
     match /profiles/{uid} {
       allow get: if isOwner(uid) || (signedIn() && isFriend(uid));
-      allow write: if isOwner(uid)
+      allow create, update: if isOwner(uid)
         && validDisplayName(request.resource.data.displayName)
         && request.resource.data.points is number
         && request.resource.data.points >= 0
@@ -35,6 +35,11 @@ service cloud.firestore {
         && request.resource.data.weekPoints >= 0
         && request.resource.data.code is string
         && request.resource.data.code.size() <= 12;
+      // A field-validation rule on `write` also covers delete, where
+      // request.resource is null — that would deny every delete outright
+      // (account deletion / data-rights tooling included). Deleting your
+      // own profile needs no field checks, only ownership.
+      allow delete: if isOwner(uid);
     }
 
     // codes/{code} -> { uid, displayName }. Lets someone look a friend up by
@@ -48,6 +53,9 @@ service cloud.firestore {
         && request.resource.data.uid == request.auth.uid
         && (resource == null || resource.data.uid == request.auth.uid)
         && validDisplayName(request.resource.data.displayName);
+      // Needed for account deletion: removing your own code entry so a
+      // deleted account's code can't keep resolving to a live lookup.
+      allow delete: if signedIn() && resource.data.uid == request.auth.uid;
     }
 
     // Shared, mutual friendship links

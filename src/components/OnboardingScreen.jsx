@@ -45,6 +45,8 @@ export default function OnboardingScreen({ onDone }) {
           <div className="onb-preview-txt">On the board they'll show as <strong>{clean || "their name"}</strong></div>
         </div>
 
+        <div className="onb-privacy-note">Your grown-up can see how you're doing in Settings.</div>
+
         {error && <div className="onb-error">{error}</div>}
 
         <button className="onb-create" onClick={create} disabled={!clean || saving}>

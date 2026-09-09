@@ -62,6 +62,7 @@ export default function Paywall({ reason = "feature", onClose }) {
         <div className="pw-badge">FULL ACCESS</div>
         <h2 className="pw-title">{r.title}</h2>
         <p className="pw-sub">{r.sub}</p>
+        <p className="pw-ask-grownup">Ask a grown-up to unlock this with you — it needs their card.</p>
 
         <ul className="pw-benefits">
           {BENEFITS.map((b) => <li key={b}><span className="pw-tick">✓</span>{b}</li>)}

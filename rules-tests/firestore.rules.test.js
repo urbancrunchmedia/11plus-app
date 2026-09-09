@@ -158,3 +158,39 @@ describe("Regression — existing app flows still work exactly as before", () =>
     await assertFails(ctx(STRANGER).doc(`users/${ME}`).get());
   });
 });
+
+describe("Account deletion — a user can remove everything of their own", () => {
+  it("can delete their own profile", async () => {
+    await seedProfile(ME);
+    await assertSucceeds(ctx(ME).doc(`profiles/${ME}`).delete());
+  });
+
+  it("cannot delete someone else's profile", async () => {
+    await seedProfile(FRIEND);
+    await assertFails(ctx(ME).doc(`profiles/${FRIEND}`).delete());
+  });
+
+  it("can delete their own codes/{code} entry", async () => {
+    await seedCode("WM-MINE1", ME, "Amu");
+    await assertSucceeds(ctx(ME).doc("codes/WM-MINE1").delete());
+  });
+
+  it("cannot delete a code entry that belongs to someone else", async () => {
+    await seedCode("WM-TAKEN", FRIEND, "Sam");
+    await assertFails(ctx(ME).doc("codes/WM-TAKEN").delete());
+  });
+
+  it("can delete their own users/{uid} document", async () => {
+    await testEnv.withSecurityRulesDisabled(async (env) => {
+      await env.firestore().doc(`users/${ME}`).set({ bests: {}, history: {} });
+    });
+    await assertSucceeds(ctx(ME).doc(`users/${ME}`).delete());
+  });
+
+  it("can delete a friendship they're part of, tearing down both sides' access", async () => {
+    await seedProfile(ME);
+    await seedFriendship(ME, FRIEND);
+    await assertSucceeds(ctx(ME).doc(`friendships/${pairId(ME, FRIEND)}`).delete());
+    await assertFails(ctx(FRIEND).doc(`profiles/${ME}`).get());
+  });
+});

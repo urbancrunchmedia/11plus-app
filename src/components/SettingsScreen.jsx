@@ -7,6 +7,7 @@ import { openBillingPortal } from "../utils/subscription";
 import LegalModal, { CONTACT } from "./LegalModal";
 import Icon from "./Icon";
 import { formatDate } from "./SubscriptionSuccess";
+import { exportMyData, downloadMyData, deleteMyAccount } from "../utils/dataRights";
 
 const GOALS = [3, 5, 10];
 const DIFFS = [
@@ -47,6 +48,38 @@ export default function SettingsScreen({ onOpenReport }) {
   const [toast, setToast] = useState(null);
   const [confirmPinOff, setConfirmPinOff] = useState(false);
   const [legal, setLegal] = useState(null); // "privacy" | "terms" | null
+  const [exportBusy, setExportBusy] = useState(false);
+  const [deleteSheet, setDeleteSheet] = useState(false);
+  const [deleteConfirmText, setDeleteConfirmText] = useState("");
+  const [deleteBusy, setDeleteBusy] = useState(false);
+  const [deleteError, setDeleteError] = useState("");
+
+  async function handleExport() {
+    if (exportBusy) return;
+    setExportBusy(true);
+    try {
+      downloadMyData(await exportMyData(user));
+      setToast("Your data file has downloaded");
+    } catch {
+      setToast("Couldn't prepare your data — please try again");
+    }
+    setExportBusy(false);
+    setTimeout(() => setToast(null), 2200);
+  }
+
+  async function handleDeleteAccount() {
+    if (deleteBusy) return;
+    setDeleteBusy(true);
+    setDeleteError("");
+    try {
+      await deleteMyAccount(user);
+      // Auth state flips to signed-out on its own; AuthProvider/App.jsx
+      // already route an unauthenticated user to the login screen.
+    } catch (e) {
+      setDeleteError(e.message || "Couldn't delete your account — please try again.");
+      setDeleteBusy(false);
+    }
+  }
 
   function update(key, value) {
     setSetting(key, value);
@@ -227,6 +260,16 @@ export default function SettingsScreen({ onOpenReport }) {
         </div>
         <div className="set-divider" />
         <div className="set-row">
+          <div className="set-row-txt"><div className="set-row-label">Download your data</div><div className="set-row-sub">Everything we hold about this account, as a file you keep</div></div>
+          <button className="set-ghost" onClick={handleExport} disabled={exportBusy}>{exportBusy ? "Preparing…" : "Download"}</button>
+        </div>
+        <div className="set-divider" />
+        <div className="set-row">
+          <div className="set-row-txt"><div className="set-row-label">Delete your account</div><div className="set-row-sub">Permanently removes your progress, friends and login</div></div>
+          <button className="set-ghost set-danger-text" onClick={() => { setDeleteConfirmText(""); setDeleteError(""); setDeleteSheet(true); }}>Delete</button>
+        </div>
+        <div className="set-divider" />
+        <div className="set-row">
           <div className="set-row-txt"><div className="set-row-label">Child PIN</div><div className="set-row-sub">A 4-digit PIN to start a session (soft lock)</div></div>
           {!editingPin ? (
             <div className="set-pin-actions">
@@ -268,6 +311,36 @@ export default function SettingsScreen({ onOpenReport }) {
       </div>
 
       {legal && <LegalModal doc={legal} onClose={() => setLegal(null)} />}
+
+      {deleteSheet && (
+        <div className="set-sheet-overlay" onClick={() => !deleteBusy && setDeleteSheet(false)}>
+          <div className="set-sheet board-sheet" onClick={(e) => e.stopPropagation()}>
+            <div className="set-sheet-title">Delete your account?</div>
+            <div className="set-sheet-sub">
+              This permanently removes your progress, XP, streak, friends and login for {user?.email || "this account"}.
+              It can't be undone — there's no "keep for later". Downloading your data first is a good idea.
+            </div>
+            <div className="board-fieldlbl">Type DELETE to confirm</div>
+            <input
+              className="board-sheet-input"
+              value={deleteConfirmText}
+              onChange={(e) => setDeleteConfirmText(e.target.value)}
+              placeholder="DELETE"
+              autoFocus
+            />
+            {deleteError && <div className="board-msg err">{deleteError}</div>}
+            <button
+              className="set-sheet-confirm board-danger"
+              disabled={deleteConfirmText.trim().toUpperCase() !== "DELETE" || deleteBusy}
+              onClick={handleDeleteAccount}
+            >
+              {deleteBusy ? "Deleting…" : "Delete my account"}
+            </button>
+            <button className="set-sheet-cancel" onClick={() => setDeleteSheet(false)} disabled={deleteBusy}>Keep my account</button>
+          </div>
+        </div>
+      )}
+
       {confirmPinOff && (
         <div className="set-sheet-overlay" onClick={() => setConfirmPinOff(false)}>
           <div className="set-sheet" onClick={(e) => e.stopPropagation()}>

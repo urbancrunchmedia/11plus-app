@@ -11,6 +11,12 @@ let premium = { isPremium: false, subscription: { status: "none" }, openPaywall:
 vi.mock("../contexts/AuthContext", () => ({ useAuth: () => AUTH }));
 vi.mock("../contexts/PremiumContext", () => ({ usePremium: () => premium }));
 vi.mock("../utils/subscription", () => ({ openBillingPortal: vi.fn() }));
+const dataRights = vi.hoisted(() => ({
+  exportMyData: vi.fn(async () => ({ account: { uid: "u1" } })),
+  downloadMyData: vi.fn(),
+  deleteMyAccount: vi.fn(async () => {}),
+}));
+vi.mock("../utils/dataRights", () => dataRights);
 
 import SettingsScreen from "./SettingsScreen";
 
@@ -96,5 +102,34 @@ describe("SettingsScreen", () => {
     expect(resub).toBeTruthy();
     await act(async () => { resub.click(); });
     expect(premium.openPaywall).toHaveBeenCalledWith("feature");
+  });
+
+  // The account-deletion button is the single most destructive action in the
+  // app — it must not be a one-tap confirm like everything else in Settings.
+  it("keeps account deletion disabled until DELETE is typed, then calls through", async () => {
+    const el = await mount();
+    const del = [...el.querySelectorAll("button")].find((b) => b.textContent === "Delete");
+    await act(async () => { del.click(); });
+
+    const confirmBtn = document.querySelector(".board-danger");
+    expect(confirmBtn.disabled).toBe(true);
+
+    const input = document.querySelector(".board-sheet-input");
+    await act(async () => {
+      Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value").set.call(input, "delete");
+      input.dispatchEvent(new Event("input", { bubbles: true }));
+    });
+    expect(confirmBtn.disabled).toBe(false);
+
+    await act(async () => { confirmBtn.click(); });
+    expect(dataRights.deleteMyAccount).toHaveBeenCalledWith(AUTH.user);
+  });
+
+  it("downloads a data export on request", async () => {
+    const el = await mount();
+    const dl = [...el.querySelectorAll("button")].find((b) => b.textContent === "Download");
+    await act(async () => { dl.click(); });
+    expect(dataRights.exportMyData).toHaveBeenCalledWith(AUTH.user);
+    expect(dataRights.downloadMyData).toHaveBeenCalled();
   });
 });
