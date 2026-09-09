@@ -3,6 +3,7 @@ import { useAuth } from "../contexts/AuthContext";
 import { usePremium } from "../contexts/PremiumContext";
 import Icon from "./Icon";
 
+// eslint-disable-next-line react-refresh/only-export-components -- a plain formatting helper used only by this screen; not worth a separate file for a dev-only warning.
 export function formatDate(ms) {
   if (!ms) return null;
   return new Date(ms).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });

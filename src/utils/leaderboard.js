@@ -85,7 +85,7 @@ export function saveIfBest(level, gameType, totalQuestions, stars, wrong, time) 
 
   if (isNew) {
     all[key] = { stars, wrong, time, date: new Date().toLocaleDateString("en-GB") };
-    try { localStorage.setItem(BEST_KEY, JSON.stringify(all)); } catch {}
+    try { localStorage.setItem(BEST_KEY, JSON.stringify(all)); } catch { /* ignore */ }
   }
   return isNew;
 }
@@ -102,7 +102,7 @@ export function saveRun(level, gameType, totalQuestions, stars, wrong, time, nam
   const runs = all[key] || [];
   runs.push({ stars, wrong, time, name: name || "You", date: new Date().toLocaleDateString("en-GB") });
   all[key] = runs.slice(-50);
-  try { localStorage.setItem(HISTORY_KEY, JSON.stringify(all)); } catch {}
+  try { localStorage.setItem(HISTORY_KEY, JSON.stringify(all)); } catch { /* ignore */ }
 }
 
 export function getTopRuns(level, gameType, totalQuestions, n = 5) {

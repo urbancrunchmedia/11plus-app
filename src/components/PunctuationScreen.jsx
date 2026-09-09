@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { punctuationSpot } from "../data/punctuationSpot";
-import { getPrefs, savePrefs, getBest, getTopRuns, formatTime, formatDate } from "../utils/leaderboard";
+import { getPrefs, savePrefs } from "../utils/leaderboard";
 import { getSkillMastery, getXp } from "../utils/gamify";
 import { usePremium } from "../contexts/PremiumContext";
 import { isLevelFree } from "../utils/entitlement";
@@ -63,6 +63,7 @@ export default function PunctuationScreen({ onPlay, onExit }) {
 
   const { isPremium, openPaywall } = usePremium();
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- level is the source of truth fed to buildQuestions()/savePrefs(); this corrects real state, not a display value.
     if (!isPremium && !isLevelFree(level)) setLevel("A");
   }, [isPremium, level]);
 
@@ -71,12 +72,8 @@ export default function PunctuationScreen({ onPlay, onExit }) {
     setLevel(v);
   }
 
-  const maxStars   = totalQuestions * 3;
-  const best       = getBest(level, "punctuation", totalQuestions);
-  const topRuns    = getTopRuns(level, "punctuation", totalQuestions, 5);
   const skillM     = getSkillMastery().find((m) => m.id === "punctuation") || {};
   const masteryPct = skillM.pct ?? 0;
-  const estMin     = Math.max(1, Math.round(totalQuestions * 0.3));
   const setLabel   = (SETS.find((s) => s.id === level) || SETS[3]).label;
 
   return (

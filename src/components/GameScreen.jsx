@@ -64,7 +64,7 @@ function pickNonColliding(queue, boardItems) {
   return idx === -1 ? 0 : idx;
 }
 
-export default function GameScreen({ level, gameType, totalQuestions = 20, onHome, pairs, instruction, typeLabel: typeLabelProp, practice = false }) {
+export default function GameScreen({ level, gameType, totalQuestions = 20, onHome, pairs, instruction, practice = false }) {
   // Practice = only the pairs you've missed. Otherwise a caller can pass an
   // explicit `pairs` list, or we fall back to synonyms/antonyms by level+type.
   const basePairs = practice ? getMisses(SKILL) : (pairs ?? [
@@ -256,8 +256,6 @@ export default function GameScreen({ level, gameType, totalQuestions = 20, onHom
     setGameComplete(false);
   }
 
-  const typeLabel = typeLabelProp ?? (gameType === "synonyms" ? "Synonyms" : "Antonyms");
-  const progress  = (results.length / roundLength) * 100;
 
   if (gameComplete) {
     return (

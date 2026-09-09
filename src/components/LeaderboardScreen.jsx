@@ -47,7 +47,10 @@ export default function LeaderboardScreen({ onPlay }) {
     setLoading(false);
   }, [user]);
 
-  useEffect(() => { load(); }, [load]);
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- load() fetches from Firestore and resolves asynchronously; data-on-mount, not derived state.
+    load();
+  }, [load]);
 
   // Successes announce themselves and get out of the way; errors stay put next
   // to the field you have to fix.

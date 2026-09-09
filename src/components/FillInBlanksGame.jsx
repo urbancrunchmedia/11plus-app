@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import LeaveRoundConfirm from "./LeaveRoundConfirm";
 import { fillInBlanksData } from "../data/fillInBlanks";
 import GameComplete from "./GameComplete";

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { spellingSpot } from "../data/spellingSpot";
-import { getPrefs, savePrefs, getBest } from "../utils/leaderboard";
+import { getPrefs, savePrefs } from "../utils/leaderboard";
 import { getSkillMastery, getXp } from "../utils/gamify";
 import { usePremium } from "../contexts/PremiumContext";
 import { isLevelFree } from "../utils/entitlement";
@@ -63,6 +63,7 @@ export default function SpellingScreen({ onPlay, onExit }) {
 
   const { isPremium, openPaywall } = usePremium();
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- level is the source of truth fed to buildQuestions()/savePrefs(); this corrects real state, not a display value.
     if (!isPremium && !isLevelFree(level)) setLevel("A");
   }, [isPremium, level]);
 

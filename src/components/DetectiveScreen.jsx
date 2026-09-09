@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { fillInBlanksData } from "../data/fillInBlanks";
-import { getBest, getTopRuns, formatTime, formatDate, getPrefs, savePrefs } from "../utils/leaderboard";
+import { getPrefs, savePrefs } from "../utils/leaderboard";
 import { getSkillMastery, getXp } from "../utils/gamify";
 import SampleQuiz from "./SampleQuiz";
 import PracticeButton from "./PracticeButton";
@@ -28,9 +28,6 @@ export default function DetectiveScreen({ onPlay, onLearn, onExit }) {
   });
   React.useEffect(() => { savePrefs("fillInBlanks", { totalQuestions }); }, [totalQuestions]);
 
-  const maxStars   = totalQuestions * 3;
-  const best       = getBest("all", "fillInBlanks", totalQuestions);
-  const topRuns    = getTopRuns("all", "fillInBlanks", totalQuestions, 5);
   const skillM     = getSkillMastery().find((m) => m.id === "fillInBlanks") || {};
   const masteryPct = skillM.pct ?? 0;
   const estMin     = Math.max(1, Math.round(totalQuestions * 0.35));

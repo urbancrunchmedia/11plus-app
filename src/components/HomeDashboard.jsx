@@ -29,6 +29,7 @@ export default function HomeDashboard({ onPlaySkill, onOpenBoard }) {
     if (user) {
       getLeaderboard(user.uid).then((b) => ok && setFriends(b)).catch(() => ok && setFriends([]));
     } else {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- fetch-on-mount pattern: resolves async in the branch above, or resets to "no friends" here when there's no signed-in user.
       setFriends([]);
     }
     return () => { ok = false; };

@@ -44,6 +44,7 @@ export default function WordListScreen() {
   // Keep a valid selection as the filter/search changes.
   useEffect(() => {
     if (!filtered.some((w) => w.word === selectedWord)) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- selectedWord stays a real, changeable selection; this only steps in when a filter change leaves it invalid.
       setSelectedWord(filtered[0]?.word);
     }
   }, [filtered, selectedWord]);

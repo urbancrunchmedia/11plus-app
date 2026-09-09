@@ -36,6 +36,7 @@ export function PremiumProvider({ children }) {
   useEffect(() => {
     granted.current = false;
     try {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- reacting to a real external source of truth (localStorage / auth user change), not derived from props.
       if (localStorage.getItem(DEV_KEY) === "1") { granted.current = true; setSub(COMP); setLoading(false); return; }
     } catch { /* ignore */ }
 
@@ -98,6 +99,7 @@ export function PremiumProvider({ children }) {
   );
 }
 
+// eslint-disable-next-line react-refresh/only-export-components -- same pattern as AuthContext: the useX() hook belongs beside its Provider.
 export function usePremium() {
   return useContext(PremiumContext) || {
     isPremium: false, subscription: FREE, loading: false,

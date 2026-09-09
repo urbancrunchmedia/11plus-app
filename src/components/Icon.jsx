@@ -31,6 +31,7 @@ const ICONS = {
 };
 
 // Per-skill icon name + stroke + tile background, matching the design.
+// eslint-disable-next-line react-refresh/only-export-components -- a lookup table, not a component; not worth a separate file for a dev-only warning.
 export const SKILL_ICON = {
   wordMatch:     { name: "match",    stroke: "#12a5ff", bg: "#e4f6ff" },
   fillInBlanks:  { name: "detect",   stroke: "#7fa30c", bg: "#f3fbd4" },

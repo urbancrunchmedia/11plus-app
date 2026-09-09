@@ -22,7 +22,7 @@ function unlock() {
     src.buffer = c.createBuffer(1, 1, 22050);
     src.connect(c.destination);
     src.start(0);
-  } catch (_) {}
+  } catch { /* ignore */ }
 }
 
 if (typeof window !== "undefined") {
@@ -47,7 +47,7 @@ function playTones(schedule) {
     } else {
       run();
     }
-  } catch (_) {}
+  } catch { /* ignore */ }
 }
 
 function tone(c, freq, start, duration, vol = 0.28) {
@@ -72,7 +72,7 @@ function soundOn() {
 
 export function playCorrect() {
   if (!soundOn()) return;
-  try { if (navigator.vibrate) navigator.vibrate(40); } catch (_) {}
+  try { if (navigator.vibrate) navigator.vibrate(40); } catch { /* ignore */ }
 
   playTones((c, now) => {
     tone(c, 523,  now,        0.6,  0.18);  // C5
@@ -83,7 +83,7 @@ export function playCorrect() {
 
 export function playWrong() {
   if (!soundOn()) return;
-  try { if (navigator.vibrate) navigator.vibrate([40, 60, 40]); } catch (_) {}
+  try { if (navigator.vibrate) navigator.vibrate([40, 60, 40]); } catch { /* ignore */ }
 
   playTones((c, now) => {
     const osc  = c.createOscillator();

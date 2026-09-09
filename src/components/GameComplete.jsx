@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { saveIfBest, saveRun, getBest, formatTime } from "../utils/leaderboard";
+import { saveIfBest, saveRun, formatTime } from "../utils/leaderboard";
 import { xpToRunReward, getLevelInfo, getStreak } from "../utils/gamify";
 import { pushToCloud } from "../utils/cloudScores";
 import { addWeeklyPoints } from "../utils/weekly";

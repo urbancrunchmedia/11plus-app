@@ -75,7 +75,7 @@ function WorksheetFor({ baseType, config, playKey, onHome }) {
 
 function AppInner() {
   const { user } = useAuth();
-  const { isPremium, subscription, openPaywall, refresh, refreshUntilPremium } = usePremium();
+  const { isPremium, openPaywall, refresh, refreshUntilPremium } = usePremium();
 
   // All hooks must run on every render (before any early return) — otherwise
   // the hook count changes when auth flips logged-out → logged-in and React
@@ -108,6 +108,7 @@ function AppInner() {
     if (!checkout && !billing) return;
     // Clear the params so a refresh doesn't replay the celebration.
     window.history.replaceState({}, "", window.location.pathname);
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- one-time reaction to the Stripe redirect landing on this URL, not derived state.
     if (checkout === "success") { setBillingEvent("success"); refreshUntilPremium(); }
     else if (checkout === "cancel") setBillingNote("Checkout cancelled — no payment was taken.");
     else if (billing === "return") {

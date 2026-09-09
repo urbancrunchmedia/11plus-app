@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { getBest, getTopRuns, formatTime, formatDate, getPrefs, savePrefs, getSetting } from "../utils/leaderboard";
+import { getPrefs, savePrefs, getSetting } from "../utils/leaderboard";
 import { getSkillMastery, getXp } from "../utils/gamify";
 import { compoundWords } from "../data/compoundWords";
 import { usePremium } from "../contexts/PremiumContext";
@@ -58,7 +58,7 @@ export default function HomeScreen({ gameType, onPlay, onLearn, initialConfig, o
     if (saved.subType === "antonyms" || saved.subType === "synonyms") return saved.subType;
     return initialConfig?.baseType === "antonyms" ? "antonyms" : "synonyms";
   });
-  const [format, setFormat] = useState(() => {
+  const [format] = useState(() => {
     if (saved.format === "match" || saved.format === "worksheet") return saved.format;
     return "match";
   });
@@ -78,6 +78,7 @@ export default function HomeScreen({ gameType, onPlay, onLearn, initialConfig, o
   const { isPremium, openPaywall } = usePremium();
   // Free users can't sit on a premium level — snap back to A once we know.
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- level is the source of truth fed to buildQuestions()/savePrefs(), so this corrects real state, not a display value.
     if (!isPremium && !noLevel && !isLevelFree(level)) setLevel("A");
   }, [isPremium, noLevel, level]);
 
@@ -95,12 +96,8 @@ export default function HomeScreen({ gameType, onPlay, onLearn, initialConfig, o
   const scoreType   = isWorksheet ? `${baseType}Ws` : baseType;
   const scoreLevel  = noLevel ? "all" : level;
   const info        = TYPE_INFO[baseType] || {};
-  const maxStars    = totalQuestions * 3;
-  const best        = getBest(scoreLevel, scoreType, totalQuestions);
-  const topRuns     = getTopRuns(scoreLevel, scoreType, totalQuestions, 5);
   const skillM      = getSkillMastery().find((m) => m.id === gameType) || {};
   const masteryPct  = skillM.pct ?? 0;
-  const estMin      = Math.max(1, Math.round(totalQuestions * 0.3));
 
   function handlePlay() {
     onPlay({ level: scoreLevel, totalQuestions, gameType: scoreType, baseType, format: isWorksheet ? "worksheet" : "match" });

@@ -1,7 +1,7 @@
 // Gamification metrics DERIVED from the scores/history the app already saves in
 // localStorage (see leaderboard.js). Nothing here needs a backend — XP, level,
 // streak, per-skill mastery and badges are all computed from real play data.
-import { getAllBests, getAllHistory, getSetting } from "./leaderboard";
+import { getAllHistory, getSetting } from "./leaderboard";
 import { getSkillAccuracy } from "./progress";
 
 // Skills shown on the dashboard, each mapping to the score gameTypes it covers.

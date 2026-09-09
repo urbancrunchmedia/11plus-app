@@ -125,6 +125,7 @@ export function AuthProvider({ children }) {
   );
 }
 
+// eslint-disable-next-line react-refresh/only-export-components -- the useX() hook alongside its Provider is the standard pattern used by every context in this app.
 export function useAuth() {
   return useContext(AuthContext);
 }

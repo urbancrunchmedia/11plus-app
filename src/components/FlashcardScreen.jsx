@@ -25,7 +25,7 @@ function speak(word) {
     u.lang = "en-GB";
     u.rate = 0.9;
     window.speechSynthesis.speak(u);
-  } catch (e) {
+  } catch {
     /* speech not supported — silently ignore */
   }
 }
