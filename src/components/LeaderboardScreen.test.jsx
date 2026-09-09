@@ -129,4 +129,30 @@ describe("LeaderboardScreen", () => {
     expect(document.querySelector(".board-sheet-input")).toBeTruthy(); // still open
     expect(document.querySelector(".set-toast")).toBeNull();           // nothing claimed saved
   });
+
+  // A brand-new week: everyone on nothing. Being listed first shouldn't read as
+  // winning, and it shouldn't depend on who happened to load first.
+  it("doesn't crown anyone on a board where nobody has scored", async () => {
+    const { getLeaderboard } = await import("../utils/cloudScores");
+    getLeaderboard.mockResolvedValueOnce([
+      { uid: "u1", displayName: "Zara", points: 0, weekPoints: 0, isMe: true },
+      { uid: "u2", displayName: "Ali", points: 0, weekPoints: 0 },
+    ]);
+    const el = await render();
+
+    // Alphabetical, not "me first".
+    const names = [...el.querySelectorAll(".board-name")].map((n) => n.textContent);
+    expect(names[0]).toContain("Ali");
+    expect(names[1]).toContain("Zara");
+
+    expect(el.textContent).toContain("Nobody's scored yet this week");
+    expect(el.textContent).not.toContain("top of the board");
+    expect(el.querySelector(".board-rank--1")).toBeNull(); // no gold disc for 0
+  });
+
+  it("still ranks and crowns once someone has scored", async () => {
+    const el = await render();
+    expect(el.querySelector(".board-rank--1")).toBeTruthy();
+    expect(el.textContent).toContain("top of the board");
+  });
 });

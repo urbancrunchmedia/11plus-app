@@ -192,7 +192,11 @@ export async function getLeaderboard(uid) {
       // weekPoints is what the board ranks on; a profile last written in an
       // earlier week counts as zero without anyone having to open the app.
       .map((p) => ({ ...p, isMe: p.uid === uid, weekPoints: weeklyPointsOf(p) }))
-      .sort((a, b) => (b.weekPoints || 0) - (a.weekPoints || 0) || (b.points || 0) - (a.points || 0));
+      .sort((a, b) =>
+        (b.weekPoints || 0) - (a.weekPoints || 0) ||
+        (b.points || 0) - (a.points || 0) ||
+        (a.displayName || "").localeCompare(b.displayName || "")
+      );
   } catch (e) {
     console.error("getLeaderboard:", e);
     return [];

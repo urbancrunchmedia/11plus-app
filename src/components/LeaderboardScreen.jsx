@@ -58,10 +58,19 @@ export default function LeaderboardScreen({ onPlay }) {
   }, []);
   useEffect(() => () => clearTimeout(toastTimer.current), []);
 
-  const rows = [...people].sort((a, b) => (b.weekPoints || 0) - (a.weekPoints || 0) || (b.points || 0) - (a.points || 0));
+  // Ties fall back to all-time, then to name — never to "whoever was fetched
+  // first", which quietly put you top of an empty board.
+  const rows = [...people].sort((a, b) =>
+    (b.weekPoints || 0) - (a.weekPoints || 0) ||
+    (b.points || 0) - (a.points || 0) ||
+    (a.displayName || "").localeCompare(b.displayName || "")
+  );
+  // A board where nobody has scored isn't a ranking yet.
+  const noScores = rows.length > 0 && rows.every((p) => !p.weekPoints);
   const myIdx = rows.findIndex((p) => p.isMe);
-  const gapLine =
-    myIdx <= 0
+  const gapLine = noScores
+    ? "Nobody's scored yet this week"
+    : myIdx <= 0
       ? "You're top of the board — hold it!"
       : `${((rows[myIdx - 1].weekPoints || 0) - (rows[myIdx].weekPoints || 0)).toLocaleString()} points behind ${rows[myIdx - 1].displayName || "them"}`;
 
@@ -137,7 +146,7 @@ export default function LeaderboardScreen({ onPlay }) {
         <div className="board-rows">
           {rows.map((p, i) => (
             <div key={p.uid} className={`board-row ${p.isMe ? "me" : ""}`}>
-              <span className={`board-rank ${i < 3 ? `board-rank--${i + 1}` : ""}`}>{i + 1}</span>
+              <span className={`board-rank ${!noScores && i < 3 ? `board-rank--${i + 1}` : ""}`}>{i + 1}</span>
               <span className={`board-avatar ${p.isMe ? "me" : ""}`}>{initials(p.displayName)}</span>
               <span className="board-name">
                 {p.displayName || "Player"}{p.isMe && <span className="board-you"> (you)</span>}
@@ -165,7 +174,7 @@ export default function LeaderboardScreen({ onPlay }) {
         <div className="board-foot">
           <div>
             <div className="board-foot-title">{gapLine}</div>
-            <div className="board-foot-sub">Every round you play counts towards this week</div>
+            <div className="board-foot-sub">{noScores ? "Play a round to put the first points on the board" : "Every round you play counts towards this week"}</div>
           </div>
           {onPlay && <button className="board-foot-cta" onClick={onPlay}>Play a round</button>}
         </div>
