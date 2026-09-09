@@ -8,6 +8,11 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
+      // We register the service worker ourselves (src/pwa.js) so a failed
+      // registration can be caught instead of surfacing as an unhandled
+      // promise rejection (seen in Sentry from iOS Safari private browsing,
+      // where service workers are restricted).
+      injectRegister: false,
       includeAssets: ['favicon.svg', 'apple-touch-icon.png'],
       manifest: {
         name: '11 Plus Lab',

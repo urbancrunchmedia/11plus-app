@@ -5,6 +5,7 @@ import App from './App.jsx'
 import ErrorBoundary from './components/ErrorBoundary.jsx'
 import { Analytics } from '@vercel/analytics/react'
 import { initMonitoring } from './utils/monitoring.js'
+import './pwa.js'
 
 initMonitoring()
 
