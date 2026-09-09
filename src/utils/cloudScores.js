@@ -1,6 +1,6 @@
 import {
   doc, getDoc, setDoc, deleteDoc,
-  collection, query, where, getDocs, limit,
+  collection, query, where, getDocs,
 } from "firebase/firestore";
 import { db } from "../firebase";
 import { getWeeklyPoints, weekKey, weeklyPointsOf } from "./weekly";
@@ -111,8 +111,9 @@ export async function syncProfile(user) {
     const existing = await getProfile(uid);
     const code = existing?.code || generateCode();
     const { total, byGame } = computeStats();
+    const displayName = user.displayName || "Player";
     await setDoc(doc(db, "profiles", uid), {
-      displayName: user.displayName || "Player",
+      displayName,
       code,
       points: total,
       weekPoints: getWeeklyPoints(),
@@ -120,6 +121,10 @@ export async function syncProfile(user) {
       byGame,
       updatedAt: new Date().toISOString(),
     }, { merge: true });
+    // Keep the code -> {uid, displayName} lookup in step. This IS the
+    // migration for every account that predates it — no backfill script
+    // needed, since every sync (every app open) writes this idempotently.
+    await setDoc(doc(db, "codes", code), { uid, displayName }, { merge: true });
     return code;
   } catch (e) {
     console.error("syncProfile:", e);
@@ -149,17 +154,19 @@ export async function addFriendByCode(uid, codeRaw) {
   const code = (codeRaw || "").trim().toUpperCase();
   if (!code) return { ok: false, error: "Please enter a code." };
   try {
-    const q = query(collection(db, "profiles"), where("code", "==", code), limit(1));
-    const res = await getDocs(q);
-    if (res.empty) return { ok: false, error: "No player found with that code." };
-    const friendDoc = res.docs[0];
-    if (friendDoc.id === uid) return { ok: false, error: "That's your own code!" };
+    // A direct get() by exact code — the profiles collection is no longer
+    // queryable by anyone but its owner and their friends, so this lookup
+    // has to go through the codes collection instead of a `where` query.
+    const codeSnap = await getDoc(doc(db, "codes", code));
+    if (!codeSnap.exists()) return { ok: false, error: "No player found with that code." };
+    const { uid: friendUid, displayName } = codeSnap.data();
+    if (friendUid === uid) return { ok: false, error: "That's your own code!" };
     // One shared friendship doc → both sides see each other (mutual).
-    await setDoc(doc(db, "friendships", pairId(uid, friendDoc.id)), {
-      uids: [uid, friendDoc.id].sort(),
+    await setDoc(doc(db, "friendships", pairId(uid, friendUid)), {
+      uids: [uid, friendUid].sort(),
       createdAt: new Date().toISOString(),
     }, { merge: true });
-    return { ok: true, friend: { uid: friendDoc.id, ...friendDoc.data() } };
+    return { ok: true, friend: { uid: friendUid, displayName } };
   } catch (e) {
     console.error("addFriendByCode:", e);
     return { ok: false, error: "Couldn't add friend — please try again." };
