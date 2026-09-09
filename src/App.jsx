@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { chooseStartScreen } from "./utils/startScreen";
 import AppNav from "./components/AppNav";
 import HomeDashboard from "./components/HomeDashboard";
@@ -91,6 +91,23 @@ function AppInner() {
       localStorage.setItem("11plus_last_screen", selectedGame); // later visits
     } catch { /* private mode */ }
   }, [selectedGame]);
+
+  // Signing out doesn't unmount this component (see the hooks-order note
+  // above), so `selectedGame` — and the sessionStorage a reload restores it
+  // from — would otherwise still say "me" from the account that just left.
+  // Sign back in in the same tab and chooseStartScreen trusts a same-tab
+  // "reload" completely (that's the point of it — a Settings refresh has to
+  // stay put), so it would inherit the previous person's grown-up screen.
+  // Only fire on a genuine sign-out (was signed in, now isn't) — not on the
+  // very first render, before anyone has signed in at all.
+  const wasSignedIn = useRef(false);
+  useEffect(() => {
+    if (user) { wasSignedIn.current = true; return; }
+    if (!wasSignedIn.current) return;
+    wasSignedIn.current = false;
+    try { sessionStorage.removeItem("11plus_screen"); } catch { /* private mode */ }
+    setSelectedGame("home");
+  }, [user]);
 
   const [screen, setScreen] = useState("home");
   const [config, setConfig] = useState(null);
