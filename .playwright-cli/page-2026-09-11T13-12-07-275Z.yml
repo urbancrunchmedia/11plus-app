@@ -1,0 +1,62 @@
+- generic [ref=e155]:
+  - navigation [ref=e156]:
+    - generic [ref=e157]: "11"
+    - generic [ref=e158]:
+      - button "Home" [ref=e159] [cursor=pointer]:
+        - img [ref=e161]
+        - generic [ref=e165]: Home
+      - button "Board" [ref=e166] [cursor=pointer]:
+        - img [ref=e168]
+        - generic [ref=e173]: Board
+    - generic [ref=e174]:
+      - generic [ref=e175]: 🔥 0
+      - button "Me" [ref=e176] [cursor=pointer]:
+        - generic [ref=e177]: T
+  - generic [ref=e180]:
+    - generic [ref=e181]:
+      - generic [ref=e182]:
+        - generic [ref=e183]: Hi, Test Child
+        - generic [ref=e184]: Level 1 · Word Rookie · 0 XP
+      - generic [ref=e186]: 🔥 0 day streak
+    - generic [ref=e187]:
+      - generic [ref=e188]:
+        - generic [ref=e189]:
+          - generic [ref=e190]: TODAY'S CHALLENGE
+          - generic [ref=e191]: 0 of 3 rounds done
+          - generic [ref=e192]: One more keeps your 0-day streak alive.
+          - button "Play a round →" [ref=e193] [cursor=pointer]:
+            - generic [ref=e194]: Play a round
+            - generic [ref=e195]: →
+        - generic [ref=e197]: 0%
+      - generic [ref=e198]:
+        - generic [ref=e199]: Choose a game
+        - generic [ref=e200]:
+          - button "Word Match Not started yet" [ref=e201] [cursor=pointer]:
+            - img [ref=e203]
+            - generic [ref=e206]: Word Match
+            - generic [ref=e207]: Not started yet
+          - button "Compound Words Not started yet" [ref=e209] [cursor=pointer]:
+            - img [ref=e211]
+            - generic [ref=e215]: Compound Words
+            - generic [ref=e216]: Not started yet
+          - button "Word Detective Not started yet" [ref=e218] [cursor=pointer]:
+            - img [ref=e220]
+            - generic [ref=e223]: Word Detective
+            - generic [ref=e224]: Not started yet
+          - button "Punctuation Not started yet" [ref=e226] [cursor=pointer]:
+            - img [ref=e228]
+            - generic [ref=e232]: Punctuation
+            - generic [ref=e233]: Not started yet
+          - button "Spelling Not started yet" [ref=e235] [cursor=pointer]:
+            - img [ref=e237]
+            - generic [ref=e240]: Spelling
+            - generic [ref=e241]: Not started yet
+          - button "Word List Look up every word Browse words →" [ref=e243] [cursor=pointer]:
+            - img [ref=e245]
+            - generic [ref=e247]: Word List
+            - generic [ref=e248]: Look up every word
+            - generic [ref=e249]: Browse words →
+      - generic [ref=e250]:
+        - generic [ref=e251]: Friends this week
+        - generic [ref=e253]: Add friends to compete — tap below.
+        - button "Open leaderboard" [ref=e254] [cursor=pointer]

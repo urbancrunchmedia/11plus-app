@@ -85,6 +85,16 @@ export function AuthProvider({ children }) {
     if (!check.ok) throw new Error(check.reason);
     const cred = await createUserWithEmailAndPassword(auth, email, password);
     await updateProfile(cred.user, { displayName: check.value });
+    // onAuthStateChanged already fired for the sign-up itself (before this
+    // updateProfile call), with a user object whose displayName is still
+    // null — Firebase mutates auth.currentUser in place afterwards but does
+    // NOT refire the listener for a profile update, so React's copy of
+    // `user` was left stale. That stale displayName is exactly what
+    // App.jsx's needsOnboarding check reads, so straight after signing up
+    // with a name already typed in, the app sent everyone through the "Who's
+    // learning?" screen again to ask for the same name a second time — read
+    // as the flow glitching. Same local-echo fix as updateDisplayName below.
+    setUser({ uid: cred.user.uid, displayName: check.value, photoURL: cred.user.photoURL, email: cred.user.email });
   }
 
   async function handleSignOut() {

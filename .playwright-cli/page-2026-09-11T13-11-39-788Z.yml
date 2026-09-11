@@ -1,0 +1,16 @@
+- generic [ref=e141]:
+  - generic [ref=e142]: SET UP A LEARNER
+  - generic [ref=e143]: Who's learning?
+  - generic [ref=e144]: Their first name appears on the leaderboard and at the end of every round. You can change it any time from Settings.
+  - generic [ref=e145]:
+    - generic [ref=e146]: CHILD'S FIRST NAME
+    - textbox "CHILD'S FIRST NAME" [active] [ref=e147]:
+      - /placeholder: e.g. Amu
+  - generic [ref=e148]:
+    - generic [ref=e149]: "?"
+    - generic [ref=e150]:
+      - text: On the board they'll show as
+      - strong [ref=e151]: their name
+  - generic [ref=e152]: Your grown-up can see how you're doing in Settings.
+  - button "Create profile" [disabled] [ref=e153] [cursor=pointer]
+  - button "Skip for now" [ref=e154] [cursor=pointer]
