@@ -73,4 +73,16 @@ describe("signUpWithEmail", () => {
     // straight back through "Who's learning?" to ask for the same name again.
     expect(renders.some((u) => u?.displayName === "Amu")).toBe(true);
   });
+
+  // NOTE: a second, real bug exists alongside this one — `user` can pass
+  // THROUGH a displayName:null render on its way to the correct final state
+  // (onAuthStateChanged fires before updateProfile even starts), which flashes
+  // "Who's learning?" for one frame before the real name replaces it. That is
+  // fixed in AuthContext.jsx (the signingUpRef suppression), but it is NOT
+  // covered by an automated test here: React's `act()` deliberately batches
+  // every state update inside its callback and only guarantees the FINAL
+  // state is observable, so no assertion against `renders` mid-flight can
+  // reliably tell the fixed code apart from the vulnerable one — a version of
+  // this test that made that claim passed identically against both. Verified
+  // by hand instead: see the session notes on this fix for how.
 });

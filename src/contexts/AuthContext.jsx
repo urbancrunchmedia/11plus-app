@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, { createContext, useContext, useEffect, useState, useRef } from "react";
 import { checkDisplayName } from "../utils/nameCheck";
 import {
   GoogleAuthProvider,
@@ -30,6 +30,16 @@ const POPUP_FALLBACK_CODES = new Set([
 export function AuthProvider({ children }) {
   const [user, setUser]           = useState(undefined); // undefined = loading
   const [redirectError, setRedirectError] = useState(null);
+  // While a signUpWithEmail() call is in flight, the listener below would
+  // otherwise commit ONE render with the fresh account's displayName still
+  // null (Firebase fires onAuthStateChanged for the sign-up itself before
+  // our own updateProfile call even starts) — long enough for App.jsx's
+  // needsOnboarding check to flash the "Who's learning?" screen before the
+  // corrected name lands a moment later. signUpWithEmail sets this ref before
+  // creating the account and does the listener's own job itself once the
+  // real name is known, so `user` only ever goes straight from loading to
+  // its final, correct value — no intermediate stale render to flash.
+  const signingUpRef = useRef(false);
 
   useEffect(() => {
     // Complete any sign-in that used the redirect fallback.
@@ -39,6 +49,7 @@ export function AuthProvider({ children }) {
     });
 
     const unsub = onAuthStateChanged(auth, (u) => {
+      if (signingUpRef.current) return;
       setUser(u ?? null);
       if (u) {
         // Clear any previous account's local progress on this device, THEN merge
@@ -83,18 +94,20 @@ export function AuthProvider({ children }) {
     // leave someone signed up under nothing.
     const check = checkDisplayName(name);
     if (!check.ok) throw new Error(check.reason);
-    const cred = await createUserWithEmailAndPassword(auth, email, password);
-    await updateProfile(cred.user, { displayName: check.value });
-    // onAuthStateChanged already fired for the sign-up itself (before this
-    // updateProfile call), with a user object whose displayName is still
-    // null — Firebase mutates auth.currentUser in place afterwards but does
-    // NOT refire the listener for a profile update, so React's copy of
-    // `user` was left stale. That stale displayName is exactly what
-    // App.jsx's needsOnboarding check reads, so straight after signing up
-    // with a name already typed in, the app sent everyone through the "Who's
-    // learning?" screen again to ask for the same name a second time — read
-    // as the flow glitching. Same local-echo fix as updateDisplayName below.
-    setUser({ uid: cred.user.uid, displayName: check.value, photoURL: cred.user.photoURL, email: cred.user.email });
+    // Told the listener above to stand down for this sign-up — replicate its
+    // job here ourselves, once, with the real name already known, so `user`
+    // never passes through a displayName:null render at all.
+    signingUpRef.current = true;
+    try {
+      const cred = await createUserWithEmailAndPassword(auth, email, password);
+      await updateProfile(cred.user, { displayName: check.value });
+      const u = cred.user;
+      prepareLocalForUser(u.uid);
+      setUser({ uid: u.uid, displayName: check.value, photoURL: u.photoURL, email: u.email });
+      await mergeFromCloud(u.uid).then(() => syncProfile(u)).catch(console.error);
+    } finally {
+      signingUpRef.current = false;
+    }
   }
 
   async function handleSignOut() {
