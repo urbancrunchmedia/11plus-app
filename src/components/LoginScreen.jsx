@@ -145,7 +145,7 @@ export default function LoginScreen() {
             </div>
           ) : (
             <>
-              <div className="login2-h">{mode === "signin" ? "Grown-up sign in" : "Create a family account"}</div>
+              <div className="login2-h">{mode === "signin" ? "Grown-up sign in" : "Create an account"}</div>
               <div className="login2-p">See progress, set daily goals and manage profiles.</div>
 
               <form className="login2-form" onSubmit={handleSubmit}>
@@ -211,7 +211,7 @@ export default function LoginScreen() {
               <div className="login2-toggle">
                 {mode === "signin" ? "New here? " : "Already have an account? "}
                 <button onClick={() => { setMode(mode === "signin" ? "signup" : "signin"); setError(""); }}>
-                  {mode === "signin" ? "Create a family account" : "Log in"}
+                  {mode === "signin" ? "Create an account" : "Log in"}
                 </button>
               </div>
             </>
