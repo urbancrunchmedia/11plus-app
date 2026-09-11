@@ -60,7 +60,7 @@ export default function HomeDashboard({ onPlaySkill, onOpenBoard }) {
             <div className="dash-hero-title">{daily.done} of {daily.target} rounds done</div>
             <div className="dash-hero-note">
               {daily.complete
-                ? "Challenge complete — nice work!"
+                ? "Challenge complete! Nice work!"
                 : `One more keeps your ${stats.streak}-day streak alive.`}
             </div>
             <button className="dash-hero-cta" onClick={() => onPlaySkill("wordMatch")}>
@@ -101,7 +101,7 @@ export default function HomeDashboard({ onPlaySkill, onOpenBoard }) {
           <div className="dash-friends">
             {friends === null && <div className="dash-friend-empty">Loading…</div>}
             {friends !== null && !hasFriends && (
-              <div className="dash-friend-empty">Add friends to compete — tap below.</div>
+              <div className="dash-friend-empty">Add friends to compete. Tap below.</div>
             )}
             {friends !== null && hasFriends && topFriends.map((f, i) => (
               <div key={f.uid} className={`dash-friend ${f.isMe ? "me" : ""}`}>

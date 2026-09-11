@@ -74,7 +74,7 @@ export default function LeaderboardScreen({ onPlay }) {
   const gapLine = noScores
     ? "Nobody's scored yet this week"
     : myIdx <= 0
-      ? "You're top of the board — hold it!"
+      ? "You're top of the board. Hold it!"
       : `${((rows[myIdx - 1].weekPoints || 0) - (rows[myIdx].weekPoints || 0)).toLocaleString()} points behind ${rows[myIdx - 1].displayName || "them"}`;
 
   async function handleAdd(e) {
@@ -115,11 +115,11 @@ export default function LeaderboardScreen({ onPlay }) {
     try {
       await navigator.clipboard.writeText(me.code);
       setCopied(true);
-      showToast("Code copied — send it to your friend");
+      showToast("Code copied! Send it to your friend");
       setTimeout(() => setCopied(false), 1800);
     } catch {
       // No clipboard (older browser, or not on https) — show the code to type out.
-      setMsg({ type: "err", text: `Couldn't copy automatically — your code is ${me.code}` });
+      setMsg({ type: "err", text: `Couldn't copy automatically. Your code is ${me.code}` });
     }
   }
 

@@ -40,13 +40,13 @@ function friendlyError(code, message) {
     case "auth/invalid-credential":
       // Accounts created with Google have no password at all, so a saved
       // password from the browser will always be rejected here.
-      return "That email and password didn't match. If you normally use Google, sign in with the button below — accounts created with Google don't have a password.";
+      return "That email and password didn't match. If you normally use Google, sign in with the button below. Accounts created with Google don't have a password.";
     case "auth/email-already-in-use":  return "An account with this email already exists.";
     case "auth/weak-password":         return "Password must be at least 6 characters.";
     case "auth/invalid-email":         return "Please enter a valid email address.";
     case "auth/too-many-requests":     return "Too many attempts. Please try again later.";
     case "auth/operation-not-allowed": return "Email/Password sign-in is not enabled in Firebase.";
-    case "auth/popup-blocked":         return "Popup was blocked — please allow popups for this site.";
+    case "auth/popup-blocked":         return "Popup was blocked. Please allow popups for this site.";
     case "auth/popup-closed-by-user":  return "Sign-in window was closed. Please try again.";
     case "auth/unauthorized-domain":   return "This domain isn't authorised in Firebase.";
     case "auth/cancelled-popup-request": return null;
@@ -70,7 +70,7 @@ export default function LoginScreen() {
 
   async function handleSubmit(e) {
     e.preventDefault();
-    setError(""); setNotice(""); setLoading(true);
+    setError(""); setNotice(""); setCredFail(false); setLoading(true);
     try {
       if (mode === "signup") await signUpWithEmail(email, password, name);
       else await signInWithEmail(email, password);
@@ -83,7 +83,7 @@ export default function LoginScreen() {
   }
 
   async function handleForgot() {
-    setError(""); setNotice("");
+    setError(""); setNotice(""); setCredFail(false);
     if (!email.trim()) { setError("Enter your email above, then tap 'Forgot password?'."); return; }
     try {
       await resetPassword(email);
@@ -203,14 +203,21 @@ export default function LoginScreen() {
                 </button>
               </form>
 
-              <div className="login2-divider"><span>or</span></div>
-              <button className="login2-google" onClick={handleGoogle} disabled={loading}>
-                <GoogleIcon /> Continue with Google
-              </button>
+              {/* The credential-mismatch error above already offers its own
+                  Google button right where it's needed — showing this one
+                  too, right underneath, would just be the same button twice. */}
+              {!credFail && (
+                <>
+                  <div className="login2-divider"><span>or</span></div>
+                  <button className="login2-google" onClick={handleGoogle} disabled={loading}>
+                    <GoogleIcon /> Continue with Google
+                  </button>
+                </>
+              )}
 
               <div className="login2-toggle">
                 {mode === "signin" ? "New here? " : "Already have an account? "}
-                <button onClick={() => { setMode(mode === "signin" ? "signup" : "signin"); setError(""); }}>
+                <button onClick={() => { setMode(mode === "signin" ? "signup" : "signin"); setError(""); setCredFail(false); }}>
                   {mode === "signin" ? "Create an account" : "Log in"}
                 </button>
               </div>

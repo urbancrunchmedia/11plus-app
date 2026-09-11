@@ -61,7 +61,7 @@ export default function SettingsScreen({ onOpenReport }) {
       downloadMyData(await exportMyData(user));
       setToast("Your data file has downloaded");
     } catch {
-      setToast("Couldn't prepare your data — please try again");
+      setToast("Couldn't prepare your data. Please try again.");
     }
     setExportBusy(false);
     setTimeout(() => setToast(null), 2200);
@@ -76,7 +76,7 @@ export default function SettingsScreen({ onOpenReport }) {
       // Auth state flips to signed-out on its own; AuthProvider/App.jsx
       // already route an unauthenticated user to the login screen.
     } catch (e) {
-      setDeleteError(e.message || "Couldn't delete your account — please try again.");
+      setDeleteError(e.message || "Couldn't delete your account. Please try again.");
       setDeleteBusy(false);
     }
   }
@@ -100,7 +100,7 @@ export default function SettingsScreen({ onOpenReport }) {
       setToast(`Name updated to ${n} ✓`);
     } catch (e) {
       // Say what was wrong with the name, and leave the sheet open to fix it.
-      setToast(e.message || "Couldn't save name — please try again");
+      setToast(e.message || "Couldn't save name. Please try again.");
     }
     setSavingName(false);
     setTimeout(() => setToast(null), 2200);
@@ -158,7 +158,7 @@ export default function SettingsScreen({ onOpenReport }) {
             {!isPremium
               ? "Free is Level A with a daily limit. Full Access opens Levels B & C, unlimited rounds and the parent report."
               : endingSoon
-                ? `You still have Full Access${daysLeft != null ? ` for ${daysLeft} more ${daysLeft === 1 ? "day" : "days"}` : ""}${endsOn ? ` — until ${endsOn}` : ""}. Resubscribe any time to keep it.`
+                ? `You still have Full Access${daysLeft != null ? ` for ${daysLeft} more ${daysLeft === 1 ? "day" : "days"}` : ""}${endsOn ? `, until ${endsOn}` : ""}. Resubscribe any time to keep it.`
                 : onTrial
                   ? `All levels, unlimited rounds and the progress report are on.${trialEnds ? ` Your free trial ends on ${trialEnds}, when the first payment of ${trialPrice} is taken.` : ""} Cancel any time before then and you won't be charged.`
                   : renewsOn
@@ -252,10 +252,10 @@ export default function SettingsScreen({ onOpenReport }) {
         ))}
         <div className="set-divider" />
         <div className="set-row">
-          <div className="set-row-txt"><div className="set-row-label">Contact support</div><div className="set-row-sub">Questions, problems or billing — we'll reply by email</div></div>
+          <div className="set-row-txt"><div className="set-row-label">Contact support</div><div className="set-row-sub">Questions, problems or billing? We'll reply by email</div></div>
           <a
             className="set-ghost"
-            href={`mailto:${CONTACT}?subject=${encodeURIComponent("11 Plus Lab — support")}&body=${encodeURIComponent(`\n\n---\nAccount: ${user?.email || "(not signed in)"}\nPlan: ${isPremium ? "Full Access" : "Free"}`)}`}
+            href={`mailto:${CONTACT}?subject=${encodeURIComponent("11 Plus Lab support")}&body=${encodeURIComponent(`\n\n---\nAccount: ${user?.email || "(not signed in)"}\nPlan: ${isPremium ? "Full Access" : "Free"}`)}`}
           >Email us</a>
         </div>
         <div className="set-divider" />
@@ -318,7 +318,7 @@ export default function SettingsScreen({ onOpenReport }) {
             <div className="set-sheet-title">Delete your account?</div>
             <div className="set-sheet-sub">
               This permanently removes your progress, XP, streak, friends and login for {user?.email || "this account"}.
-              It can't be undone — there's no "keep for later". Downloading your data first is a good idea.
+              This can't be undone. Downloading your data first is a good idea.
             </div>
             <div className="board-fieldlbl">Type DELETE to confirm</div>
             <input

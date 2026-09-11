@@ -46,4 +46,26 @@ describe("LoginScreen", () => {
     await act(async () => { el.querySelector(".login2-error-cta").click(); });
     expect(AUTH.signInWithGoogle).toHaveBeenCalled();
   });
+
+  // Two identical "Continue with Google" buttons on screen at once (the one
+  // inside this error plus the standalone one below) is exactly what was
+  // reported as looking broken.
+  it("hides the standalone Google button while the inline one is already showing", async () => {
+    AUTH.signInWithEmail.mockRejectedValue({ code: "auth/invalid-credential" });
+    const el = await render();
+    expect(el.querySelectorAll(".login2-google").length).toBe(1);
+
+    el.querySelector('input[type="email"]').value = "a@b.com";
+    await act(async () => { el.querySelector("form").dispatchEvent(new Event("submit", { bubbles: true, cancelable: true })); });
+    expect(el.querySelectorAll(".login2-error-cta").length).toBe(1);
+    expect(el.querySelectorAll(".login2-google").length).toBe(0); // the redundant one is gone
+
+    // Retrying (even one that's about to fail differently) drops the old
+    // error state — the standalone button shouldn't stay hidden forever
+    // after a single bad attempt.
+    AUTH.signInWithEmail.mockRejectedValue({ code: "auth/too-many-requests" });
+    await act(async () => { el.querySelector("form").dispatchEvent(new Event("submit", { bubbles: true, cancelable: true })); });
+    expect(el.querySelectorAll(".login2-error-cta").length).toBe(0);
+    expect(el.querySelectorAll(".login2-google").length).toBe(1);
+  });
 });

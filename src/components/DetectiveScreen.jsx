@@ -45,7 +45,7 @@ export default function DetectiveScreen({ onPlay, onLearn, onExit }) {
       </div>
 
       <div className="samp-card">
-        <SampleQuiz label="TRY A CLUE — FREE, NO STREAK RISK" items={samples} blank="_____" hint="Every clue teaches the word in a real sentence." nextLabel="Next clue" />
+        <SampleQuiz label="TRY A CLUE · FREE, NO STREAK RISK" items={samples} blank="_____" hint="Every clue teaches the word in a real sentence." nextLabel="Next clue" />
       </div>
 
       <div className="landing-hero landing-hero--row">

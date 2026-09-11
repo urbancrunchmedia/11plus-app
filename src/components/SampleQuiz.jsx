@@ -44,10 +44,10 @@ export default function SampleQuiz({ label, items, blank = "_____", hint, nextLa
       <div className="samp-fbrow">
         <div className={`samp-fb ${revealed ? (correct ? "ok" : "no") : ""}`}>
           {!revealed
-            ? (hint || "Free practice — pick an answer, no streak risk.")
+            ? (hint || "Free practice: pick an answer, no streak risk.")
             : correct
-              ? `Correct — it's ${q.options[q.answer]}.`
-              : `Not quite — it's ${q.options[q.answer]}.${q.teach ? " " + q.teach : ""}`}
+              ? `Correct! It's ${q.options[q.answer]}.`
+              : `Not quite. It's ${q.options[q.answer]}.${q.teach ? " " + q.teach : ""}`}
         </div>
         {revealed && (
           <button className="samp-next" onClick={next}>

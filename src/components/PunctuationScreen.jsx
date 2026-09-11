@@ -20,7 +20,7 @@ function SpotSample({ items }) {
   const classFor = (idx) => (done && idx === q.answer ? "correct" : done && idx === picked && picked !== q.answer ? "wrong" : "");
   return (
     <div className="spotsamp">
-      <div className="samp-label">TRY ONE — FREE, NO STREAK RISK</div>
+      <div className="samp-label">TRY ONE · FREE, NO STREAK RISK</div>
       <p className="spotsamp-q">Which section has the mistake?</p>
       <SpotSentence segments={q.segments} classFor={classFor} onPick={(idx) => !done && setPicked(idx)} disabled={done} />
       {done && (
@@ -95,7 +95,7 @@ export default function PunctuationScreen({ onPlay, onExit }) {
       <div className="landing-hero landing-hero--row">
         <div className="landing-hero-body">
           <div className="landing-hero-title">{setLabel} · {totalQuestions} questions</div>
-          <div className="landing-hero-blurb">Find the section with the punctuation or capital-letter mistake — or spot when there's none.</div>
+          <div className="landing-hero-blurb">Find the section with the punctuation or capital-letter mistake, or spot when there's none.</div>
         </div>
         <div className="landing-hero-actions">
           <div className="hero-selects">

@@ -6,15 +6,15 @@ import { usePremium } from "../contexts/PremiumContext";
 // Headline changes with what the child bumped into, so the ask feels relevant.
 const REASONS = {
   level:   { title: "Unlock Levels B & C",            sub: "Level A is free forever. Full Access opens the harder levels and the full 11+ challenge." },
-  limit:   { title: "That's today's free rounds done", sub: "Free play resets tomorrow — or go unlimited with Full Access." },
+  limit:   { title: "That's today's free rounds done", sub: "Free play resets tomorrow, or go unlimited with Full Access." },
   report:  { title: "See what to revise",             sub: "The parent progress report and 'words to review' come with Full Access." },
   feature: { title: "Unlock Full Access",             sub: "Every level, unlimited rounds, and the parent progress report." },
 };
 
 const BENEFITS = [
-  "All difficulty levels — A, B & C",
+  "All difficulty levels: A, B & C",
   "Unlimited rounds, every day",
-  "Parent progress report — spot weak words",
+  "Parent progress report: spot weak words",
   "Every game · all 776 words",
   "Cancel anytime",
 ];
@@ -22,12 +22,12 @@ const BENEFITS = [
 function friendlyError(message) {
   const m = (message || "").toLowerCase();
   if (m.includes("failed to fetch") || m.includes("networkerror") || m.includes("load failed"))
-    return "We couldn't reach the payment page — check your connection and try again.";
+    return "We couldn't reach the payment page. Check your connection and try again.";
   if (m.includes("sign") || m.includes("token") || m.includes("unauthor") || m.includes("401"))
     return "Your session expired. Please sign out, sign back in and try again.";
   if (m.includes("price") || m.includes("no such"))
     return "That plan isn't available right now. Please try the other plan, or come back shortly.";
-  return "Something went wrong starting checkout — no payment was taken. Please try again.";
+  return "Something went wrong starting checkout. No payment was taken. Please try again.";
 }
 
 export default function Paywall({ reason = "feature", onClose }) {
@@ -44,7 +44,7 @@ export default function Paywall({ reason = "feature", onClose }) {
     setErr(null);
     if (!user) { setErr("Please sign in first."); return; }
     const priceId = plan === "annual" ? PRICES.annual : PRICES.monthly;
-    if (!priceId) { setErr("Billing isn't switched on yet — please check back soon."); return; }
+    if (!priceId) { setErr("Billing isn't switched on yet. Please check back soon."); return; }
     setBusy(true);
     try {
       await startCheckout(priceId);
@@ -62,7 +62,7 @@ export default function Paywall({ reason = "feature", onClose }) {
         <div className="pw-badge">FULL ACCESS</div>
         <h2 className="pw-title">{r.title}</h2>
         <p className="pw-sub">{r.sub}</p>
-        <p className="pw-ask-grownup">Ask a grown-up to unlock this with you — it needs their card.</p>
+        <p className="pw-ask-grownup">Ask a grown-up to unlock this with you. It needs their card.</p>
 
         <ul className="pw-benefits">
           {BENEFITS.map((b) => <li key={b}><span className="pw-tick">✓</span>{b}</li>)}

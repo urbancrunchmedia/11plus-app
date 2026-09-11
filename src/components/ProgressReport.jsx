@@ -19,7 +19,7 @@ export default function ProgressReport({ onBack, onPractise }) {
         <button className="report-back" onClick={onBack} aria-label="Back">←</button>
         <div>
           <h1 className="report-title">Progress report</h1>
-          <div className="report-sub">What to revise next — for grown-ups</div>
+          <div className="report-sub">What to revise next (for grown-ups)</div>
         </div>
       </div>
 
@@ -73,7 +73,7 @@ export default function ProgressReport({ onBack, onPractise }) {
             </div>
 
             {weak.length === 0 ? (
-              <div className="report-none">No weak words right now — nice!</div>
+              <div className="report-none">No weak words right now. Nice!</div>
             ) : (
               <div className={!isPremium ? "report-blur" : ""}>
                 <ul className="report-words">

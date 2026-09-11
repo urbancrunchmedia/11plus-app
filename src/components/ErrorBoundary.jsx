@@ -36,7 +36,7 @@ export default class ErrorBoundary extends React.Component {
       <div className="errscreen">
         <div className="errscreen-card">
           <div className="errscreen-emoji">🙈</div>
-          <h1 className="errscreen-title">Oops — something went wobbly</h1>
+          <h1 className="errscreen-title">Oops! Something went wobbly</h1>
           <p className="errscreen-sub">Don't worry, your stars and streak are safe. Let's start again.</p>
           <button className="errscreen-btn" onClick={this.handleReload}>Try again</button>
         </div>

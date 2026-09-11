@@ -29,8 +29,8 @@ const LEVELS = [
 const TYPE_INFO = {
   synonyms:      { description: "Words that mean the same. Match each word with its synonym." },
   antonyms:      { description: "Words that mean the opposite. Match each word with its antonym." },
-  fillInBlanks:  { description: "Read the clue and work out the missing word — learn what each word means." },
-  compoundWords: { description: "Two small words joined into one — e.g. Sun + Flower = Sunflower." },
+  fillInBlanks:  { description: "Read the clue and work out the missing word. Learn what each word means." },
+  compoundWords: { description: "Two small words joined into one, e.g. Sun + Flower = Sunflower." },
 };
 
 // Header identity per game (the landing is shared by Word Match / Compound / Detective).
@@ -122,7 +122,7 @@ export default function HomeScreen({ gameType, onPlay, onLearn, initialConfig, o
       {gameType === "compoundWords" && (
         <div className="samp-card">
           <SampleQuiz
-            label="TRY A PUZZLE — FREE"
+            label="TRY A PUZZLE · FREE"
             items={compSamples}
             blank="_____"
             hint="Pick the word that joins on to make a real compound word."

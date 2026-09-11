@@ -10,7 +10,7 @@ export function formatDate(ms) {
 }
 
 const PERKS = [
-  "All difficulty levels — A, B & C",
+  "All difficulty levels: A, B & C",
   "Unlimited rounds, every day",
   "Parent progress report",
 ];
@@ -33,7 +33,7 @@ export default function SubscriptionSuccess({ onStart }) {
           {loading
             ? "Setting up your account…"
             : trialEnds
-              ? `Your 7-day free trial has started — you won't be charged until ${trialEnds}.`
+              ? `Your 7-day free trial has started. You won't be charged until ${trialEnds}.`
               : renews
                 ? `Your subscription is active. Next payment ${renews}.`
                 : "Your subscription is active."}
