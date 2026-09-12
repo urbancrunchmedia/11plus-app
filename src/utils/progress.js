@@ -25,6 +25,11 @@ function save(o) {
   try { localStorage.setItem(KEY, JSON.stringify(o)); } catch { /* storage full/unavailable */ }
 }
 
+// Raw read/write for cloudScores.js to sync this store across devices —
+// the merge logic itself lives there, next to the bests/history merges it mirrors.
+export function getProgressData() { return load(); }
+export function setProgressData(o) { save(o); }
+
 // Record a single answer. `word` is optional — pass it for the vocab games so
 // the word feeds the review list; omit it (null) to log skill accuracy only.
 export function recordAttempt({ skill, word, correct, meaning }) {

@@ -4,6 +4,7 @@ import {
 } from "firebase/firestore";
 import { db } from "../firebase";
 import { getWeeklyPoints, weekKey, weeklyPointsOf, WEEK_POINTS_KEY } from "./weekly";
+import { getProgressData, setProgressData } from "./progress";
 
 // A friendship is one shared doc both people can read, so it's mutual.
 // ID is the two uids sorted + joined, so either party computes the same id.
@@ -58,13 +59,40 @@ function isBetter(a, b) {
     (a.stars === b.stars && a.wrong === b.wrong && (a.time ?? 0) < (b.time ?? 0));
 }
 
+// A skill's practice count only grows, so whichever device has racked up more
+// reps for it holds the more complete picture — same idea as isBetter() above,
+// just compared by volume instead of by score.
+function isFurtherAlong(a, b) {
+  if (!b) return true;
+  return (a.hits || 0) + (a.misses || 0) > (b.hits || 0) + (b.misses || 0);
+}
+
+// Merge cloud progress (per-skill accuracy + the weak-words review list) into
+// whatever this device already has, same shape as the bests/history merges.
+function mergeProgress(cloudProgress) {
+  const cloud = cloudProgress || {};
+  const local = getProgressData();
+
+  const skills = { ...local.skills };
+  for (const [id, cloudSkill] of Object.entries(cloud.skills || {})) {
+    if (isFurtherAlong(cloudSkill, skills[id])) skills[id] = cloudSkill;
+  }
+
+  const words = { ...(cloud.words || {}) };
+  for (const [key, w] of Object.entries(local.words || {})) {
+    if (!words[key]) words[key] = w;
+  }
+
+  setProgressData({ skills, words });
+}
+
 // On sign-in: pull cloud data and merge into localStorage (best score wins)
 export async function mergeFromCloud(userId) {
   try {
     const snap = await getDoc(doc(db, "users", userId));
     if (!snap.exists()) return;
 
-    const { bests: cloudBests = {}, history: cloudHistory = {} } = snap.data();
+    const { bests: cloudBests = {}, history: cloudHistory = {}, progress: cloudProgress } = snap.data();
 
     const merged = { ...localBests() };
     for (const [key, cloud] of Object.entries(cloudBests)) {
@@ -78,6 +106,8 @@ export async function mergeFromCloud(userId) {
       if (!mergedH[key]) mergedH[key] = runs;
     }
     localStorage.setItem(HISTORY_KEY, JSON.stringify(mergedH));
+
+    mergeProgress(cloudProgress);
   } catch (e) {
     console.error("mergeFromCloud:", e);
   }
@@ -140,7 +170,7 @@ export async function pushToCloud(user) {
   try {
     await setDoc(
       doc(db, "users", uid),
-      { bests: localBests(), history: localHistory(), updatedAt: new Date().toISOString() },
+      { bests: localBests(), history: localHistory(), progress: getProgressData(), updatedAt: new Date().toISOString() },
       { merge: true }
     );
   } catch (e) {
