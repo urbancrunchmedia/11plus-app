@@ -1,0 +1,34 @@
+- generic [ref=e6]:
+  - generic [ref=e7]:
+    - generic [ref=e10]: "11"
+    - generic [ref=e12]: Master the words. Ace the 11+.
+  - generic [ref=e14]:
+    - generic [ref=e15]:
+      - button "I'm learning" [ref=e16] [cursor=pointer]
+      - button "Grown-up" [ref=e17] [cursor=pointer]
+    - generic [ref=e18]: Create an account
+    - generic [ref=e19]: See progress, set daily goals and manage profiles.
+    - generic [ref=e20]:
+      - generic [ref=e44]:
+        - generic [ref=e45]: CHILD NAME
+        - textbox "CHILD NAME" [ref=e46]:
+          - /placeholder: Your child's name
+      - generic [ref=e21]:
+        - generic [ref=e22]: EMAIL
+        - textbox "EMAIL" [ref=e23]:
+          - /placeholder: you@email.com
+      - generic [ref=e24]:
+        - generic [ref=e25]: PASSWORD
+        - generic [ref=e26]:
+          - textbox "PASSWORD Show password" [ref=e27]:
+            - /placeholder: ••••••••
+          - button "Show password" [ref=e28] [cursor=pointer]:
+            - img [ref=e29]
+      - button "Create account" [ref=e47] [cursor=pointer]
+    - generic [ref=e35]: or
+    - button "Continue with Google" [ref=e36] [cursor=pointer]:
+      - img [ref=e37]
+      - text: Continue with Google
+    - generic [ref=e42]:
+      - text: Already have an account?
+      - button "Log in" [active] [ref=e48] [cursor=pointer]
