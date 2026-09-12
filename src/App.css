@@ -21,6 +21,7 @@
   --brand-ink: #0a6db2;   /* ~4.6:1 on white ✓ — blue text on light */
   --brand-solid: #0a6db2; /* same hex as --brand-ink, reused as a BACKGROUND fill —
      white text on --brand itself is 2.67:1 (fails WCAG AA); this is 5.46:1 */
+  --brand-gradient: linear-gradient(135deg, #0a75bc 0%, #085586 100%); /* both stops individually clear 4.5:1 with white text (4.9:1 / 7.9:1) — unlike the old var(--brand)-based gradient, which was 2.67:1 at its light end */
   --on-brand: #ffffff;    /* text on blue fills */
 
   /* Lime accent — CTAs, highlights, selected/streak */
@@ -2047,7 +2048,7 @@ body {
 .dash-hero  { grid-area: hero; }
 .dash-side  { grid-area: friends; }
 .dash-games { grid-area: games; display: flex; flex-direction: column; gap: 14px; }
-.dash-hero { background: var(--brand-solid); border-radius: 30px; padding: 28px; color: #fff; position: relative; overflow: hidden; display: flex; justify-content: space-between; gap: 20px; }
+.dash-hero { background: var(--brand-gradient); border-radius: 30px; padding: 28px; color: #fff; position: relative; overflow: hidden; display: flex; justify-content: space-between; gap: 20px; }
 .dash-hero::after { content: ""; position: absolute; right: -60px; bottom: -70px; width: 220px; height: 220px; border-radius: 50%; background: rgba(255,255,255,0.09); pointer-events: none; }
 .dash-hero-body, .dash-ring { position: relative; z-index: 1; }
 .dash-hero-body { flex: 1; min-width: 0; }
@@ -2136,7 +2137,7 @@ body {
 .chip { flex: 1; border: none; border-radius: var(--r-full); padding: 12px 0; font-weight: 700; font-size: 0.9rem; background: #fff; color: var(--muted, #6b7a8c); box-shadow: var(--shadow-xs); transition: all 0.15s; }
 .chip.active { background: var(--ink); color: #fff; }
 
-.landing-hero { background: var(--brand-solid); color: #fff; border-radius: 28px; padding: 26px; position: relative; overflow: hidden; }
+.landing-hero { background: var(--brand-gradient); color: #fff; border-radius: 28px; padding: 26px; position: relative; overflow: hidden; }
 .landing-hero-title { font-weight: 800; font-size: 1.7rem; letter-spacing: -0.02em; margin: 14px 0 8px; }
 .landing-hero-blurb { font-weight: 500; font-size: 0.92rem; line-height: 1.5; color: rgba(255,255,255,0.85); max-width: 440px; }
 .landing-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
@@ -2648,7 +2649,7 @@ body {
 .set-plan {
   display: flex; align-items: center; gap: 16px;
   padding: 18px 20px; border-radius: 20px; margin-bottom: 18px;
-  background: linear-gradient(135deg, var(--brand) 0%, var(--brand-dark) 100%);
+  background: var(--brand-gradient);
   color: #fff; box-shadow: 0 14px 34px rgba(11,60,110,0.28);
 }
 .set-plan.premium {
