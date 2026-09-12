@@ -3,7 +3,7 @@ import {
   collection, query, where, getDocs,
 } from "firebase/firestore";
 import { db } from "../firebase";
-import { getWeeklyPoints, weekKey, weeklyPointsOf } from "./weekly";
+import { getWeeklyPoints, weekKey, weeklyPointsOf, WEEK_POINTS_KEY } from "./weekly";
 
 // A friendship is one shared doc both people can read, so it's mutual.
 // ID is the two uids sorted + joined, so either party computes the same id.
@@ -23,7 +23,7 @@ export function prepareLocalForUser(uid) {
   try {
     const prev = localStorage.getItem(UID_KEY);
     if (prev && prev !== uid) {
-      [BEST_KEY, HISTORY_KEY, "11plus_progress"].forEach((k) => localStorage.removeItem(k));
+      [BEST_KEY, HISTORY_KEY, "11plus_progress", WEEK_POINTS_KEY].forEach((k) => localStorage.removeItem(k));
       Object.keys(localStorage)
         .filter((k) => k.startsWith("11plus_rounds_") || k.startsWith("11plus_misses_"))
         .forEach((k) => localStorage.removeItem(k));

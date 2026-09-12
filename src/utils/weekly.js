@@ -5,7 +5,8 @@
 // board, and the reset needs no scheduled job: a stored week key that isn't
 // this week's simply reads as zero.
 
-const KEY = "11plus_week_points";
+export const WEEK_POINTS_KEY = "11plus_week_points";
+const KEY = WEEK_POINTS_KEY;
 
 export function weekStart(date = new Date()) {
   const d = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
