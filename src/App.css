@@ -2451,6 +2451,15 @@ body {
 .set-row-txt { flex: 1; min-width: 0; }
 .set-row-label { font-weight: 700; font-size: 0.95rem; color: var(--ink); }
 .set-row-sub { font-weight: 500; font-size: 0.78rem; color: var(--muted); margin-top: 3px; }
+/* "Easy/Medium/Hard" plus a lock icon is much wider than the "A/B/C" this
+   replaced — on a narrow phone that squeezed the label column down to a
+   ragged one-word-per-line wrap. Stack instead of cramming both onto one
+   row once there isn't room for both comfortably. */
+@media (max-width: 420px) {
+  .set-row--wrap { flex-wrap: wrap; }
+  .set-row--wrap .set-row-txt { flex-basis: 100%; }
+  .set-row--wrap .set-seg { margin-left: auto; }
+}
 .set-divider { height: 1px; background: #edf2f7; margin: 8px 0; }
 
 .set-seg { display: flex; gap: 6px; background: var(--surface-2, #f4f9ff); border-radius: 12px; padding: 4px; flex: none; }

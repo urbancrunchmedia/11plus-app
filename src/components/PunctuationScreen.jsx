@@ -36,10 +36,10 @@ function SpotSample({ items }) {
 }
 
 const SETS = [
-  { id: "A",   emoji: "🌱", label: "Level A", topics: "Full stops · question marks · commas in lists · contractions" },
-  { id: "B",   emoji: "⚡", label: "Level B", topics: "Possessive apostrophes · colons · semi-colons" },
-  { id: "C",   emoji: "🔥", label: "Level C", topics: "Fronted adverbials · dashes · brackets · tricky possessives" },
-  { id: "all", emoji: "🎲", label: "All levels", topics: "Exam-style mix of every set, shuffled" },
+  { id: "A",   emoji: "🌱", label: "Easy", topics: "Full stops · question marks · commas in lists · contractions" },
+  { id: "B",   emoji: "⚡", label: "Medium", topics: "Possessive apostrophes · colons · semi-colons" },
+  { id: "C",   emoji: "🔥", label: "Hard", topics: "Fronted adverbials · dashes · brackets · tricky possessives" },
+  { id: "all", emoji: "🎲", label: "Mixed", topics: "Exam-style mix of every set, shuffled" },
 ];
 
 function shuffle(a) { return [...a].sort(() => Math.random() - 0.5); }

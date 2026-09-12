@@ -21,9 +21,9 @@ function buildCompoundSamples() {
 }
 
 const LEVELS = [
-  { id: "A", label: "Level A", desc: "Easiest",      emoji: "🌱" },
-  { id: "B", label: "Level B", desc: "Intermediate", emoji: "⚡" },
-  { id: "C", label: "Level C", desc: "Hardest",      emoji: "🔥" },
+  { id: "A", label: "Easy",   desc: "Easiest",      emoji: "🌱" },
+  { id: "B", label: "Medium", desc: "Intermediate", emoji: "⚡" },
+  { id: "C", label: "Hard",   desc: "Hardest",      emoji: "🔥" },
 ];
 
 const TYPE_INFO = {
@@ -149,7 +149,7 @@ export default function HomeScreen({ gameType, onPlay, onLearn, initialConfig, o
           </div>
         )}
         <div className="landing-hero-title">
-          {noLevel ? `All words · ${totalQuestions}` : `Level ${level} · ${totalQuestions} words`}
+          {noLevel ? `All words · ${totalQuestions}` : `${LEVELS.find((l) => l.id === level)?.label || level} · ${totalQuestions} words`}
         </div>
         <div className="landing-hero-blurb">{info.description}</div>
         <div className="landing-hero-actions">

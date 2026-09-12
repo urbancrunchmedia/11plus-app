@@ -11,9 +11,9 @@ import { exportMyData, downloadMyData, deleteMyAccount } from "../utils/dataRigh
 
 const GOALS = [3, 5, 10];
 const DIFFS = [
-  { id: "A", label: "Level A" },
-  { id: "B", label: "Level B" },
-  { id: "C", label: "Level C" },
+  { id: "A", label: "Easy" },
+  { id: "B", label: "Medium" },
+  { id: "C", label: "Hard" },
 ];
 const LEARN_TOGGLES = [
   { key: "sound",         label: "Sounds and cheers",   sub: "Ticks, streak fanfare and combo sounds" },
@@ -197,7 +197,7 @@ export default function SettingsScreen({ onOpenReport }) {
         </div>
         <div className="set-divider" />
 
-        <div className="set-row">
+        <div className="set-row set-row--wrap">
           <div className="set-row-txt"><div className="set-row-label">Default difficulty</div><div className="set-row-sub">{isPremium ? "New rounds start at this level" : "Levels B and C need Full Access"}</div></div>
           <div className="set-seg">
             {DIFFS.map((d) => {
@@ -208,7 +208,7 @@ export default function SettingsScreen({ onOpenReport }) {
                   className={`set-seg-btn ${s.defaultDifficulty === d.id ? "active" : ""} ${locked ? "locked" : ""}`}
                   onClick={() => (locked ? openPaywall("level") : update("defaultDifficulty", d.id))}
                 >
-                  {d.id}
+                  {d.label}
                   {locked && <Icon name="lock" size={10} stroke="currentColor" strokeWidth={2.4} />}
                 </button>
               );

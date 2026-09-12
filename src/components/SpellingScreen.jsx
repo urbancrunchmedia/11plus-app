@@ -36,10 +36,10 @@ function SpotSample({ items }) {
 }
 
 const SETS = [
-  { id: "A",   label: "Level A" },
-  { id: "B",   label: "Level B" },
-  { id: "C",   label: "Level C" },
-  { id: "all", label: "All levels" },
+  { id: "A",   label: "Easy" },
+  { id: "B",   label: "Medium" },
+  { id: "C",   label: "Hard" },
+  { id: "all", label: "Mixed" },
 ];
 
 function shuffle(a) { return [...a].sort(() => Math.random() - 0.5); }

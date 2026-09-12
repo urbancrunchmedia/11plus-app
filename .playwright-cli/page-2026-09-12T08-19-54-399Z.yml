@@ -1,0 +1,70 @@
+- generic [ref=e3]:
+  - navigation [ref=e6]:
+    - generic [ref=e7]:
+      - button "Home" [ref=e8] [cursor=pointer]:
+        - img [ref=e10]
+        - generic [ref=e14]: Home
+      - button "Board" [ref=e15] [cursor=pointer]:
+        - img [ref=e17]
+        - generic [ref=e22]: Board
+    - button "Me" [ref=e24] [cursor=pointer]:
+      - generic [ref=e25]: W
+      - generic [ref=e26]: Me
+  - generic [ref=e355]:
+    - button "← All games" [ref=e356] [cursor=pointer]
+    - generic [ref=e357]:
+      - img [ref=e359]
+      - generic [ref=e363]:
+        - heading "Punctuation" [level=1] [ref=e364]
+        - generic [ref=e365]: Spot the punctuation mistake
+      - generic [ref=e366]: 0 XP
+    - generic [ref=e368]:
+      - generic [ref=e369]: TRY ONE · FREE, NO STREAK RISK
+      - paragraph [ref=e370]: Which section has the mistake?
+      - generic [ref=e371]:
+        - generic [ref=e372]:
+          - generic [ref=e373]:
+            - generic [ref=e374]: Dont forget
+            - generic [ref=e376]: A
+          - generic [ref=e377]:
+            - generic [ref=e378]: to bring
+            - generic [ref=e380]: B
+          - generic [ref=e381]:
+            - generic [ref=e382]: your coat
+            - generic [ref=e384]: C
+          - generic [ref=e385]:
+            - generic [ref=e386]: tomorrow.
+            - generic [ref=e388]: D
+        - generic [ref=e389]:
+          - button "A" [ref=e390] [cursor=pointer]
+          - button "B" [ref=e391] [cursor=pointer]
+          - button "C" [ref=e392] [cursor=pointer]
+          - button "D" [ref=e393] [cursor=pointer]
+          - button "N" [ref=e394] [cursor=pointer]
+        - generic [ref=e395]: N = no mistake
+    - generic [ref=e396]:
+      - generic [ref=e397]:
+        - generic [ref=e398]: Easy · 10 questions
+        - generic [ref=e399]: Find the section with the punctuation or capital-letter mistake, or spot when there's none.
+      - generic [ref=e400]:
+        - generic [ref=e401]:
+          - generic [ref=e402]:
+            - combobox "Set" [ref=e403] [cursor=pointer]:
+              - option "Easy" [selected]
+              - option "Medium · Premium"
+              - option "Hard · Premium"
+              - option "Mixed · Premium"
+            - generic: ▾
+          - generic [ref=e404]:
+            - combobox "Length" [ref=e405] [cursor=pointer]:
+              - option "5 questions"
+              - option "10 questions" [selected]
+              - option "20 questions"
+              - option "30 questions"
+            - generic: ▾
+        - button "Start round →" [ref=e406] [cursor=pointer]:
+          - generic [ref=e407]: Start round
+          - generic [ref=e408]: →
+        - button "Nothing to practice" [disabled] [ref=e410]:
+          - img [ref=e411]
+          - generic [ref=e414]: Nothing to practice
