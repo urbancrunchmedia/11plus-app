@@ -31,6 +31,13 @@ export default async function handler(req, res) {
       // billing address to know which jurisdiction's tax applies.
       automatic_tax: { enabled: true },
       billing_address_collection: "required",
+      // Without this, Stripe tries to calculate tax against the *existing*
+      // Customer object's address before the session even renders — for any
+      // brand-new customer that's empty, and the whole session creation call
+      // fails outright with "requires a valid address on the Customer" before
+      // anyone sees a checkout page. This tells Stripe to use the address
+      // collected in *this* session instead, and to save it going forward.
+      customer_update: { address: "auto" },
       success_url: `${origin}/?checkout=success`,
       cancel_url: `${origin}/?checkout=cancel`,
     });
