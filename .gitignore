@@ -29,3 +29,4 @@ dist-ssr
 # Firebase auth exports — contains emails and password hashes
 users.json
 *.users.json
+.playwright-cli/

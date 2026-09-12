@@ -130,7 +130,10 @@ export default function LeaderboardScreen({ onPlay }) {
           <div className="board-icon"><Icon name="trophy" size={22} stroke="currentColor" strokeWidth={2} /></div>
           <div>
             <h1 className="board-title">Leaderboard</h1>
-            <div className="board-sub">Friends · resets in {resetsIn}</div>
+            <div className="board-sub">
+              Friends
+              <span className="board-reset-chip">New week in {resetsIn}</span>
+            </div>
           </div>
         </div>
         <div className="board-head-actions">
@@ -155,7 +158,7 @@ export default function LeaderboardScreen({ onPlay }) {
                 {p.displayName || "Player"}{p.isMe && <span className="board-you"> (you)</span>}
               </span>
               {p.isMe && (
-                <button className="board-rename" onClick={() => { setNameInput(myName); setNameError(""); setNameSheet(true); }}>Rename</button>
+                <button className="board-rename" onClick={() => { setNameInput(myName); setNameError(""); setNameSheet(true); }}>Edit name</button>
               )}
               <span className="board-pts">{(p.weekPoints || 0).toLocaleString()}</span>
               {!p.isMe && managing && (

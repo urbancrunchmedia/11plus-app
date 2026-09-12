@@ -2243,6 +2243,11 @@ body {
 .board-icon { width: 52px; height: 52px; border-radius: 17px; background: #fff6d6; display: grid; place-items: center; font-size: 1.5rem; flex: none; }
 .board-title { font-weight: 800; font-size: 1.7rem; color: var(--ink); letter-spacing: -0.02em; }
 .board-sub { font-weight: 600; font-size: 0.85rem; color: var(--muted, #6b7a8c); margin-top: 3px; }
+.board-reset-chip {
+  display: inline-block; margin-left: 8px; padding: 2px 9px;
+  background: var(--surface-2, #f4f9ff); color: var(--brand-ink);
+  border-radius: var(--r-full); font-weight: 700; font-size: 0.72rem;
+}
 
 /* Header actions: white "Manage" that turns black while managing, lime primary. */
 .board-manage { border: none; cursor: pointer; background: #fff; color: var(--ink); border-radius: var(--r-full); padding: 12px 22px; font-weight: 800; font-size: 0.88rem; box-shadow: var(--shadow-xs); flex: none; transition: background 0.12s, color 0.12s; }

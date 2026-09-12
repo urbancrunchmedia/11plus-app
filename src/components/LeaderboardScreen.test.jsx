@@ -66,7 +66,9 @@ describe("LeaderboardScreen", () => {
     expect(remove.getAttribute("aria-label")).toBe("Remove Sam");
     // Your own row is renamed, never removed.
     expect(el.querySelectorAll(".board-remove").length).toBe(1);
-    expect(el.querySelector(".board-rename")).toBeTruthy();
+    // Matches the word Settings already uses for the identical action —
+    // "Rename" read as more technical than a child-facing app should sound.
+    expect(el.querySelector(".board-rename").textContent).toBe("Edit name");
   });
 
   it("says out loud that the code was copied", async () => {
@@ -106,7 +108,7 @@ describe("LeaderboardScreen", () => {
 
   it("ranks on this week and says when the week turns over", async () => {
     const el = await render();
-    expect(el.querySelector(".board-sub").textContent).toMatch(/resets in \d+[dhm]/);
+    expect(el.querySelector(".board-sub").textContent).toMatch(/new week in \d+[dhm]/i);
     const names = [...el.querySelectorAll(".board-name")].map((n) => n.textContent);
     expect(names[0]).toContain("Ava");   // 40 this week beats Sam's 12…
     expect(names[1]).toContain("Sam");   // …despite Sam's larger all-time total
