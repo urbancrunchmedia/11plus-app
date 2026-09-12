@@ -2958,6 +2958,9 @@ body {
 }
 /* N looks like every other answer button (no pink). */
 .spot-ans--n, .spot-ans--n:hover { background: var(--track); color: var(--muted); }
+/* Extra gap before N so it doesn't read as "the next letter after D" — kids were
+   tapping it by mistake instead of the last real answer. */
+.spot-ans--n { margin-left: 20px; }
 
 /* Spot sample feedback colour */
 .spotsamp-why.ok { color: var(--correct); }

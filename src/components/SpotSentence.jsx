@@ -27,7 +27,7 @@ export default function SpotSentence({ segments, classFor, onPick, disabled }) {
             {LETTERS[i]}
           </button>
         ))}
-        <button type="button" className={`spot-ans ${classFor(N_INDEX)}`} onClick={() => onPick(N_INDEX)} disabled={disabled}>
+        <button type="button" className={`spot-ans spot-ans--n ${classFor(N_INDEX)}`} onClick={() => onPick(N_INDEX)} disabled={disabled}>
           N
         </button>
       </div>
