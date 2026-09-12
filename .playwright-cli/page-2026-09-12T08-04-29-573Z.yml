@@ -1,0 +1,53 @@
+- generic [ref=e49]:
+  - navigation [ref=e50]:
+    - generic [ref=e51]:
+      - button "Home" [ref=e52] [cursor=pointer]:
+        - img [ref=e54]
+        - generic [ref=e58]: Home
+      - button "Board" [ref=e59] [cursor=pointer]:
+        - img [ref=e61]
+        - generic [ref=e66]: Board
+    - button "Me" [ref=e68] [cursor=pointer]:
+      - generic [ref=e69]: M
+      - generic [ref=e70]: Me
+  - generic [ref=e155]:
+    - button "← All games" [ref=e156] [cursor=pointer]
+    - generic [ref=e157]:
+      - img [ref=e159]
+      - generic [ref=e162]:
+        - heading "Word Match" [level=1] [ref=e163]
+        - generic [ref=e164]: Synonyms & antonyms
+      - generic [ref=e165]: 0 XP
+    - generic [ref=e166]:
+      - generic [ref=e167]:
+        - generic [ref=e168]: What are we matching?
+        - generic [ref=e169]:
+          - button "Synonyms same meaning" [ref=e170] [cursor=pointer]:
+            - generic [ref=e171]: Synonyms
+            - generic [ref=e172]: same meaning
+          - button "Antonyms opposite meaning" [ref=e173] [cursor=pointer]:
+            - generic [ref=e174]: Antonyms
+            - generic [ref=e175]: opposite meaning
+      - generic [ref=e176]: Level A · 10 words
+      - generic [ref=e177]: Words that mean the same. Match each word with its synonym.
+      - generic [ref=e178]:
+        - generic [ref=e179]:
+          - generic [ref=e180]:
+            - combobox "Level" [ref=e181] [cursor=pointer]:
+              - option "Level A · easiest" [selected]
+              - option "Level B · premium"
+              - option "Level C · premium"
+            - generic: ▾
+          - generic [ref=e182]:
+            - combobox "Length" [ref=e183] [cursor=pointer]:
+              - option "5 words"
+              - option "10 words" [selected]
+              - option "20 words"
+              - option "30 words"
+            - generic: ▾
+        - button "Start round →" [ref=e184] [cursor=pointer]:
+          - generic [ref=e185]: Start round
+          - generic [ref=e186]: →
+        - button "Nothing to practice" [disabled] [ref=e188]:
+          - img [ref=e189]
+          - generic [ref=e192]: Nothing to practice

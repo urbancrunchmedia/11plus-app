@@ -2540,6 +2540,17 @@ body {
   .login2-panel { padding: 26px 20px 44px; }
 }
 
+/* Phone portrait specifically (tablets are >=768px wide even in portrait, and
+   have the height to spare): the 5-game strip is decorative context, not
+   needed to sign in, and on a short screen it was pushing the entire form —
+   email, password, the actual submit button — below the fold with nothing
+   on screen to hint there was more content to scroll to. */
+@media (max-width: 480px) {
+  .login2-games { display: none; }
+  .login2-hero { padding: 24px 24px 20px; }
+  .login2-hero-mid { margin: 0; }
+}
+
 /* ── Settings PIN control ── */
 .set-pin-actions { display: flex; gap: 8px; align-items: center; flex: none; }
 .set-pin-input { width: 74px; border: 2px solid var(--border); border-radius: 10px; padding: 9px 10px; font: inherit; font-weight: 800; letter-spacing: 4px; text-align: center; color: var(--ink); }

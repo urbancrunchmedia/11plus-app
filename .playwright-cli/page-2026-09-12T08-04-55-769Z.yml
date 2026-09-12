@@ -1,0 +1,45 @@
+- generic [ref=e49]:
+  - navigation [ref=e50]:
+    - generic [ref=e51]:
+      - button "Home" [ref=e52] [cursor=pointer]:
+        - img [ref=e54]
+        - generic [ref=e58]: Home
+      - button "Board" [ref=e59] [cursor=pointer]:
+        - img [ref=e61]
+        - generic [ref=e66]: Board
+    - button "Me" [ref=e68] [cursor=pointer]:
+      - generic [ref=e69]: M
+      - generic [ref=e70]: Me
+  - generic [ref=e200]:
+    - generic [ref=e201]:
+      - button "Home" [ref=e202] [cursor=pointer]: ←
+      - button "Mute" [ref=e214] [cursor=pointer]:
+        - img [ref=e215]
+    - generic [ref=e218]:
+      - generic [ref=e219]:
+        - generic [ref=e220]: ×0
+        - generic [ref=e221]: combo
+      - generic [ref=e222]:
+        - generic [ref=e223]: 0:01
+        - generic [ref=e224]: time
+      - generic [ref=e225]:
+        - generic [ref=e226]: ✓ 0
+        - generic [ref=e227]: correct
+      - generic [ref=e228]:
+        - generic [ref=e229]: "0"
+        - generic [ref=e230]: wrong
+    - generic [ref=e231]:
+      - paragraph [ref=e232]: Match each word with its synonym (same meaning)
+      - generic [ref=e233]:
+        - generic [ref=e234]:
+          - button "Anxious" [ref=e235] [cursor=pointer]
+          - button "Last" [ref=e236] [cursor=pointer]
+          - button "Miserable" [ref=e237] [cursor=pointer]
+          - button "Easy" [ref=e238] [cursor=pointer]
+          - button "Above" [ref=e239] [cursor=pointer]
+        - generic [ref=e246]:
+          - button "Final" [ref=e247] [cursor=pointer]
+          - button "Simple" [ref=e248] [cursor=pointer]
+          - button "Overhead" [ref=e249] [cursor=pointer]
+          - button "Wretched" [ref=e250] [cursor=pointer]
+          - button "Nervous" [ref=e251] [cursor=pointer]

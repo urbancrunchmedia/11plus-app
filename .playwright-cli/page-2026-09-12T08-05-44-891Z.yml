@@ -1,0 +1,110 @@
+- generic [ref=e49]:
+  - navigation [ref=e50]:
+    - generic [ref=e51]:
+      - button "Home" [ref=e52] [cursor=pointer]:
+        - img [ref=e54]
+        - generic [ref=e58]: Home
+      - button "Board" [ref=e59] [cursor=pointer]:
+        - img [ref=e61]
+        - generic [ref=e66]: Board
+    - button "Me" [active] [ref=e68] [cursor=pointer]:
+      - generic [ref=e69]: M
+      - generic [ref=e70]: Me
+  - generic [ref=e316]:
+    - generic [ref=e317]:
+      - generic [ref=e318]: M
+      - generic [ref=e319]:
+        - generic [ref=e320]: Mobi
+        - generic [ref=e321]: Level 1 · Word Rookie · 0 XP · 🔥 0 day streak
+      - button "Edit name" [ref=e322] [cursor=pointer]
+    - generic [ref=e323]:
+      - generic [ref=e324]:
+        - generic [ref=e325]: FREE PLAN
+        - generic [ref=e326]: Unlock every level & unlimited play
+        - generic [ref=e327]: Free is Level A with a daily limit. Full Access opens Levels B & C, unlimited rounds and the parent report.
+      - button "Upgrade" [ref=e328] [cursor=pointer]
+    - generic [ref=e329]:
+      - generic [ref=e330]: Your learning
+      - generic [ref=e331]:
+        - generic [ref=e332]:
+          - generic [ref=e333]: Daily goal
+          - generic [ref=e334]: How many rounds keep your streak alive
+        - generic [ref=e335]:
+          - button "3" [ref=e336] [cursor=pointer]
+          - button "5" [ref=e337] [cursor=pointer]
+          - button "10" [ref=e338] [cursor=pointer]
+      - generic [ref=e340]:
+        - generic [ref=e341]:
+          - generic [ref=e342]: Default difficulty
+          - generic [ref=e343]: Levels B and C need Full Access
+        - generic [ref=e344]:
+          - button "A" [ref=e345] [cursor=pointer]
+          - button "B" [ref=e346] [cursor=pointer]:
+            - text: B
+            - img [ref=e347]
+          - button "C" [ref=e350] [cursor=pointer]:
+            - text: C
+            - img [ref=e351]
+      - generic [ref=e355]:
+        - generic [ref=e356]:
+          - generic [ref=e357]: Sounds and cheers
+          - generic [ref=e358]: Ticks, streak fanfare and combo sounds
+        - button [pressed] [ref=e359] [cursor=pointer]
+      - generic [ref=e362]:
+        - generic [ref=e363]:
+          - generic [ref=e364]: Show the timer
+          - generic [ref=e365]: Hide it if racing the clock feels stressful
+        - button [pressed] [ref=e366] [cursor=pointer]
+      - generic [ref=e369]:
+        - generic [ref=e370]:
+          - generic [ref=e371]: Bring back missed words
+          - generic [ref=e372]: Words you slip on return in a later round
+        - button [pressed] [ref=e373] [cursor=pointer]
+    - generic [ref=e375]:
+      - generic [ref=e376]: Grown-ups
+      - generic [ref=e377]:
+        - generic [ref=e378]:
+          - generic [ref=e379]: Progress report
+          - generic [ref=e380]: See accuracy by skill and the words to revise next
+        - button "View" [ref=e381] [cursor=pointer]:
+          - text: View
+          - img [ref=e382]
+      - generic [ref=e386]:
+        - generic [ref=e387]:
+          - generic [ref=e388]: PIN-protect grown-up settings
+          - generic [ref=e389]: Set a Child PIN below to use this
+        - button [disabled] [ref=e390] [cursor=pointer]
+      - generic [ref=e393]:
+        - generic [ref=e394]:
+          - generic [ref=e395]: Contact support
+          - generic [ref=e396]: Questions, problems or billing? We'll reply by email
+        - link "Email us" [ref=e397] [cursor=pointer]:
+          - /url: mailto:hello@11pluslab.com?subject=11%20Plus%20Lab%20support&body=%0A%0A---%0AAccount%3A%20mobile-check-1789200129%40example.com%0APlan%3A%20Free
+      - generic [ref=e399]:
+        - generic [ref=e400]:
+          - generic [ref=e401]: Download your data
+          - generic [ref=e402]: Everything we hold about this account, as a file you keep
+        - button "Download" [ref=e403] [cursor=pointer]
+      - generic [ref=e405]:
+        - generic [ref=e406]:
+          - generic [ref=e407]: Delete your account
+          - generic [ref=e408]: Permanently removes your progress, friends and login
+        - button "Delete" [ref=e409] [cursor=pointer]
+      - generic [ref=e411]:
+        - generic [ref=e412]:
+          - generic [ref=e413]: Child PIN
+          - generic [ref=e414]: A 4-digit PIN to start a session (soft lock)
+        - button "Set PIN" [ref=e416] [cursor=pointer]
+    - generic [ref=e417]:
+      - generic [ref=e418]:
+        - generic [ref=e419]: Signed in as Mobi
+        - generic [ref=e420]: mobile-check-1789200129@example.com
+        - generic [ref=e421]: Logging out keeps your XP, badges and streak safe.
+      - button "Log out" [ref=e422] [cursor=pointer]
+    - generic [ref=e423]:
+      - text: 11 Plus Lab ·
+      - link "Privacy" [ref=e424] [cursor=pointer]:
+        - /url: "#"
+      - text: ·
+      - link "Terms" [ref=e425] [cursor=pointer]:
+        - /url: "#"
