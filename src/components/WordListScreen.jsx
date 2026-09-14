@@ -82,19 +82,44 @@ export default function WordListScreen() {
       </div>
 
       <div className="wl2-panes">
-        {/* Left: list */}
+        {/* Left: list (on mobile, tapping a row expands its detail inline below it) */}
         <div className="wl2-list">
           {filtered.length === 0 && <div className="wl2-empty">No words found.</div>}
-          {filtered.map((w) => (
-            <button
-              key={w.word}
-              className={`wl2-row ${selectedWord === w.word ? "active" : ""}`}
-              onClick={() => setSelectedWord(w.word)}
-            >
-              <span className="wl2-word">{w.word}</span>
-              <span className="wl2-levels">{w.levels.join(" · ")}</span>
-            </button>
-          ))}
+          {filtered.map((w) => {
+            const isOpen = selectedWord === w.word;
+            return (
+              <React.Fragment key={w.word}>
+                <button
+                  className={`wl2-row ${isOpen ? "active" : ""}`}
+                  onClick={() => setSelectedWord((prev) => (prev === w.word ? undefined : w.word))}
+                >
+                  <span className="wl2-word">{w.word}</span>
+                  <span className="wl2-levels">{w.levels.join(" · ")}</span>
+                </button>
+                {isOpen && (
+                  <div className="wl2-row-detail">
+                    <div className="wl2-detail-levels">
+                      {w.levels.map((l) => `Level ${l}`).join(", ")}
+                    </div>
+                    {w.definition && <div className="wl2-defn">{w.definition}</div>}
+                    <div className="wl2-rel">
+                      <div className="wl2-rel-col">
+                        <div className="wl2-rel-lbl">SAME AS</div>
+                        <div className="wl2-rel-val">{w.synonym || "—"}</div>
+                      </div>
+                      <div className="wl2-rel-col">
+                        <div className="wl2-rel-lbl">OPPOSITE</div>
+                        <div className="wl2-rel-val">{w.antonym || "—"}</div>
+                      </div>
+                    </div>
+                    {!w.definition && !w.synonym && !w.antonym && (
+                      <div className="wl2-defn wl2-defn--muted">No extra detail for this word yet.</div>
+                    )}
+                  </div>
+                )}
+              </React.Fragment>
+            );
+          })}
         </div>
 
         {/* Right: detail */}

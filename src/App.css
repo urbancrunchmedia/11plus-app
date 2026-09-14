@@ -2206,6 +2206,7 @@ body {
 .wl2-levels { font-weight: 700; font-size: 0.72rem; color: var(--muted, #6b7a8c); }
 .wl2-row.active .wl2-levels { color: rgba(255,255,255,0.85); }
 .wl2-empty { padding: 40px 16px; text-align: center; font-weight: 600; color: var(--muted, #6b7a8c); }
+.wl2-row-detail { display: none; }
 
 .wl2-detail { background: #fff; border-radius: 22px; padding: 24px; box-shadow: var(--shadow-xs); position: sticky; top: 0; }
 .wl2-detail-word { font-weight: 800; font-size: 1.7rem; color: var(--ink); letter-spacing: -0.02em; }
@@ -2219,10 +2220,16 @@ body {
 @media (max-width: 760px) {
   .wl2-panes { grid-template-columns: 1fr; }
   .wl2-list { max-height: none; }
-  /* Pin the detail card above the list instead of leaving it in document
-     flow below a potentially long list, where tapping a word wouldn't show
-     any visible change unless the user scrolled all the way down. */
-  .wl2-detail { position: sticky; top: 8px; order: -1; z-index: 5; margin-bottom: 4px; }
+  /* Detail lives inline under the tapped row instead of a separate pane —
+     a pane below a long list wasn't visible unless scrolled all the way down. */
+  .wl2-detail { display: none; }
+  .wl2-row-detail {
+    display: block;
+    padding: 4px 16px 18px;
+    margin: -4px 0 4px;
+    background: var(--surface-2, #f4f9ff);
+    border-radius: 0 0 14px 14px;
+  }
 }
 
 /* ── Dashboard: Friends this week ── */
