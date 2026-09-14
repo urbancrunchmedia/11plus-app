@@ -78,4 +78,12 @@ describe("LoginScreen", () => {
     expect(el.querySelector(".login2-error").textContent).toMatch(/sign in with email/i);
     AUTH.redirectError = null;
   });
+
+  // A saved-looking autofilled password is what gets people stuck here in the
+  // first place, so the hint has to be visible before they ever submit —
+  // not only after the login attempt has already failed.
+  it("hints at Google sign-in on the sign-in form before any attempt is made", async () => {
+    const el = await render();
+    expect(el.textContent).toMatch(/Signed up with Google\?/);
+  });
 });

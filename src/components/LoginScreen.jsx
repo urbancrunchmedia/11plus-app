@@ -189,7 +189,13 @@ export default function LoginScreen() {
                 </label>
 
                 {mode === "signin" && (
-                  <button type="button" className="login2-forgot" onClick={handleForgot}>Forgot password?</button>
+                  <>
+                    {/* Shown always, not just after a failed attempt — a browser
+                        that's autofilled email+password looks trustworthy enough
+                        that people submit it without reading an error first. */}
+                    <div className="login2-googlehint">Signed up with Google? Use the button below instead.</div>
+                    <button type="button" className="login2-forgot" onClick={handleForgot}>Forgot password?</button>
+                  </>
                 )}
 
                 {(error || redirectError) && (
