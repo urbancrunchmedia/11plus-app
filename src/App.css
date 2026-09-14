@@ -2219,7 +2219,10 @@ body {
 @media (max-width: 760px) {
   .wl2-panes { grid-template-columns: 1fr; }
   .wl2-list { max-height: none; }
-  .wl2-detail { position: static; }
+  /* Pin the detail card above the list instead of leaving it in document
+     flow below a potentially long list, where tapping a word wouldn't show
+     any visible change unless the user scrolled all the way down. */
+  .wl2-detail { position: sticky; top: 8px; order: -1; z-index: 5; margin-bottom: 4px; }
 }
 
 /* ── Dashboard: Friends this week ── */
