@@ -2189,7 +2189,8 @@ body {
 .wordlist { width: 100%; max-width: 960px; display: flex; flex-direction: column; gap: 16px; }
 .wordlist-head { display: flex; align-items: center; gap: 14px; }
 .wordlist-controls { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
-.wl2-search { flex: 1; min-width: 160px; background: #fff; border: 2px solid var(--border); border-radius: 16px; padding: 14px 18px; font: inherit; font-size: 0.95rem; font-weight: 500; color: var(--ink); }
+/* 16px minimum — anything smaller makes iOS Safari zoom the whole page in on focus. */
+.wl2-search { flex: 1; min-width: 160px; background: #fff; border: 2px solid var(--border); border-radius: 16px; padding: 14px 18px; font: inherit; font-size: 1rem; font-weight: 500; color: var(--ink); }
 .wl2-search:focus { outline: none; border-color: var(--brand); box-shadow: 0 0 0 4px rgba(18,165,255,0.15); }
 .wl2-filters { display: flex; gap: 7px; }
 .wl2-filter { border: none; border-radius: var(--r-full); padding: 11px 16px; font-weight: 700; font-size: 0.8rem; background: #fff; color: var(--muted, #6b7a8c); box-shadow: var(--shadow-xs); }
@@ -2524,7 +2525,8 @@ body {
 .login2-form { display: flex; flex-direction: column; gap: 14px; margin-top: 22px; }
 .login2-field { display: flex; flex-direction: column; gap: 7px; }
 .login2-field span { font-weight: 800; font-size: 0.66rem; letter-spacing: 0.09em; color: var(--muted); }
-.login2-field input { border: 2px solid var(--border); border-radius: 14px; padding: 14px 16px; font: inherit; font-size: 0.95rem; font-weight: 600; color: var(--ink); background: #fff; }
+/* 16px minimum — anything smaller makes iOS Safari zoom the whole page in on focus. */
+.login2-field input { border: 2px solid var(--border); border-radius: 14px; padding: 14px 16px; font: inherit; font-size: 1rem; font-weight: 600; color: var(--ink); background: #fff; }
 .login2-field input:focus { outline: none; border-color: var(--brand); box-shadow: 0 0 0 4px rgba(18,165,255,0.15); }
 .login2-pw { position: relative; display: block; }
 .login2-pw input { width: 100%; padding-right: 50px; }
