@@ -63,10 +63,6 @@ export default function HomeDashboard({ onPlaySkill, onOpenBoard }) {
                 ? "Challenge complete! Nice work!"
                 : `One more keeps your ${stats.streak}-day streak alive.`}
             </div>
-            <button className="dash-hero-cta" onClick={() => onPlaySkill("wordMatch")}>
-              <span>Play a round</span>
-              <span className="dash-hero-arrow">→</span>
-            </button>
           </div>
           <div className="dash-ring" style={{ "--pct": `${ringPct}%` }}>
             <div className="dash-ring-mid">{ringPct}%</div>
