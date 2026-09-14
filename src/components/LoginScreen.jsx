@@ -50,6 +50,12 @@ function friendlyError(code, message) {
     case "auth/popup-closed-by-user":  return "Sign-in window was closed. Please try again.";
     case "auth/unauthorized-domain":   return "This domain isn't authorised in Firebase.";
     case "auth/cancelled-popup-request": return null;
+    // In-app browsers (WhatsApp, Instagram, Facebook) often can't hold onto
+    // the session state Google sign-in needs across the redirect. Email is
+    // the one path that always works there, so point straight at it.
+    case "auth/missing-initial-state":
+    case "auth/web-storage-unsupported":
+      return "Google sign-in didn't work in this browser — this often happens in an app's built-in browser (like WhatsApp or Instagram). Please sign in with email instead, or open this page in Safari or Chrome.";
     default:                           return message || "Something went wrong. Please try again.";
   }
 }

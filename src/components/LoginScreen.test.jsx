@@ -68,4 +68,14 @@ describe("LoginScreen", () => {
     expect(el.querySelectorAll(".login2-error-cta").length).toBe(0);
     expect(el.querySelectorAll(".login2-google").length).toBe(1);
   });
+
+  // In-app browsers (WhatsApp, Instagram) often can't complete the Google
+  // redirect round-trip — the fix is pointing at the escape hatch (email),
+  // not leaving the parent stuck on Firebase's raw internal-state message.
+  it("tells the parent to use email when Google's redirect sign-in fails", async () => {
+    AUTH.redirectError = "auth/missing-initial-state";
+    const el = await render();
+    expect(el.querySelector(".login2-error").textContent).toMatch(/sign in with email/i);
+    AUTH.redirectError = null;
+  });
 });
