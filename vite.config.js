@@ -30,6 +30,15 @@ export default defineConfig({
         ],
       },
       workbox: {
+        // registerType: 'autoUpdate' normally sets these automatically, but
+        // that only happens when vite-plugin-pwa injects its own register
+        // script — since we register manually (injectRegister: false, to
+        // catch failures ourselves in src/pwa.js), they must be set here too.
+        // Without them the new service worker installs but sits waiting
+        // forever instead of activating, so deployed changes never appear
+        // until every open tab/app instance is fully closed.
+        skipWaiting: true,
+        clientsClaim: true,
         // Precache the built app so it opens and plays offline.
         globPatterns: ['**/*.{js,css,html,svg,png,woff2}'],
         navigateFallback: '/index.html',
