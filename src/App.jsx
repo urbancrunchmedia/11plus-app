@@ -109,6 +109,24 @@ function AppInner() {
     setSelectedGame("home");
   }, [user]);
 
+  // The mirror image: an actual sign-in (typing credentials on the login
+  // screen) should always land on Home, even if a game screen was left open
+  // the last time someone used this device — that's a deliberate new session,
+  // not the same "keep me where I was" reload chooseStartScreen exists for.
+  // `user` only passes through `null` when the LoginScreen was genuinely
+  // shown; restoring an already-signed-in session on a fresh page load goes
+  // straight from `undefined` to a user and never sets this, so a reload
+  // still resumes wherever it left off.
+  const wasLoggedOut = useRef(false);
+  useEffect(() => {
+    if (user === null) { wasLoggedOut.current = true; return; }
+    if (!user) return;
+    if (wasLoggedOut.current) {
+      wasLoggedOut.current = false;
+      setSelectedGame("home");
+    }
+  }, [user]);
+
   const [screen, setScreen] = useState("home");
   const [config, setConfig] = useState(null);
   const [playKey, setPlayKey] = useState(0);
