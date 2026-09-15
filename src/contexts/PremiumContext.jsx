@@ -36,8 +36,11 @@ export function PremiumProvider({ children }) {
   useEffect(() => {
     granted.current = false;
     try {
+      // import.meta.env.DEV is statically false in a production build, so
+      // Vite dead-code-eliminates this whole branch — the flag can't be used
+      // to grant free premium on the live site, only in local dev.
       // eslint-disable-next-line react-hooks/set-state-in-effect -- reacting to a real external source of truth (localStorage / auth user change), not derived from props.
-      if (localStorage.getItem(DEV_KEY) === "1") { granted.current = true; setSub(COMP); setLoading(false); return; }
+      if (import.meta.env.DEV && localStorage.getItem(DEV_KEY) === "1") { granted.current = true; setSub(COMP); setLoading(false); return; }
     } catch { /* ignore */ }
 
     if (!user) { setSub(FREE); setLoading(false); return; }
