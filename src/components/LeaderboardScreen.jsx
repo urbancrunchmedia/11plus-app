@@ -15,7 +15,7 @@ function formatCode(raw) {
   return s.length > 2 ? `${s.slice(0, 2)}-${s.slice(2)}` : s;
 }
 
-export default function LeaderboardScreen({ onPlay }) {
+export default function LeaderboardScreen({ onPlay, onExit }) {
   const { user, updateDisplayName } = useAuth();
   const [me, setMe]           = useState(null);
   const [people, setPeople]   = useState([]);
@@ -125,6 +125,7 @@ export default function LeaderboardScreen({ onPlay }) {
 
   return (
     <div className="board">
+      {onExit && <button className="landing-back" onClick={onExit}>← Home</button>}
       <div className="board-head">
         <div className="board-head-left">
           <div className="board-icon"><Icon name="trophy" size={22} stroke="currentColor" strokeWidth={2} /></div>

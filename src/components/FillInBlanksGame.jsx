@@ -148,7 +148,7 @@ export default function FillInBlanksGame({ level, totalQuestions = 20, onHome, m
         <div className="ig-pips">
           {questions.map((_, i) => <span key={i} className={`ig-pip ${i < results.length ? "done" : ""}`} />)}
         </div>
-        <button className="ig-mute" onClick={() => setMuted((m) => !m)} aria-label={muted ? "Unmute" : "Mute"}><Icon name={muted ? "bellOff" : "bell"} size={18} stroke="currentColor" strokeWidth={2} /></button>
+        <button className="ig-mute" onClick={() => setMuted((m) => !m)} aria-label={muted ? "Unmute" : "Mute"}><Icon name={muted ? "volumeOff" : "volumeOn"} size={18} stroke="currentColor" strokeWidth={2} /></button>
       </div>
 
       <div className="ig-hud">

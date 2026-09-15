@@ -370,7 +370,7 @@ function AppInner() {
 
           {isWordList && <WordListScreen />}
 
-          {isLeaderboard && <LeaderboardScreen onPlay={() => handleSelectGame("wordMatch")} />}
+          {isLeaderboard && <LeaderboardScreen onPlay={() => handleSelectGame("wordMatch")} onExit={() => handleSelectGame("home")} />}
 
           {!isKnown && <ComingSoon gameId={selectedGame} />}
         </div>

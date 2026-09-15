@@ -30,10 +30,10 @@ import LeaderboardScreen from "./LeaderboardScreen";
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 
-async function render() {
+async function render(props) {
   const container = document.createElement("div");
   document.body.appendChild(container);
-  await act(async () => { createRoot(container).render(<LeaderboardScreen onPlay={() => {}} />); });
+  await act(async () => { createRoot(container).render(<LeaderboardScreen onPlay={() => {}} {...props} />); });
   return container;
 }
 
@@ -48,6 +48,18 @@ describe("LeaderboardScreen", () => {
     expect(el.textContent).toContain("Leaderboard");
     expect(el.textContent).toContain("Sam");
     expect(el.querySelector(".board-addbtn")).toBeTruthy();
+  });
+
+  // Regression: every other screen has a way back to Home; Leaderboard was
+  // the one dead end when it wasn't given an onExit handler.
+  it("has no back button unless given one, and uses it when given one", async () => {
+    const noExit = await render();
+    expect(noExit.querySelector(".landing-back")).toBeNull();
+
+    const onExit = vi.fn();
+    const withExit = await render({ onExit });
+    await act(async () => { withExit.querySelector(".landing-back").click(); });
+    expect(onExit).toHaveBeenCalled();
   });
 
   it("opens the add-a-friend sheet with your code in it", async () => {

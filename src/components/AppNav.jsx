@@ -18,7 +18,7 @@ export default function AppNav({ active, onNavigate }) {
 
   return (
     <nav className="appnav">
-      <div className="appnav-logo" aria-hidden>11</div>
+      <button className="appnav-logo" onClick={() => onNavigate("home")} aria-label="Home">11</button>
 
       <div className="appnav-items">
         {ITEMS.map((it) => (

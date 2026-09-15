@@ -2008,7 +2008,7 @@ body {
   position: sticky; top: 0; align-self: flex-start; height: 100dvh;
 }
 .appnav-logo {
-  width: 46px; height: 46px; border-radius: 15px; flex-shrink: 0;
+  width: 46px; height: 46px; border-radius: 15px; flex-shrink: 0; border: none; padding: 0;
   background: var(--accent); color: var(--ink);
   display: grid; place-items: center; font-weight: 800; font-size: 1.15rem; margin-bottom: 14px;
 }
@@ -3013,11 +3013,7 @@ body {
   font-weight: 800; font-size: 0.92rem; cursor: pointer;
   box-shadow: 0 6px 16px rgba(11,60,110,0.18); transition: background 0.12s, transform 0.1s;
 }
-.landing-practice:hover:not(:disabled) { background: #eaf4ff; transform: translateY(-1px); }
-.landing-practice:disabled {
-  background: rgba(255,255,255,0.14); color: rgba(255,255,255,0.6);
-  box-shadow: none; cursor: default;
-}
+.landing-practice:hover { background: #eaf4ff; transform: translateY(-1px); }
 
 /* Legal (Privacy / Terms) modal */
 .legal-overlay {

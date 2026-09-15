@@ -292,7 +292,7 @@ export default function GameScreen({ level, gameType, totalQuestions = 20, onHom
           ))}
         </div>
         <button className="ig-mute" onClick={() => setMuted((m) => !m)} aria-label={muted ? "Unmute" : "Mute"}>
-          <Icon name={muted ? "bellOff" : "bell"} size={18} stroke="currentColor" strokeWidth={2} />
+          <Icon name={muted ? "volumeOff" : "volumeOn"} size={18} stroke="currentColor" strokeWidth={2} />
         </button>
       </div>
 

@@ -76,7 +76,7 @@ export default function FlashcardScreen({ onHome, onPlay }) {
                 onClick={(e) => { e.stopPropagation(); speak(card.word); }}
                 aria-label={`Hear the word ${card.word}`}
               >
-                <Icon name="volumeOn" size={20} stroke="currentColor" strokeWidth={2} />
+                <Icon name="speak" size={20} stroke="currentColor" strokeWidth={2} />
               </button>
               <span className="flashcard-word">{card.word}</span>
               <span className="flashcard-flip-hint">tap to flip</span>
