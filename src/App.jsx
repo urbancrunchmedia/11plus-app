@@ -92,6 +92,31 @@ function AppInner() {
     } catch { /* private mode */ }
   }, [selectedGame]);
 
+  // There's no router — every screen is just `selectedGame` changing — so the
+  // browser's own back button had no history entries of ours to step through
+  // and exited the site instead. Give each top-level screen a real entry:
+  // one push per navigation, restoring `selectedGame` on back/forward instead
+  // of letting the browser leave the page.
+  const skipNextPush = useRef(true);  // the resolved start screen already IS the baseline — don't push it again on mount
+  const isPopping     = useRef(false); // a change driven by popstate, not a fresh navigation — don't re-push it
+  useEffect(() => {
+    try { window.history.replaceState({ selectedGame }, ""); } catch { /* private mode */ }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- baseline entry for whatever screen we resolved to on mount, deliberately once
+  }, []);
+  useEffect(() => {
+    if (skipNextPush.current) { skipNextPush.current = false; return; }
+    if (isPopping.current) { isPopping.current = false; return; }
+    try { window.history.pushState({ selectedGame }, ""); } catch { /* private mode */ }
+  }, [selectedGame]);
+  useEffect(() => {
+    function onPopState(e) {
+      isPopping.current = true;
+      setSelectedGame(e.state?.selectedGame || "home");
+    }
+    window.addEventListener("popstate", onPopState);
+    return () => window.removeEventListener("popstate", onPopState);
+  }, []);
+
   // Signing out doesn't unmount this component (see the hooks-order note
   // above), so `selectedGame` — and the sessionStorage a reload restores it
   // from — would otherwise still say "me" from the account that just left.
