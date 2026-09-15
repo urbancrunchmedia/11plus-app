@@ -21,7 +21,28 @@ export async function findCustomer(stripe, uid, email) {
   try {
     const res = await stripe.customers.search({ query: `metadata['firebaseUID']:'${uid}'`, limit: 1 });
     if (res.data[0]) return res.data[0];
-  } catch { /* search unavailable — fall through */ }
+  } catch (e) {
+    // Logged, not swallowed silently — this shouldn't happen often, and the
+    // fallback below is what keeps it from mattering when it does.
+    console.error("customers.search unavailable, falling back to a full scan:", e.message);
+  }
+  // Last resort. Reached only if BOTH lookups above missed — most likely a
+  // real paying customer whose Firebase email no longer matches what's on
+  // file in Stripe (changed email, switched sign-in provider), landing here
+  // during whatever moment the search index above is also lagging or down.
+  // Without this, they'd wrongly look unsubscribed and checkout would hand
+  // them a second free trial on a disconnected new customer. Stripe has no
+  // way to filter customers.list by metadata, so this scans — bounded, so a
+  // large customer base can't stall this request chasing a customer that
+  // was never going to turn up (a genuinely new customer, not a lookup miss).
+  let startingAfter;
+  for (let page = 0; page < 5; page++) {
+    const batch = await stripe.customers.list({ limit: 100, starting_after: startingAfter });
+    const match = batch.data.find((c) => c.metadata?.firebaseUID === uid);
+    if (match) return match;
+    if (!batch.has_more) break;
+    startingAfter = batch.data[batch.data.length - 1]?.id;
+  }
   return null;
 }
 
