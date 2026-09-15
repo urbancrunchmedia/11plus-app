@@ -5,6 +5,7 @@ import {
 import { db } from "../firebase";
 import { getWeeklyPoints, weekKey, weeklyPointsOf, WEEK_POINTS_KEY } from "./weekly";
 import { getProgressData, setProgressData } from "./progress";
+import { setSetting } from "./leaderboard";
 
 // A friendship is one shared doc both people can read, so it's mutual.
 // ID is the two uids sorted + joined, so either party computes the same id.
@@ -28,6 +29,12 @@ export function prepareLocalForUser(uid) {
       Object.keys(localStorage)
         .filter((k) => k.startsWith("11plus_rounds_") || k.startsWith("11plus_misses_"))
         .forEach((k) => localStorage.removeItem(k));
+      // "onboarded" is per-account (has THIS kid set their name up?), unlike
+      // the other settings it lives alongside (sound, daily goal, PIN lock),
+      // which are device-wide. Without this, a new sibling on a device
+      // where someone else already onboarded skips name setup entirely and
+      // gets published to the leaderboard as "Player".
+      setSetting("onboarded", false);
     }
     localStorage.setItem(UID_KEY, uid);
   } catch { /* storage unavailable */ }
@@ -91,6 +98,10 @@ export async function mergeFromCloud(userId) {
   try {
     const snap = await getDoc(doc(db, "users", userId));
     if (!snap.exists()) return;
+    // If a different account signed in on this device while the fetch above
+    // was in flight, localStorage now belongs to that new account — writing
+    // this stale data would leak one kid's scores into another's profile.
+    if (localStorage.getItem(UID_KEY) !== userId) return;
 
     const { bests: cloudBests = {}, history: cloudHistory = {}, progress: cloudProgress } = snap.data();
 

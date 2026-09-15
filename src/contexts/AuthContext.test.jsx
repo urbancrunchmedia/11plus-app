@@ -37,6 +37,7 @@ vi.mock("firebase/auth", () => ({
 }));
 
 import { AuthProvider, useAuth } from "./AuthContext";
+import { mergeFromCloud, syncProfile } from "../utils/cloudScores";
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -85,4 +86,31 @@ describe("signUpWithEmail", () => {
   // reliably tell the fixed code apart from the vulnerable one — a version of
   // this test that made that claim passed identically against both. Verified
   // by hand instead: see the session notes on this fix for how.
+});
+
+describe("onAuthStateChanged — shared-device account switch", () => {
+  beforeEach(() => { authStateCallback = null; renders = []; vi.clearAllMocks(); });
+
+  // Regression: kid A signs in, their mergeFromCloud("A") fetch is still in
+  // flight when the device switches to kid B. If A's chain finishes
+  // afterwards and unconditionally calls syncProfile(A), it computes stats
+  // from localStorage — which by then belongs to B — and publishes B's
+  // scores onto A's Firestore profile. The fix tracks the latest signed-in
+  // uid and skips syncProfile for any chain that's gone stale.
+  it("does not sync a stale account's profile after a quicker switch to a new account", async () => {
+    const resolvers = {};
+    mergeFromCloud.mockImplementation((uid) => new Promise((resolve) => { resolvers[uid] = resolve; }));
+
+    await mount();
+    act(() => { authStateCallback({ uid: "kid-a", displayName: "A", photoURL: null, email: "a@b.com" }); });
+    act(() => { authStateCallback({ uid: "kid-b", displayName: "B", photoURL: null, email: "b@b.com" }); });
+
+    // kid-b's fetch (the current account) resolves first; kid-a's late
+    // response — from the account no longer signed in — arrives after.
+    await act(async () => { resolvers["kid-b"](); });
+    await act(async () => { resolvers["kid-a"](); });
+
+    expect(syncProfile).toHaveBeenCalledTimes(1);
+    expect(syncProfile).toHaveBeenCalledWith(expect.objectContaining({ uid: "kid-b" }));
+  });
 });

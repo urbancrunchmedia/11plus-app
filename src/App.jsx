@@ -164,6 +164,13 @@ function AppInner() {
     return () => clearTimeout(t);
   }, [billingNote]);
   const [onboarded, setOnboarded] = useState(() => getSetting("onboarded", false));
+  // Re-read on every account change (not just first mount) — a shared-device
+  // account switch clears the previous kid's "onboarded" flag, and this
+  // state needs to pick that up without a full page reload.
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- reacting to a real external source of truth (localStorage, cleared by prepareLocalForUser on account switch), not derived from props.
+    setOnboarded(getSetting("onboarded", false));
+  }, [user?.uid]);
 
   if (user === undefined) {
     return (

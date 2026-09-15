@@ -40,6 +40,11 @@ export function AuthProvider({ children }) {
   // real name is known, so `user` only ever goes straight from loading to
   // its final, correct value — no intermediate stale render to flash.
   const signingUpRef = useRef(false);
+  // The most recently signed-in uid, so an in-flight sync from an account
+  // that's since been switched away from (shared device, quick profile
+  // swap) can tell it's stale and skip writing — syncProfile() computes its
+  // stats from local storage, which by then belongs to the NEW account.
+  const latestUidRef = useRef(null);
 
   useEffect(() => {
     // Complete any sign-in that used the redirect fallback.
@@ -51,11 +56,14 @@ export function AuthProvider({ children }) {
     const unsub = onAuthStateChanged(auth, (u) => {
       if (signingUpRef.current) return;
       setUser(u ?? null);
+      latestUidRef.current = u ? u.uid : null;
       if (u) {
         // Clear any previous account's local progress on this device, THEN merge
         // this account's cloud scores and publish a profile (friend code + points).
         prepareLocalForUser(u.uid);
-        mergeFromCloud(u.uid).then(() => syncProfile(u)).catch(console.error);
+        mergeFromCloud(u.uid)
+          .then(() => { if (latestUidRef.current === u.uid) return syncProfile(u); })
+          .catch(console.error);
       }
     });
     return unsub;
