@@ -981,8 +981,10 @@ body {
 
 /* ───── Punctuation Game ───── */
 .punct-game { display: flex; flex-direction: column; gap: 20px; padding: 4px 0; }
-.punct-prompt { font-size: 0.9rem; font-weight: 600; color: var(--text-muted); }
-.wc-hint { font-weight: 500; font-style: italic; color: var(--muted, #6b7a8c); }
+/* The question itself has to read as THE question — kids were losing it
+   next to the sentence below, back when this was small and muted. */
+.punct-prompt { font-size: 1.05rem; font-weight: 800; color: var(--ink); margin-bottom: 4px; }
+.wc-hint { display: block; font-weight: 500; font-style: italic; font-size: 0.8rem; color: var(--muted, #6b7a8c); margin-top: 2px; }
 
 .punct-sentence-box {
   background: linear-gradient(135deg, #e4f6ff, #cfe8fb);
