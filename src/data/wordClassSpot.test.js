@@ -11,8 +11,8 @@ const LEVEL_CATEGORIES = {
 };
 
 describe("wordClassSpot", () => {
-  it("has 15 questions in each level", () => {
-    for (const L of ["A", "B", "C"]) expect(wordClassSpot[L].length).toBe(15);
+  it("has 25 questions in each level", () => {
+    for (const L of ["A", "B", "C"]) expect(wordClassSpot[L].length).toBe(25);
   });
 
   for (const L of ["A", "B", "C"]) {

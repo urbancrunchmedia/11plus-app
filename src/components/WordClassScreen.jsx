@@ -8,7 +8,7 @@ import Icon, { SKILL_ICON } from "./Icon";
 import SpotSentence from "./SpotSentence";
 import PracticeButton from "./PracticeButton";
 
-const Q_OPTIONS = [5, 10, 15];
+const Q_OPTIONS = [5, 10, 20];
 
 const ASK_LABEL = {
   noun: "a NOUN", pronoun: "a PRONOUN", verb: "a VERB", adverb: "an ADVERB",
