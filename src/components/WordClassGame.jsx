@@ -17,12 +17,16 @@ const ASK_LABEL = {
   helpingVerb: "a HELPING VERB", conjunction: "a CONJUNCTION",
   interjection: "an INTERJECTION", adjective: "an ADJECTIVE", preposition: "a PREPOSITION",
 };
+// No example words here (e.g. "he, it, they" for pronoun) — one could be the
+// answer sitting right in the sentence below, which would give it away before
+// the child has even tried. Examples are fine in the `why` feedback, which
+// only shows after they've answered.
 const ASK_HINT = {
-  noun: "a person, place or thing", pronoun: "stands in for a noun (he, it, they…)",
+  noun: "a person, place or thing", pronoun: "stands in for a noun",
   verb: "a doing or action word", adverb: "describes how something is done",
-  helpingVerb: "works alongside the main verb (is, was, has, will…)",
-  conjunction: "joins two ideas together (and, but, because…)",
-  interjection: "a short burst of feeling (wow! ouch! hey!)",
+  helpingVerb: "works alongside the main verb",
+  conjunction: "joins two ideas together",
+  interjection: "a short burst of feeling",
   adjective: "a describing word", preposition: "shows where or when",
 };
 
