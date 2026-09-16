@@ -7,7 +7,9 @@ const N_INDEX = 4; // data convention: answer 4 === "no mistake"
 // spacing, each section lightly underlined with an A/B/C letter beneath), and a
 // dedicated answer row (A/B/C… + N) sits below. Tapping a section OR its answer
 // button picks it. `classFor(i)` returns "" | "correct" | "wrong".
-export default function SpotSentence({ segments, classFor, onPick, disabled }) {
+// `showNone` hides the "N = no mistake" option for games (e.g. Parts of
+// Speech) where every sentence genuinely contains the thing being asked for.
+export default function SpotSentence({ segments, classFor, onPick, disabled, showNone = true }) {
   return (
     <div className="spot">
       {/* The sentence is read-only — only the answer buttons below are clickable. */}
@@ -27,11 +29,13 @@ export default function SpotSentence({ segments, classFor, onPick, disabled }) {
             {LETTERS[i]}
           </button>
         ))}
-        <button type="button" className={`spot-ans spot-ans--n ${classFor(N_INDEX)}`} onClick={() => onPick(N_INDEX)} disabled={disabled}>
-          N
-        </button>
+        {showNone && (
+          <button type="button" className={`spot-ans spot-ans--n ${classFor(N_INDEX)}`} onClick={() => onPick(N_INDEX)} disabled={disabled}>
+            N
+          </button>
+        )}
       </div>
-      <div className="spot-ncap">N = no mistake</div>
+      {showNone && <div className="spot-ncap">N = no mistake</div>}
     </div>
   );
 }

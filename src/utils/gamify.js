@@ -11,6 +11,7 @@ export const SKILLS = [
   { id: "fillInBlanks",  label: "Word Detective", icon: "🕵️", types: ["fillInBlanks"] },
   { id: "punctuation",   label: "Punctuation",    icon: "✏️", types: ["punctuation"] },
   { id: "spelling",      label: "Spelling",       icon: "🔤", types: ["spelling"] },
+  { id: "wordClass",     label: "Parts of Speech", icon: "🏷️", types: ["wordClass"] },
 ];
 
 const TITLES = [

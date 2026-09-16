@@ -30,6 +30,7 @@ const ICONS = {
   check:    '<path d="M5 12.5l4.5 4.5L19 7"/>',
   trash:    '<path d="M4.5 7h15"/><path d="M9.5 7V4.8h5V7"/><path d="M6.6 7l1 12.2h8.8L17.4 7"/>',
   chart:    '<path d="M4 4v16h16"/><rect x="7.5" y="11" width="3" height="6" rx="1"/><rect x="12.5" y="7" width="3" height="10" rx="1"/><rect x="17.5" y="13" width="3" height="4" rx="1"/>',
+  tag:      '<path d="M12 3h6a2 2 0 0 1 2 2v6l-9 9-8-8z"/><circle cx="16" cy="8" r="1.4"/>',
 };
 
 // Per-skill icon name + stroke + tile background, matching the design.
@@ -40,6 +41,7 @@ export const SKILL_ICON = {
   punctuation:   { name: "punct",    stroke: "#0e1116", bg: "#f0f2f5" },
   compoundWords: { name: "compound", stroke: "#ff6b4a", bg: "#ffe9e3" },
   spelling:      { name: "spelling", stroke: "#8b5cf6", bg: "#f1ecfe" },
+  wordClass:     { name: "tag",      stroke: "#0d9488", bg: "#e0f5f3" },
   wordList:      { name: "book",     stroke: "#12a5ff", bg: "#eaf4fc" },
 };
 

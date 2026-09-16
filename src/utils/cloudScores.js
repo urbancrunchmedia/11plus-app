@@ -46,7 +46,7 @@ function localHistory() { try { return JSON.parse(localStorage.getItem(HISTORY_K
 // Leaderboard metrics: total stars + a per-game breakdown.
 // Keys are "level-gameType-totalQuestions" (gameType has no dashes).
 function computeStats() {
-  const byGame = { wordMatch: 0, fillInBlanks: 0, punctuation: 0 };
+  const byGame = { wordMatch: 0, fillInBlanks: 0, punctuation: 0, wordClass: 0 };
   let total = 0;
   for (const [key, b] of Object.entries(localBests())) {
     const stars = (b && b.stars) || 0;
@@ -55,6 +55,7 @@ function computeStats() {
     if (gameType === "synonyms" || gameType === "antonyms") byGame.wordMatch += stars;
     else if (gameType === "fillInBlanks") byGame.fillInBlanks += stars;
     else if (gameType === "punctuation") byGame.punctuation += stars;
+    else if (gameType === "wordClass") byGame.wordClass += stars;
   }
   return { total, byGame };
 }

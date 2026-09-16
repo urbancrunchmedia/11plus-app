@@ -12,6 +12,8 @@ import PunctuationScreen from "./components/PunctuationScreen";
 import PunctuationGame from "./components/PunctuationGame";
 import SpellingScreen from "./components/SpellingScreen";
 import SpellingGame from "./components/SpellingGame";
+import WordClassScreen from "./components/WordClassScreen";
+import WordClassGame from "./components/WordClassGame";
 import DetectiveScreen from "./components/DetectiveScreen";
 import FillInBlanksGame from "./components/FillInBlanksGame";
 import FlashcardScreen from "./components/FlashcardScreen";
@@ -264,12 +266,13 @@ function AppInner() {
   const isCompoundWords  = selectedGame === "compoundWords";
   const isPunctuation    = selectedGame === "punctuation";
   const isSpelling       = selectedGame === "spelling";
+  const isWordClass      = selectedGame === "wordClass";
   const isFillInBlanks   = selectedGame === "fillInBlanks";
   const isWordList       = selectedGame === "wordList";
   const isLeaderboard    = selectedGame === "leaderboard";
   const isKnown =
     isDashboard || isMe || isWordMatch || isCompoundWords ||
-    isPunctuation || isSpelling || isFillInBlanks || isWordList || isLeaderboard || isReport;
+    isPunctuation || isSpelling || isWordClass || isFillInBlanks || isWordList || isLeaderboard || isReport;
 
   return (
     <div className="app-layout">
@@ -365,6 +368,20 @@ function AppInner() {
           )}
           {isSpelling && screen === "game" && config && (
             <SpellingGame
+              key={playKey}
+              level={config.level}
+              totalQuestions={config.totalQuestions}
+              onHome={handleHome}
+              practice={config.practice}
+            />
+          )}
+
+          {/* Parts of Speech — spot the noun/verb/adjective/etc. */}
+          {isWordClass && screen === "home" && (
+            <WordClassScreen onPlay={handlePlay} onExit={() => handleSelectGame("home")} />
+          )}
+          {isWordClass && screen === "game" && config && (
+            <WordClassGame
               key={playKey}
               level={config.level}
               totalQuestions={config.totalQuestions}

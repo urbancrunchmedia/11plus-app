@@ -982,6 +982,7 @@ body {
 /* ───── Punctuation Game ───── */
 .punct-game { display: flex; flex-direction: column; gap: 20px; padding: 4px 0; }
 .punct-prompt { font-size: 0.9rem; font-weight: 600; color: var(--text-muted); }
+.wc-hint { font-weight: 500; font-style: italic; color: var(--muted, #6b7a8c); }
 
 .punct-sentence-box {
   background: linear-gradient(135deg, #e4f6ff, #cfe8fb);

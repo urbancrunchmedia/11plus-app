@@ -10,6 +10,7 @@ const SKILL_BAR = {
   punctuation:   "var(--ink)",
   compoundWords: "#ff6b4a",
   spelling:      "#8b5cf6",
+  wordClass:     "#0d9488",
 };
 
 function initial(name) {

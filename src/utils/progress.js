@@ -15,6 +15,7 @@ export const SKILL_LABEL = {
   fillInBlanks:  "Word Detective",
   punctuation:   "Punctuation",
   spelling:      "Spelling",
+  wordClass:     "Parts of Speech",
 };
 
 function load() {
