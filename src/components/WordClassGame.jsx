@@ -13,9 +13,9 @@ const SKILL = "wordClass";
 // Shown above the sentence — both the label and a short reminder of what the
 // category actually means, so each question doubles as a tiny lesson.
 const ASK_LABEL = {
-  noun: "a NOUN", pronoun: "a PRONOUN", verb: "a VERB", adverb: "an ADVERB",
-  helpingVerb: "a HELPING VERB", conjunction: "a CONJUNCTION",
-  interjection: "an INTERJECTION", adjective: "an ADJECTIVE", preposition: "a PREPOSITION",
+  noun: "NOUN", pronoun: "PRONOUN", verb: "VERB", adverb: "ADVERB",
+  helpingVerb: "HELPING VERB", conjunction: "CONJUNCTION",
+  interjection: "INTERJECTION", adjective: "ADJECTIVE", preposition: "PREPOSITION",
 };
 // No example words here (e.g. "he, it, they" for pronoun) — one could be the
 // answer sitting right in the sentence below, which would give it away before
@@ -166,7 +166,7 @@ export default function WordClassGame({ level, totalQuestions = 20, onHome, mute
 
       <div className="punct-game play-card">
         <p className="punct-prompt">
-          Which word is {ASK_LABEL[q.askFor]}? <span className="wc-hint">({ASK_HINT[q.askFor]})</span>
+          Find the {ASK_LABEL[q.askFor]} <span className="wc-hint">({ASK_HINT[q.askFor]})</span>
         </p>
         <SpotSentence segments={q.segments} classFor={classFor} onPick={handleAnswer} disabled={answered !== null} showNone={false} />
 

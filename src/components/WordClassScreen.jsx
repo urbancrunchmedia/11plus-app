@@ -11,9 +11,9 @@ import PracticeButton from "./PracticeButton";
 const Q_OPTIONS = [5, 10, 20];
 
 const ASK_LABEL = {
-  noun: "a NOUN", pronoun: "a PRONOUN", verb: "a VERB", adverb: "an ADVERB",
-  helpingVerb: "a HELPING VERB", conjunction: "a CONJUNCTION",
-  interjection: "an INTERJECTION", adjective: "an ADJECTIVE", preposition: "a PREPOSITION",
+  noun: "NOUN", pronoun: "PRONOUN", verb: "VERB", adverb: "ADVERB",
+  helpingVerb: "HELPING VERB", conjunction: "CONJUNCTION",
+  interjection: "INTERJECTION", adjective: "ADJECTIVE", preposition: "PREPOSITION",
 };
 
 // Free "spot the word class" demo — mirrors the real game: read the sentence
@@ -27,7 +27,7 @@ function SpotSample({ items }) {
   return (
     <div className="spotsamp">
       <div className="samp-label">TRY ONE · FREE, NO STREAK RISK</div>
-      <p className="spotsamp-q">Which word is {ASK_LABEL[q.askFor]}?</p>
+      <p className="spotsamp-q">Find the {ASK_LABEL[q.askFor]}</p>
       <SpotSentence segments={q.segments} classFor={classFor} onPick={(idx) => !done && setPicked(idx)} disabled={done} showNone={false} />
       {done && (
         <div className="spotsamp-fb">
