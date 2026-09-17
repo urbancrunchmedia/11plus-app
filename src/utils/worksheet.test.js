@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from "vitest";
-import { makeCompoundBuildQuestions } from "./worksheet";
+import { makeCompoundBuildQuestions, makeSynonymQuestions, makeCompoundQuestions } from "./worksheet";
 import { compoundWords } from "../data/compoundWords";
 
 // Seam: the Compound Words generator. The critical invariant is that every
@@ -43,5 +43,44 @@ describe("makeCompoundBuildQuestions", () => {
       expect(questions).toHaveLength(10);
       questions.forEach((q) => expect(q.options[q.answer]).toBe(q.second));
     }
+  });
+});
+
+// Regression: "Play again" was handing back some of the very words the
+// child just saw, purely by chance — each round was an independent random
+// draw with no memory of the last one. avoidKeys fixes that whenever the
+// pool is big enough to fill a round without repeating anything.
+describe("avoiding repeats across rounds (makeSynonymQuestions/makeCompoundQuestions)", () => {
+  beforeEach(() => localStorage.clear());
+
+  it("doesn't repeat the previous round's words when the pool is big enough", () => {
+    // Level B has hundreds of synonym pairs — plenty to fill two 10-question
+    // rounds with zero overlap.
+    const first = makeSynonymQuestions("B", 10);
+    const avoidKeys = new Set(first.map((q) => `${q.display.word}|${q.display.match}`));
+    const second = makeSynonymQuestions("B", 10, avoidKeys);
+    const secondWords = new Set(second.map((q) => q.display.word));
+    for (const q of first) expect(secondWords.has(q.display.word)).toBe(false);
+  });
+
+  it("still fills the round from the avoided pool when there's no fresh material left", () => {
+    // Level A has only ~39 synonym pairs — asking for more than that, all
+    // marked as "avoid", leaves nothing fresh, so it MUST fall back to
+    // reusing them rather than returning a short/empty round.
+    const first = makeSynonymQuestions("A", 39);
+    const avoidKeys = new Set(first.map((q) => `${q.display.word}|${q.display.match}`));
+    const second = makeSynonymQuestions("A", 39, avoidKeys);
+    expect(second).toHaveLength(39);
+  });
+
+  it("also avoids repeats for Compound Words", () => {
+    // Checked by the full (first, second) pair, not just the stem — the same
+    // stem legitimately pairs with several different words (e.g. "Fire" +
+    // "house"/"ball"/"boat"), so stem reuse alone isn't a repeat.
+    const first = makeCompoundQuestions("B", 10);
+    const avoidKeys = new Set(first.map((q) => `${q.display.word}|${q.display.match}`));
+    const second = makeCompoundQuestions("B", 10, avoidKeys);
+    const secondPairs = new Set(second.map((q) => `${q.display.word}|${q.display.match}`));
+    for (const q of first) expect(secondPairs.has(`${q.display.word}|${q.display.match}`)).toBe(false);
   });
 });

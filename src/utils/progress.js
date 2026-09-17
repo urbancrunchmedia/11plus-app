@@ -102,9 +102,16 @@ function shuffleP(arr) {
 // Pick `count` items from `pool`, front-loading up to ~60% previously-missed
 // words when `revisit` is on (the "Bring back missed words" setting). Cycles if
 // the pool is smaller than count; result is shuffled for display.
-export function selectWithReview(pool, count, keyFn, skill, revisit = true) {
+//
+// `avoidKeys` (keyFn() values from the round just finished) push non-weak
+// items to the back so "Play again" doesn't hand back the same words by pure
+// chance — but only within the non-weak pool. A word that's genuinely due
+// for review resurfaces regardless of whether it was just shown; that's
+// spaced repetition working as intended, not the repeat bug this avoids.
+export function selectWithReview(pool, count, keyFn, skill, revisit = true, avoidKeys) {
   if (!pool || pool.length === 0) return [];
   let ordered = shuffleP(pool);
+  let weakFront = [];
   if (revisit) {
     const review = getReviewWords(skill);
     if (review.size) {
@@ -112,9 +119,16 @@ export function selectWithReview(pool, count, keyFn, skill, revisit = true) {
       const weak = ordered.filter(isWeak);
       const rest = ordered.filter((x) => !isWeak(x));
       const cap  = Math.min(weak.length, Math.ceil(count * 0.6));
-      ordered = [...weak.slice(0, cap), ...rest];
+      weakFront = weak.slice(0, cap);
+      ordered = rest;
     }
   }
+  if (avoidKeys && avoidKeys.size) {
+    const fresh = ordered.filter((x) => !avoidKeys.has(String(keyFn(x)).toLowerCase()));
+    const stale = ordered.filter((x) => avoidKeys.has(String(keyFn(x)).toLowerCase()));
+    ordered = [...fresh, ...stale];
+  }
+  ordered = [...weakFront, ...ordered];
   const out = [];
   for (let i = 0; i < count; i++) out.push(ordered[i % ordered.length]);
   return shuffleP(out);

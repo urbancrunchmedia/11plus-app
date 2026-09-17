@@ -39,11 +39,24 @@ function getStars(wrongCount) {
   return 1;
 }
 
-// Weak words (low stars) come first
-function buildPrioritisedList(allPairs, performance) {
+// Weak words (low stars) come first. Within the "everything else" tier —
+// words never played, or already mastered at 3 stars — anything just shown
+// in the round about to be replaced (`avoidWords`) sinks to the back, so
+// "Play again" doesn't hand back words the child just saw purely by chance.
+// Tiers 1/2 are left untouched: a word missed this round SHOULD resurface
+// soon, that's spaced repetition working as intended, not the repeat bug.
+function buildPrioritisedList(allPairs, performance, avoidWords) {
   const t1 = shuffle(allPairs.filter((p) => performance[p.word] === 1));
   const t2 = shuffle(allPairs.filter((p) => performance[p.word] === 2));
-  const t3 = shuffle(allPairs.filter((p) => !performance[p.word] || performance[p.word] >= 3));
+  const t3pool = allPairs.filter((p) => !performance[p.word] || performance[p.word] >= 3);
+  let t3;
+  if (avoidWords && avoidWords.size) {
+    const fresh = t3pool.filter((p) => !avoidWords.has(p.word));
+    const stale = t3pool.filter((p) => avoidWords.has(p.word));
+    t3 = [...shuffle(fresh), ...shuffle(stale)];
+  } else {
+    t3 = shuffle(t3pool);
+  }
   return [...t1, ...t2, ...t3];
 }
 
@@ -84,8 +97,8 @@ export default function GameScreen({ level, gameType, totalQuestions = 20, onHom
   // be built during render without touching a ref (there's no history yet).
   // `srcPairs`/`srcLength` default to the current pool but can be passed
   // explicitly so a caller can build from a fresh list before state updates.
-  function buildGame(perf = {}, srcPairs = allPairs, srcLength = roundLength) {
-    const list = buildPrioritisedList(srcPairs, perf);
+  function buildGame(perf = {}, srcPairs = allPairs, srcLength = roundLength, avoidWords) {
+    const list = buildPrioritisedList(srcPairs, perf, avoidWords);
     // No words for this level/type (or an emptied practice queue): there's no
     // round to build, so hand back an empty board and leave rather than crash.
     if (!list.length) return { board: [], queue: [], rightOrder: [] };
@@ -221,13 +234,14 @@ export default function GameScreen({ level, gameType, totalQuestions = 20, onHom
   }
 
   function handlePlayAgain() {
+    const avoidWords = new Set(results.map((r) => r.word));
     // Only ever reached from the "Play again" click in GameComplete, so reading
     // the clock here is an event, not a render.
     // eslint-disable-next-line react-hooks/purity
     setStartTime(Date.now());
     setElapsed(0);
     setOverridePairs(null);
-    setGame(buildGame(performance.current, basePairs, baseLength));
+    setGame(buildGame(performance.current, basePairs, baseLength, avoidWords));
     setResults([]);
     setSelectedLeft(null);
     setJustMatched(null);

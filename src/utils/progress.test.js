@@ -75,4 +75,28 @@ describe("selectWithReview", () => {
     const picked = selectWithReview(pool, 5, key, "fillInBlanks", false).map(key);
     picked.forEach((w) => expect(pool.map(key)).toContain(w));
   });
+
+  // Regression: "Play again" was handing back some of the very words just
+  // shown, purely by chance — each round was an independent random draw with
+  // no memory of the last one.
+  describe("avoidKeys — don't repeat what the last round just showed", () => {
+    it("excludes avoided words when the pool is big enough without them", () => {
+      const avoid = new Set(["w0", "w1", "w2", "w3", "w4"]);
+      const picked = selectWithReview(pool, 5, key, "fillInBlanks", false, avoid).map(key);
+      picked.forEach((w) => expect(avoid.has(w)).toBe(false));
+    });
+
+    it("falls back to the avoided pool rather than returning a short round", () => {
+      const avoid = new Set(pool.map(key)); // the whole pool is "just shown"
+      const picked = selectWithReview(pool, 5, key, "fillInBlanks", false, avoid);
+      expect(picked).toHaveLength(5);
+    });
+
+    it("still front-loads a due-for-review word even if it was just shown", () => {
+      recordAttempt({ skill: "fillInBlanks", word: "w7", correct: false });
+      const avoid = new Set(["w7"]); // w7 is BOTH weak and "just shown"
+      const picked = selectWithReview(pool, 5, key, "fillInBlanks", true, avoid).map(key);
+      expect(picked).toContain("w7");
+    });
+  });
 });

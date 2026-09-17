@@ -36,10 +36,29 @@ function sampleDistinct(arr, n, excluded, keyOf = (x) => x) {
   return out;
 }
 
+// A target's identity for "don't repeat what the last round just showed" —
+// works for both {word, match} pairs (Word Match) and {first, second} pairs
+// (Compound Words), since display.word/match line up with first/second.
+// `first`/`second` must win the fallback: a compound pool item ALSO carries
+// a `.word` field (the whole compound, e.g. "Sunflower"), which would
+// otherwise shadow the stem ("Sun") and silently break the match against
+// avoidKeys (built from display.word, which IS the stem).
+function targetKey(x) {
+  return `${x.first ?? x.word}|${x.second ?? x.match}`;
+}
+
 // Choose `count` target pairs from `pool`, cycling if the pool is smaller.
-function pickTargets(pool, count) {
+// `avoidKeys` (targetKey() values from the round just finished) are pushed to
+// the back of the shuffle, so "Play again" only repeats one of them when the
+// pool is too small to fill a fresh round without doing so.
+function pickTargets(pool, count, avoidKeys) {
   if (pool.length === 0) return [];
-  const shuffled = shuffle(pool);
+  let shuffled = shuffle(pool);
+  if (avoidKeys && avoidKeys.size) {
+    const fresh = shuffled.filter((x) => !avoidKeys.has(targetKey(x)));
+    const stale = shuffled.filter((x) => avoidKeys.has(targetKey(x)));
+    shuffled = [...fresh, ...stale];
+  }
   const targets = [];
   for (let i = 0; i < count; i++) targets.push(shuffled[i % shuffled.length]);
   return targets;
@@ -48,7 +67,7 @@ function pickTargets(pool, count) {
 // ── Compound Words · Build format (stem + pick the completing word) ──
 // Shows a first-half and 4 options for the second-half; only one forms a real
 // compound (decoys never combine with the stem). Matches the prototype puzzle.
-export function makeCompoundBuildQuestions(level, count = 20) {
+export function makeCompoundBuildQuestions(level, count = 20, avoidKeys) {
   const pool    = compoundWords[level] ?? [];
   const seconds = [...new Set(pool.map((c) => c.second))];
   // Validity is checked against EVERY level's compounds (not just this one), so a
@@ -58,7 +77,7 @@ export function makeCompoundBuildQuestions(level, count = 20) {
   const valid   = new Set(allCompounds.map((c) => (c.first + c.second).toLowerCase()));
   const combines = (l, r) => valid.has((l + r).toLowerCase());
 
-  const targets = selectWithReview(pool, count, (c) => c.first + c.second, "compoundWords", getSetting("revisitMisses", true));
+  const targets = selectWithReview(pool, count, (c) => c.first + c.second, "compoundWords", getSetting("revisitMisses", true), avoidKeys);
   return targets.map(({ first, second }) => {
     const decoys = sampleDistinct(
       seconds.filter((s) => s !== second && !combines(first, s)),
@@ -89,7 +108,7 @@ export function makeCompoundQuestionsFromTargets(targets) {
 // Left = a first-half + 2 decoys; right = a second-half + 2 decoys. Decoys are
 // chosen so the ONLY left×right combination that forms a real compound (per our
 // data) is the intended one — otherwise a question would have two right answers.
-export function makeCompoundQuestions(level, count = 5) {
+export function makeCompoundQuestions(level, count = 5, avoidKeys) {
   const pool   = compoundWords[level] ?? [];
   const firsts = [...new Set(pool.map((c) => c.first))];
   const seconds = [...new Set(pool.map((c) => c.second))];
@@ -97,7 +116,7 @@ export function makeCompoundQuestions(level, count = 5) {
 
   const combines = (l, r) => valid.has((l + r).toLowerCase());
 
-  return pickTargets(pool, count).map(({ first, second }) => {
+  return pickTargets(pool, count, avoidKeys).map(({ first, second }) => {
     // Left decoys must not combine with the correct right word.
     const leftDecoys = sampleDistinct(
       firsts.filter((f) => f !== first && !combines(f, second)),
@@ -131,7 +150,7 @@ export function makeCompoundQuestions(level, count = 5) {
 // Left = a word + 2 decoys; right = its pair (synonym/antonym) + 2 decoys.
 // Decoys are chosen so the only left×right pair that matches (per our data) is
 // the target — no question ever has two right answers.
-function makeMeaningQuestions(level, count, type) {
+function makeMeaningQuestions(level, count, type, avoidKeys) {
   const pool = [
     ...(wordData[level]?.[type] ?? []),
     ...(bookletWordData[level]?.[type] ?? []),
@@ -142,7 +161,7 @@ function makeMeaningQuestions(level, count, type) {
 
   const isPair = (w, m) => valid.has(`${w}|${m}`.toLowerCase());
 
-  return pickTargets(pool, count).map(({ word, match }) => {
+  return pickTargets(pool, count, avoidKeys).map(({ word, match }) => {
     const leftDecoys = sampleDistinct(
       words.filter((w) => w !== word && !isPair(w, match)),
       2,
@@ -169,5 +188,5 @@ function makeMeaningQuestions(level, count, type) {
   });
 }
 
-export const makeSynonymQuestions = (level, count = 5) => makeMeaningQuestions(level, count, "synonyms");
-export const makeAntonymQuestions = (level, count = 5) => makeMeaningQuestions(level, count, "antonyms");
+export const makeSynonymQuestions = (level, count = 5, avoidKeys) => makeMeaningQuestions(level, count, "synonyms", avoidKeys);
+export const makeAntonymQuestions = (level, count = 5, avoidKeys) => makeMeaningQuestions(level, count, "antonyms", avoidKeys);

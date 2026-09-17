@@ -21,14 +21,14 @@ function shuffle(arr) {
   return a;
 }
 
-function buildQuestions(level, totalQuestions, practice) {
+function buildQuestions(level, totalQuestions, practice, avoidKeys) {
   const full = [...(fillInBlanksData.A || []), ...(fillInBlanksData.B || []), ...(fillInBlanksData.C || [])];
   const levelPool = level === "all" ? full : (fillInBlanksData[level] || []);
   // Practice = only the words you've missed; otherwise select by level (with
   // previously-missed words mixed in when the setting is on).
   const base = practice
     ? getMisses(SKILL)
-    : selectWithReview(levelPool, totalQuestions, (it) => it.word, SKILL, getSetting("revisitMisses", true));
+    : selectWithReview(levelPool, totalQuestions, (it) => it.word, SKILL, getSetting("revisitMisses", true), avoidKeys);
   const decoyPool = practice ? full : levelPool;
   return base.map((item) => {
     const others = decoyPool.filter((p) => p.word !== item.word);
@@ -90,7 +90,8 @@ export default function FillInBlanksGame({ level, totalQuestions = 20, onHome, m
   }
 
   function handlePlayAgain() {
-    const next = buildQuestions(level, totalQuestions, practice);
+    const avoidKeys = new Set(questions.map((q) => q.word.toLowerCase()));
+    const next = buildQuestions(level, totalQuestions, practice, avoidKeys);
     // In practice mode the queue can be empty once everything's fixed.
     if (!next.length) { onHome(); return; }
     setQuestions(next);

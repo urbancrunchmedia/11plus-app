@@ -12,7 +12,7 @@ export default function WorksheetGame({
   gameType,
   totalQuestions = 5,
   onHome,
-  makeQuestions,   // (count) => [{ left, right, answerLeft, answerRight, display }]
+  makeQuestions,   // (count, avoidKeys?) => [{ left, right, answerLeft, answerRight, display }]
   instruction,
   example,         // optional JSX/string shown under the instruction
   typeLabel,
@@ -59,9 +59,13 @@ export default function WorksheetGame({
   }
 
   function handlePlayAgain() {
+    // So "Play again" doesn't just hand back some of the same words — see
+    // worksheet.js's pickTargets, which only reuses one of these if the pool
+    // is too small to fill a fresh round without doing so.
+    const avoidKeys = new Set(questions.map((q) => `${q.display.word}|${q.display.match}`));
     setStartTime(Date.now());
     setElapsed(0);
-    setQuestions(makeQuestions(totalQuestions));
+    setQuestions(makeQuestions(totalQuestions, avoidKeys));
     setAnswers({});
     setChecked(false);
     setDone(false);

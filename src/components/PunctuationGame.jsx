@@ -19,13 +19,21 @@ function shuffle(arr) {
   return a;
 }
 
-function prepareQuestions(level, count, practice) {
+// `avoidKeys` (segments.join("|") from the round just finished) are pushed
+// to the back of the shuffle, so "Play again" only repeats one of them when
+// the pool is too small to fill a fresh round without doing so.
+function prepareQuestions(level, count, practice, avoidKeys) {
   if (practice) return getMisses(SKILL).map((b) => ({ segments: b.segments, answer: b.answer, why: b.why }));
   const pick = (obj) => (level === "all"
     ? [...(obj.A || []), ...(obj.B || []), ...(obj.C || [])]
     : [...(obj[level] || [])]);
   const spot = pick(punctuationSpot).map((b) => ({ segments: b.segments, answer: b.answer, why: b.why }));
-  const pool = shuffle(spot);
+  let pool = shuffle(spot);
+  if (avoidKeys && avoidKeys.size) {
+    const fresh = pool.filter((q) => !avoidKeys.has(q.segments.join("|")));
+    const stale = pool.filter((q) => avoidKeys.has(q.segments.join("|")));
+    pool = [...fresh, ...stale];
+  }
   return Array.from({ length: count }, (_, i) => pool[i % pool.length]);
 }
 
@@ -80,7 +88,8 @@ export default function PunctuationGame({ level, totalQuestions = 20, onHome, mu
   }
 
   function handlePlayAgain() {
-    const next = prepareQuestions(level, totalQuestions, practice);
+    const avoidKeys = new Set(questions.map((q) => q.segments.join("|")));
+    const next = prepareQuestions(level, totalQuestions, practice, avoidKeys);
     // In practice mode the queue can be empty once everything's fixed.
     if (!next.length) { onHome(); return; }
     setQuestions(next);

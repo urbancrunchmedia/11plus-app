@@ -14,10 +14,10 @@ const stars = (wrong) => (wrong === 0 ? 3 : wrong === 1 ? 2 : 1);
 // Compound Words round (prototype style): show a stem word + four options,
 // pick the word that joins on to make a real compound word.
 export default function CompoundGame({ level, totalQuestions = 20, onHome, practice = false }) {
-  const build = () => (practice
+  const build = (avoidKeys) => (practice
     ? makeCompoundQuestionsFromTargets(getMisses(SKILL))
-    : makeCompoundBuildQuestions(level, totalQuestions));
-  const [questions, setQuestions] = useState(build);
+    : makeCompoundBuildQuestions(level, totalQuestions, avoidKeys));
+  const [questions, setQuestions] = useState(() => build());
   const [idx, setIdx]         = useState(0);
   const [wrongCount, setWrong] = useState(0);   // wrong picks on the current question
   const [flash, setFlash]     = useState(null); // index flashing red
@@ -72,8 +72,9 @@ export default function CompoundGame({ level, totalQuestions = 20, onHome, pract
   }
 
   function playAgain() {
+    const avoidKeys = new Set(questions.map((q) => (q.first + q.second).toLowerCase()));
     setStartTime(Date.now());
-    setQuestions(build());
+    setQuestions(build(avoidKeys));
     setIdx(0); setWrong(0); setFlash(null); setJustRight(null);
     setResults([]); setTotalWrong(0); setStreak(0); setElapsed(0); setDone(false);
     locked.current = false;

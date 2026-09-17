@@ -65,7 +65,7 @@ function WorksheetFor({ baseType, config, playKey, onHome }) {
       level={config.level}
       gameType={config.gameType}
       totalQuestions={config.totalQuestions}
-      makeQuestions={(count) => meta.makeQuestions(config.level, count)}
+      makeQuestions={(count, avoidKeys) => meta.makeQuestions(config.level, count, avoidKeys)}
       instruction={meta.instruction}
       example={meta.example}
       typeLabel={meta.typeLabel}
