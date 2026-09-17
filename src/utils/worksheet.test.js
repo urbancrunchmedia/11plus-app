@@ -44,6 +44,20 @@ describe("makeCompoundBuildQuestions", () => {
       questions.forEach((q) => expect(q.options[q.answer]).toBe(q.second));
     }
   });
+
+  // Regression: "all" (Mixed) should draw from every level combined, not
+  // silently return nothing because compoundWords.all doesn't exist.
+  it("draws from every level when level is \"all\" (Mixed)", () => {
+    const questions = makeCompoundBuildQuestions("all", 20);
+    expect(questions).toHaveLength(20);
+    questions.forEach((q) => expect(q.options[q.answer]).toBe(q.second));
+
+    const allPairs = [...compoundWords.A, ...compoundWords.B, ...compoundWords.C];
+    const validFirsts = new Set(allPairs.map((c) => c.first));
+    // At minimum, confirm the stems really exist somewhere in the combined
+    // data rather than coming from an accidentally-undefined pool.
+    questions.forEach((q) => expect(validFirsts.has(q.first)).toBe(true));
+  });
 });
 
 // Regression: "Play again" was handing back some of the very words the

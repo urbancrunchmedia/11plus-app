@@ -77,12 +77,22 @@ function pickNonColliding(queue, boardItems) {
   return idx === -1 ? 0 : idx;
 }
 
+// "all" (Mixed) pulls every level's pairs together; a specific level is just
+// that one. Matches the same convention Punctuation/Spelling/Parts of
+// Speech already use for their own Mixed option.
+function pairsForLevel(data, level, gameType) {
+  if (level === "all") {
+    return ["A", "B", "C"].flatMap((l) => data[l]?.[gameType] ?? []);
+  }
+  return data[level]?.[gameType] ?? [];
+}
+
 export default function GameScreen({ level, gameType, totalQuestions = 20, onHome, pairs, instruction, practice = false }) {
   // Practice = only the pairs you've missed. Otherwise a caller can pass an
   // explicit `pairs` list, or we fall back to synonyms/antonyms by level+type.
   const basePairs = practice ? getMisses(SKILL) : (pairs ?? [
-    ...(wordData[level]?.[gameType] ?? []),
-    ...(bookletWordData[level]?.[gameType] ?? []),
+    ...pairsForLevel(wordData, level, gameType),
+    ...pairsForLevel(bookletWordData, level, gameType),
   ]);
   // In practice, the round is exactly the missed pairs (min 1 so the board works).
   const baseLength = practice ? Math.max(1, basePairs.length) : totalQuestions;

@@ -68,12 +68,12 @@ function pickTargets(pool, count, avoidKeys) {
 // Shows a first-half and 4 options for the second-half; only one forms a real
 // compound (decoys never combine with the stem). Matches the prototype puzzle.
 export function makeCompoundBuildQuestions(level, count = 20, avoidKeys) {
-  const pool    = compoundWords[level] ?? [];
-  const seconds = [...new Set(pool.map((c) => c.second))];
   // Validity is checked against EVERY level's compounds (not just this one), so a
   // decoy can never coincidentally be a real compound from another level — which
   // would give the question two correct answers.
   const allCompounds = [...(compoundWords.A || []), ...(compoundWords.B || []), ...(compoundWords.C || [])];
+  const pool    = level === "all" ? allCompounds : (compoundWords[level] ?? []);
+  const seconds = [...new Set(pool.map((c) => c.second))];
   const valid   = new Set(allCompounds.map((c) => (c.first + c.second).toLowerCase()));
   const combines = (l, r) => valid.has((l + r).toLowerCase());
 

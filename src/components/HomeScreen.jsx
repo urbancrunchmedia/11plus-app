@@ -21,9 +21,10 @@ function buildCompoundSamples() {
 }
 
 const LEVELS = [
-  { id: "A", label: "Easy",   desc: "Easiest",      emoji: "🌱" },
-  { id: "B", label: "Medium", desc: "Intermediate", emoji: "⚡" },
-  { id: "C", label: "Hard",   desc: "Hardest",      emoji: "🔥" },
+  { id: "A",   label: "Easy",   desc: "Easiest",      emoji: "🌱" },
+  { id: "B",   label: "Medium", desc: "Intermediate", emoji: "⚡" },
+  { id: "C",   label: "Hard",   desc: "Hardest",      emoji: "🔥" },
+  { id: "all", label: "Mixed",  desc: "Exam-style mix of every level", emoji: "🎲" },
 ];
 
 const TYPE_INFO = {
@@ -63,8 +64,8 @@ export default function HomeScreen({ gameType, onPlay, onLearn, initialConfig, o
     return "match";
   });
   const [level, setLevel] = useState(() => {
-    if (["A", "B", "C"].includes(saved.level)) return saved.level;
-    if (["A", "B", "C"].includes(initialConfig?.level)) return initialConfig.level;
+    if (["A", "B", "C", "all"].includes(saved.level)) return saved.level;
+    if (["A", "B", "C", "all"].includes(initialConfig?.level)) return initialConfig.level;
     return getSetting("defaultDifficulty", "A");
   });
   const [totalQuestions, setTotal] = useState(() => {
@@ -160,6 +161,7 @@ export default function HomeScreen({ gameType, onPlay, onLearn, initialConfig, o
                   <option value="A">Easy</option>
                   <option value="B">{isPremium ? "Medium" : "Medium · Premium"}</option>
                   <option value="C">{isPremium ? "Hard" : "Hard · Premium"}</option>
+                  <option value="all">{isPremium ? "Mixed" : "Mixed · Premium"}</option>
                 </select>
                 <span className="hero-select-chev">▾</span>
               </div>
