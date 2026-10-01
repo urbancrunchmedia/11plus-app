@@ -10,7 +10,12 @@ const REMASTER_HITS = 2;
 
 // Friendly labels for the skills we track.
 export const SKILL_LABEL = {
-  wordMatch:     "Word Match",
+  synonyms:      "Synonyms",
+  antonyms:      "Antonyms",
+  // Legacy: accuracy recorded before Word Match split into Synonyms/Antonyms.
+  // No code writes this key anymore, but existing players keep this frozen
+  // historical bar rather than it showing as a raw, unlabeled "wordMatch".
+  wordMatch:     "Word Match (old)",
   compoundWords: "Compound Words",
   fillInBlanks:  "Word Detective",
   punctuation:   "Punctuation",

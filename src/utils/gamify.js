@@ -6,7 +6,8 @@ import { getSkillAccuracy } from "./progress";
 
 // Skills shown on the dashboard, each mapping to the score gameTypes it covers.
 export const SKILLS = [
-  { id: "wordMatch",     label: "Word Match",     icon: "📚",  types: ["synonyms", "antonyms", "synonymsWs", "antonymsWs"] },
+  { id: "synonyms",      label: "Synonyms",       icon: "🔄",  types: ["synonyms", "synonymsWs"] },
+  { id: "antonyms",      label: "Antonyms",       icon: "↔️",  types: ["antonyms", "antonymsWs"] },
   { id: "compoundWords", label: "Compound Words", icon: "🧩",  types: ["compoundWords", "compoundWordsWs"] },
   { id: "fillInBlanks",  label: "Word Detective", icon: "🕵️", types: ["fillInBlanks"] },
   { id: "punctuation",   label: "Punctuation",    icon: "✏️", types: ["punctuation"] },

@@ -11,8 +11,8 @@
 // reload onto the report still has to get past the gate.
 
 export const VALID_SCREENS = [
-  "home", "me", "wordMatch", "compoundWords",
-  "punctuation", "spelling", "fillInBlanks", "wordList", "leaderboard", "report",
+  "home", "me", "synonyms", "antonyms", "compoundWords",
+  "punctuation", "spelling", "wordClass", "fillInBlanks", "wordList", "leaderboard", "report",
 ];
 
 export const GROWN_UP_SCREENS = ["me", "report"];

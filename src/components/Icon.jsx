@@ -31,12 +31,16 @@ const ICONS = {
   trash:    '<path d="M4.5 7h15"/><path d="M9.5 7V4.8h5V7"/><path d="M6.6 7l1 12.2h8.8L17.4 7"/>',
   chart:    '<path d="M4 4v16h16"/><rect x="7.5" y="11" width="3" height="6" rx="1"/><rect x="12.5" y="7" width="3" height="10" rx="1"/><rect x="17.5" y="13" width="3" height="4" rx="1"/>',
   tag:      '<path d="M12 3h6a2 2 0 0 1 2 2v6l-9 9-8-8z"/><circle cx="16" cy="8" r="1.4"/>',
+  // Antonyms — two arrows pointing apart, reading as "opposite" rather than
+  // `match`'s pairing arrows (which point toward each other).
+  oppose:   '<path d="M4 9h11"/><path d="M11 5l-3 4 3 4"/><path d="M20 15H9"/><path d="M13 19l3-4-3-4"/>',
 };
 
 // Per-skill icon name + stroke + tile background, matching the design.
 // eslint-disable-next-line react-refresh/only-export-components -- a lookup table, not a component; not worth a separate file for a dev-only warning.
 export const SKILL_ICON = {
-  wordMatch:     { name: "match",    stroke: "#12a5ff", bg: "#e4f6ff" },
+  synonyms:      { name: "match",    stroke: "#12a5ff", bg: "#e4f6ff" },
+  antonyms:      { name: "oppose",   stroke: "#e0507a", bg: "#fdeef3" },
   fillInBlanks:  { name: "detect",   stroke: "#7fa30c", bg: "#f3fbd4" },
   punctuation:   { name: "punct",    stroke: "#0e1116", bg: "#f0f2f5" },
   compoundWords: { name: "compound", stroke: "#ff6b4a", bg: "#ffe9e3" },

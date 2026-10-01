@@ -8,7 +8,6 @@ import { playCorrect, playWrong } from "../utils/feedback";
 import { recordAttempt } from "../utils/progress";
 import { addMiss, clearMiss, getMisses } from "../utils/misses";
 
-const SKILL = "wordMatch";
 const BOARD_SIZE = 5;
 
 function shuffle(arr) {
@@ -88,6 +87,10 @@ function pairsForLevel(data, level, gameType) {
 }
 
 export default function GameScreen({ level, gameType, totalQuestions = 20, onHome, pairs, instruction, practice = false }) {
+  // Progress/weak-words tracking keys off whatever specific game is being
+  // played (synonyms/antonyms, now split into their own dashboard cards),
+  // not a single combined "wordMatch" bucket.
+  const SKILL = gameType;
   // Practice = only the pairs you've missed. Otherwise a caller can pass an
   // explicit `pairs` list, or we fall back to synonyms/antonyms by level+type.
   const basePairs = practice ? getMisses(SKILL) : (pairs ?? [

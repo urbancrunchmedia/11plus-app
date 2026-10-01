@@ -4,7 +4,7 @@ import Icon, { SKILL_ICON } from "./Icon";
 
 // What the app actually contains, shown before anyone signs in.
 const GAME_STRIP = [
-  { skill: "wordMatch",     label: "Word Match",     hook: "Pair words with the same or opposite meaning" },
+  { skill: "synonyms",      label: "Word Match",     hook: "Pair words with the same or opposite meaning" },
   { skill: "fillInBlanks",  label: "Word Detective", hook: "Crack the clue to find the missing word" },
   { skill: "punctuation",   label: "Punctuation",    hook: "Spot the punctuation mistake" },
   { skill: "spelling",      label: "Spelling",       hook: "Spot the misspelled section" },

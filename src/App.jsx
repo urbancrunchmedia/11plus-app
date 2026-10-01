@@ -6,8 +6,6 @@ import SettingsScreen from "./components/SettingsScreen";
 import HomeScreen from "./components/HomeScreen";
 import GameScreen from "./components/GameScreen";
 import CompoundGame from "./components/CompoundGame";
-import WorksheetGame from "./components/WorksheetGame";
-import { makeCompoundQuestions, makeSynonymQuestions, makeAntonymQuestions } from "./utils/worksheet";
 import PunctuationScreen from "./components/PunctuationScreen";
 import PunctuationGame from "./components/PunctuationGame";
 import SpellingScreen from "./components/SpellingScreen";
@@ -30,50 +28,6 @@ import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { PremiumProvider, usePremium } from "./contexts/PremiumContext";
 import { roundsToday, bumpRoundsToday, FREE_DAILY_ROUNDS } from "./utils/entitlement";
 import "./App.css";
-
-// Worksheet-format metadata per skill (baseType). Drives the exam-style
-// "two groups of three" screen for Word Match (synonyms/antonyms) and Compound Words.
-const WORKSHEET_META = {
-  synonyms: {
-    makeQuestions: makeSynonymQuestions,
-    instruction: "Pick the word on the left and the word on the right that have a similar meaning.",
-    example: <>Example: (<b>Happy</b> · Run · Cold) = (Big · <b>Joyful</b> · Jump) → <b>Happy</b> means <b>Joyful</b></>,
-    connector: "=",
-    typeLabel: "Synonyms",
-  },
-  antonyms: {
-    makeQuestions: makeAntonymQuestions,
-    instruction: "Pick the word on the left and the word on the right that have opposite meanings.",
-    example: <>Example: (<b>Happy</b> · Run · Cold) ↔ (Big · <b>Sad</b> · Jump) → <b>Happy</b> is the opposite of <b>Sad</b></>,
-    connector: "↔",
-    typeLabel: "Antonyms",
-  },
-  compoundWords: {
-    makeQuestions: makeCompoundQuestions,
-    instruction: "Pick one word from each group that join together to make a new word.",
-    example: <>Example: (<b>Water</b> · Suggest · Disc) + (<b>Fall</b> · Hard · Ton) → the word is <b>Waterfall</b></>,
-    connector: "+",
-    typeLabel: "Compound Words",
-  },
-};
-
-function WorksheetFor({ baseType, config, playKey, onHome }) {
-  const meta = WORKSHEET_META[baseType];
-  return (
-    <WorksheetGame
-      key={playKey}
-      level={config.level}
-      gameType={config.gameType}
-      totalQuestions={config.totalQuestions}
-      makeQuestions={(count, avoidKeys) => meta.makeQuestions(config.level, count, avoidKeys)}
-      instruction={meta.instruction}
-      example={meta.example}
-      typeLabel={meta.typeLabel}
-      connector={meta.connector}
-      onHome={onHome}
-    />
-  );
-}
 
 function AppInner() {
   const { user } = useAuth();
@@ -262,7 +216,8 @@ function AppInner() {
   const isMe             = selectedGame === "me";
   const isReport         = selectedGame === "report";
   const needsParentPin   = (isMe || isReport) && !!childPin && getSetting("parentPinLock", false) && !parentUnlocked;
-  const isWordMatch      = selectedGame === "wordMatch";
+  const isSynonyms       = selectedGame === "synonyms";
+  const isAntonyms       = selectedGame === "antonyms";
   const isCompoundWords  = selectedGame === "compoundWords";
   const isPunctuation    = selectedGame === "punctuation";
   const isSpelling       = selectedGame === "spelling";
@@ -271,7 +226,7 @@ function AppInner() {
   const isWordList       = selectedGame === "wordList";
   const isLeaderboard    = selectedGame === "leaderboard";
   const isKnown =
-    isDashboard || isMe || isWordMatch || isCompoundWords ||
+    isDashboard || isMe || isSynonyms || isAntonyms || isCompoundWords ||
     isPunctuation || isSpelling || isWordClass || isFillInBlanks || isWordList || isLeaderboard || isReport;
 
   return (
@@ -315,23 +270,34 @@ function AppInner() {
             )
           )}
 
-          {/* Word Match — synonyms/antonyms, in Match or Worksheet format */}
-          {isWordMatch && screen === "home" && (
-            <HomeScreen gameType="wordMatch" onPlay={handlePlay} initialConfig={config} onExit={() => handleSelectGame("home")} />
+          {/* Synonyms — straight in, no "what are we matching" toggle */}
+          {isSynonyms && screen === "home" && (
+            <HomeScreen gameType="synonyms" onPlay={handlePlay} initialConfig={config} onExit={() => handleSelectGame("home")} />
           )}
-          {isWordMatch && screen === "game" && config && (
-            config.format === "worksheet" ? (
-              <WorksheetFor baseType={config.baseType} config={config} playKey={playKey} onHome={handleHome} />
-            ) : (
-              <GameScreen
-                key={playKey}
-                level={config.level}
-                gameType={config.gameType}
-                totalQuestions={config.totalQuestions}
-                onHome={handleHome}
-                practice={config.practice}
-              />
-            )
+          {isSynonyms && screen === "game" && config && (
+            <GameScreen
+              key={playKey}
+              level={config.level}
+              gameType={config.gameType}
+              totalQuestions={config.totalQuestions}
+              onHome={handleHome}
+              practice={config.practice}
+            />
+          )}
+
+          {/* Antonyms — straight in, no "what are we matching" toggle */}
+          {isAntonyms && screen === "home" && (
+            <HomeScreen gameType="antonyms" onPlay={handlePlay} initialConfig={config} onExit={() => handleSelectGame("home")} />
+          )}
+          {isAntonyms && screen === "game" && config && (
+            <GameScreen
+              key={playKey}
+              level={config.level}
+              gameType={config.gameType}
+              totalQuestions={config.totalQuestions}
+              onHome={handleHome}
+              practice={config.practice}
+            />
           )}
 
           {/* Compound Words — join two words, in Match or Worksheet format */}
@@ -412,7 +378,7 @@ function AppInner() {
 
           {isWordList && <WordListScreen />}
 
-          {isLeaderboard && <LeaderboardScreen onPlay={() => handleSelectGame("wordMatch")} onExit={() => handleSelectGame("home")} />}
+          {isLeaderboard && <LeaderboardScreen onPlay={() => handleSelectGame("synonyms")} onExit={() => handleSelectGame("home")} />}
 
           {!isKnown && <ComingSoon gameId={selectedGame} />}
         </div>

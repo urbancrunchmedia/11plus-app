@@ -34,9 +34,10 @@ const TYPE_INFO = {
   compoundWords: { description: "Two small words joined into one, e.g. Sun + Flower = Sunflower." },
 };
 
-// Header identity per game (the landing is shared by Word Match / Compound / Detective).
+// Header identity per game (the landing is shared by Synonyms / Antonyms / Compound / Detective).
 const SKILL_META = {
-  wordMatch:     { title: "Word Match",     sub: "Synonyms & antonyms",     icon: "📚",  bg: "#e4f6ff" },
+  synonyms:      { title: "Synonyms",       sub: "Same meaning" },
+  antonyms:      { title: "Antonyms",       sub: "Opposite meaning" },
   compoundWords: { title: "Compound Words", sub: "Join two words into one", icon: "🧩",  bg: "#f3fbd4" },
   fillInBlanks:  { title: "Word Detective", sub: "Find the word from clues", icon: "🕵️", bg: "#eaf4fc" },
 };
@@ -48,17 +49,12 @@ const NO_LEVEL_GAMES = ["fillInBlanks"];
 const FORMAT_GAMES = [];
 
 export default function HomeScreen({ gameType, onPlay, onLearn, initialConfig, onExit }) {
-  const isWordMatch    = gameType === "wordMatch";
   const noLevel        = NO_LEVEL_GAMES.includes(gameType);
   const supportsFormat = FORMAT_GAMES.includes(gameType);
-  const meta           = SKILL_META[gameType] || SKILL_META.wordMatch;
+  const meta           = SKILL_META[gameType] || SKILL_META.synonyms;
 
   const [saved] = useState(() => getPrefs(gameType) || {});
 
-  const [subType, setSubType] = useState(() => {
-    if (saved.subType === "antonyms" || saved.subType === "synonyms") return saved.subType;
-    return initialConfig?.baseType === "antonyms" ? "antonyms" : "synonyms";
-  });
   const [format] = useState(() => {
     if (saved.format === "match" || saved.format === "worksheet") return saved.format;
     return "match";
@@ -89,10 +85,10 @@ export default function HomeScreen({ gameType, onPlay, onLearn, initialConfig, o
   }
 
   useEffect(() => {
-    savePrefs(gameType, { subType, level, totalQuestions, format });
-  }, [gameType, subType, level, totalQuestions, format]);
+    savePrefs(gameType, { level, totalQuestions, format });
+  }, [gameType, level, totalQuestions, format]);
 
-  const baseType    = isWordMatch ? subType : gameType;
+  const baseType    = gameType;
   const isWorksheet = supportsFormat && format === "worksheet";
   const scoreType   = isWorksheet ? `${baseType}Ws` : baseType;
   const scoreLevel  = noLevel ? "all" : level;
@@ -109,8 +105,8 @@ export default function HomeScreen({ gameType, onPlay, onLearn, initialConfig, o
       {onExit && <button className="landing-back" onClick={onExit}>← All games</button>}
       {/* Header */}
       <div className="landing-head">
-        <div className="landing-icon" style={{ background: (SKILL_ICON[gameType] || SKILL_ICON.wordMatch).bg }}>
-          <Icon name={(SKILL_ICON[gameType] || SKILL_ICON.wordMatch).name} stroke={(SKILL_ICON[gameType] || SKILL_ICON.wordMatch).stroke} size={26} />
+        <div className="landing-icon" style={{ background: (SKILL_ICON[gameType] || SKILL_ICON.synonyms).bg }}>
+          <Icon name={(SKILL_ICON[gameType] || SKILL_ICON.synonyms).name} stroke={(SKILL_ICON[gameType] || SKILL_ICON.synonyms).stroke} size={26} />
         </div>
         <div className="landing-head-txt">
           <h1 className="landing-h1">{meta.title}</h1>
@@ -134,21 +130,6 @@ export default function HomeScreen({ gameType, onPlay, onLearn, initialConfig, o
 
       {/* Picked-for-you hero */}
       <div className="landing-hero">
-        {isWordMatch && (
-          <div className="hero-mode">
-            <div className="hero-mode-lbl">What are we matching?</div>
-            <div className="hero-seg">
-              <button className={`hero-seg-btn ${subType === "synonyms" ? "active" : ""}`} onClick={() => setSubType("synonyms")}>
-                <span className="hero-seg-title">Synonyms</span>
-                <span className="hero-seg-sub">same meaning</span>
-              </button>
-              <button className={`hero-seg-btn ${subType === "antonyms" ? "active" : ""}`} onClick={() => setSubType("antonyms")}>
-                <span className="hero-seg-title">Antonyms</span>
-                <span className="hero-seg-sub">opposite meaning</span>
-              </button>
-            </div>
-          </div>
-        )}
         <div className="landing-hero-title">
           {noLevel ? `All words · ${totalQuestions}` : `${LEVELS.find((l) => l.id === level)?.label || level} · ${totalQuestions} words`}
         </div>

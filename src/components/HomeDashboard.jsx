@@ -5,7 +5,8 @@ import { useAuth } from "../contexts/AuthContext";
 import Icon, { SKILL_ICON } from "./Icon";
 
 const SKILL_BAR = {
-  wordMatch:     "var(--brand)",
+  synonyms:      "var(--brand)",
+  antonyms:      "#e0507a",
   fillInBlanks:  "var(--accent)",
   punctuation:   "var(--ink)",
   compoundWords: "#ff6b4a",
@@ -74,7 +75,7 @@ export default function HomeDashboard({ onPlaySkill, onOpenBoard }) {
           <div className="dash-jump-head">Choose a game</div>
           <div className="dash-jump">
             {stats.mastery.map((s) => {
-              const ic = SKILL_ICON[s.id] || SKILL_ICON.wordMatch;
+              const ic = SKILL_ICON[s.id] || SKILL_ICON.synonyms;
               return (
                 <button key={s.id} className="jumpcard" onClick={() => onPlaySkill(s.id)}>
                   <div className="jumpcard-icon" style={{ background: ic.bg }}><Icon name={ic.name} stroke={ic.stroke} size={24} /></div>
