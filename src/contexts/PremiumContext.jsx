@@ -13,6 +13,7 @@ const DEV_KEY = "11plus_dev_premium";
 // (owner/testing). Client-side grant — real paid access comes from Stripe.
 const COMP_EMAILS = new Set([
   "reuben.dongre@gmail.com",
+  "charlotte_dcunha@hotmail.com",
 ]);
 
 const FREE = { isPremium: false, status: "none" };
