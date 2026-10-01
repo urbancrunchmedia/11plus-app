@@ -64,6 +64,31 @@ function makeItem(pair) {
   return { uid: _uid++, word: pair.word, match: pair.match, wrongCount: 0 };
 }
 
+// Picks `length` pairs for the round, preferring ones whose word AND match
+// text haven't been used by an earlier pick — otherwise, with a big enough
+// bank, two unrelated words that happen to share a synonym/antonym (e.g.
+// "Blend"/"Combine"/"Join" all pairing with "Separate") can both get drawn
+// into the same round, so the child sees that shared word resurface
+// attached to something new partway through and reads it as a repeat.
+// Only falls back to reusing word/match text once there aren't enough
+// distinct ones left, same as the existing "cycle if the pool is smaller
+// than the round length" fallback this replaces.
+function pickRoundPairs(list, length) {
+  const usedWords = new Set(), usedMatches = new Set();
+  const unique = [], leftover = [];
+  for (const p of list) {
+    const w = p.word.toLowerCase(), m = p.match.toLowerCase();
+    if (!usedWords.has(w) && !usedMatches.has(m)) {
+      unique.push(p); usedWords.add(w); usedMatches.add(m);
+    } else {
+      leftover.push(p);
+    }
+  }
+  if (unique.length >= length) return unique.slice(0, length);
+  const combined = [...unique, ...leftover];
+  return Array.from({ length }, (_, i) => combined[i % combined.length]);
+}
+
 // Index of the first pair in `queue` that clashes with nothing already on the
 // board (same left word or same right match would create ambiguous duplicate
 // cards). Falls back to 0 if the pool is too small to avoid a clash.
@@ -115,8 +140,7 @@ export default function GameScreen({ level, gameType, totalQuestions = 20, onHom
     // No words for this level/type (or an emptied practice queue): there's no
     // round to build, so hand back an empty board and leave rather than crash.
     if (!list.length) return { board: [], queue: [], rightOrder: [] };
-    // Cycle list if fewer words than the round length
-    const full = Array.from({ length: srcLength }, (_, i) => list[i % list.length]);
+    const full = pickRoundPairs(list, srcLength);
     // Greedily seat a starting board whose left words AND right matches are all
     // distinct — otherwise two identical cards would make a match ambiguous
     // (common with compound words that share a half, e.g. Back-drop / Rain-drop).
