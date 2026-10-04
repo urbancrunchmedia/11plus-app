@@ -28,7 +28,7 @@ vi.mock("./leaderboard", () => ({
 
 import { getDoc, getDocs, deleteDoc } from "firebase/firestore";
 import { deleteUser, reauthenticateWithPopup } from "firebase/auth";
-import { exportMyData, deleteMyAccount } from "./dataRights";
+import { exportMyData, deleteMyAccount, formatAsText } from "./dataRights";
 
 const USER = {
   uid: "u1", email: "a@b.com", displayName: "Amu",
@@ -109,5 +109,50 @@ describe("deleteMyAccount", () => {
 
   it("refuses without a signed-in user", async () => {
     await expect(deleteMyAccount(null)).rejects.toThrow(/not signed in/i);
+  });
+});
+
+describe("formatAsText", () => {
+  // The downloadable export is plain text, not raw JSON, so a parent can
+  // read it without knowing what a brace or a camelCase key means.
+  it("humanises camelCase keys into readable labels", () => {
+    const out = formatAsText({ displayName: "Amu", signInProviders: ["password"] });
+    expect(out).toContain("Display name: Amu");
+    expect(out).toContain("Sign in providers: password");
+  });
+
+  it("shows null/undefined/empty fields as 'Not set' rather than dropping them", () => {
+    const out = formatAsText({ code: null, note: undefined, nickname: "" });
+    expect(out).toContain("Code: Not set");
+    expect(out).toContain("Note: Not set");
+    expect(out).toContain("Nickname: Not set");
+  });
+
+  it("formats an ISO timestamp as a locale date/time string", () => {
+    const out = formatAsText({ createdAt: "2026-01-01T10:00:00.000Z" });
+    expect(out).toMatch(/Created at: \d{1,2}\/\d{1,2}\/\d{4}/);
+  });
+
+  it("indents nested objects under their own label", () => {
+    const out = formatAsText({ cloudProfile: { points: 40 } });
+    expect(out).toContain("Cloud profile:");
+    expect(out).toContain("  Points: 40");
+  });
+
+  it("numbers array-of-object entries (e.g. friendships) without losing any", () => {
+    const out = formatAsText({ friendships: [{ uids: ["a", "b"] }, { uids: ["a", "c"] }] });
+    expect(out).toContain("1.");
+    expect(out).toContain("2.");
+    expect((out.match(/Uids:/g) || []).length).toBe(2);
+  });
+
+  it("joins a plain array of primitives on one line", () => {
+    const out = formatAsText({ signInProviders: ["password", "google.com"] });
+    expect(out).toContain("Sign in providers: password, google.com");
+  });
+
+  it("shows an empty object (e.g. no personal bests yet) as 'None', not a blank line", () => {
+    const out = formatAsText({ personalBests: {} });
+    expect(out).toContain("Personal bests: None");
   });
 });
