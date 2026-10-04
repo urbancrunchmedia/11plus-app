@@ -81,7 +81,10 @@ export function getWeakWords(limit = 20) {
     .slice(0, limit);
 }
 
-// Accuracy per skill, weakest-first, for the report's overview bars.
+// Accuracy per skill, weakest-first, for the report's overview bars. Retired
+// skills are left out here too — a bar for a game that no longer exists
+// ("Word Match (old)") is just confusing, not actionable, for a parent
+// reading the report.
 export function getSkillAccuracy() {
   const p = load();
   return Object.entries(p.skills)
@@ -89,7 +92,7 @@ export function getSkillAccuracy() {
       const total = hits + misses;
       return { skill, label: SKILL_LABEL[skill] || skill, total, misses, pct: total ? Math.round((hits / total) * 100) : 0 };
     })
-    .filter((s) => s.total > 0)
+    .filter((s) => s.total > 0 && !RETIRED_SKILLS.has(s.skill))
     .sort((a, b) => a.pct - b.pct);
 }
 

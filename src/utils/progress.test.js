@@ -59,6 +59,15 @@ describe("getSkillAccuracy", () => {
     expect(punct.pct).toBe(75); // 3 of 4
     expect(punct.misses).toBe(1);
   });
+
+  // "Word Match (old)" is dead data from a retired game - a bar for it tells
+  // a parent nothing they can act on, so it's left out of the report too,
+  // not just "words to review".
+  it("excludes a retired skill from the accuracy bars", () => {
+    recordAttempt({ skill: "wordMatch", correct: true });
+    recordAttempt({ skill: "wordMatch", correct: false });
+    expect(getSkillAccuracy().some((s) => s.skill === "wordMatch")).toBe(false);
+  });
 });
 
 describe("selectWithReview", () => {

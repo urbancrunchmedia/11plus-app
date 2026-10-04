@@ -15,7 +15,7 @@ const BENEFITS = [
   "All difficulty levels: A, B & C",
   "Unlimited rounds, every day",
   "Parent progress report: spot weak words",
-  "Every game · all 776 words",
+  "Every game, every word",
   "Cancel anytime",
 ];
 

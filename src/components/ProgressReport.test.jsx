@@ -76,12 +76,13 @@ describe("ProgressReport", () => {
     expect(premium.openPaywall).not.toHaveBeenCalled();
   });
 
-  it("excludes the frozen legacy 'wordMatch' skill from words to review entirely (nothing can ever re-master it)", async () => {
+  it("excludes the frozen legacy 'wordMatch' skill from words to review AND the accuracy bars (nothing can ever re-master it, no game left to show accuracy for)", async () => {
     premium = { isPremium: true, openPaywall: vi.fn() };
     recordAttempt({ skill: "wordMatch", word: "old-word", correct: false, meaning: "x" });
     const el = await mount();
     expect(el.querySelector(".report-skill-group")).toBeNull();
     expect(el.textContent).toContain("No weak words right now");
+    expect(el.textContent).not.toContain("Word Match (old)");
   });
 
   it("sends a free account to the paywall when Practice is clicked, instead of launching the game", async () => {
