@@ -382,7 +382,7 @@ function AppInner() {
             />
           )}
 
-          {isWordList && <WordListScreen />}
+          {isWordList && <WordListScreen onExit={() => handleSelectGame("home")} />}
 
           {isLeaderboard && <LeaderboardScreen onPlay={() => handleSelectGame("synonyms")} onExit={() => handleSelectGame("home")} />}
 

@@ -32,7 +32,7 @@ function buildWordMap() {
 
 const ALL_WORDS = buildWordMap();
 
-export default function WordListScreen() {
+export default function WordListScreen({ onExit }) {
   const [search, setSearch]           = useState("");
   const [levelFilter, setLevelFilter] = useState("All");
   const [selectedWord, setSelectedWord] = useState(ALL_WORDS[0]?.word);
@@ -57,6 +57,7 @@ export default function WordListScreen() {
 
   return (
     <div className="wordlist">
+      {onExit && <button className="landing-back" onClick={onExit}>← Home</button>}
       <div className="wordlist-head">
         <div className="landing-icon" style={{ background: SKILL_ICON.wordList.bg }}><Icon name="book" stroke={SKILL_ICON.wordList.stroke} size={26} /></div>
         <div className="landing-head-txt">
