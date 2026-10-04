@@ -7,6 +7,14 @@ const AUTH = {
   signOut: vi.fn(),
   updateDisplayName: vi.fn(),
 };
+// A distinct object from AUTH.user: after a display-name change, the
+// context's `user` becomes a plain display-only object so React notices the
+// rename, which is NOT a real Firebase User (no providerData/metadata, and
+// crucially no SDK methods like .delete()). Export/delete must go through
+// the real auth.currentUser instead, never the context's `user` - these
+// being different objects is what proves that.
+const REAL_USER = vi.hoisted(() => ({ uid: "u1", displayName: "Ava", email: "parent@example.com", providerData: [], metadata: {} }));
+vi.mock("../firebase", () => ({ auth: { currentUser: REAL_USER }, db: {} }));
 let premium = { isPremium: false, subscription: { status: "none" }, openPaywall: vi.fn(), loading: false };
 vi.mock("../contexts/AuthContext", () => ({ useAuth: () => AUTH }));
 vi.mock("../contexts/PremiumContext", () => ({ usePremium: () => premium }));
@@ -122,14 +130,17 @@ describe("SettingsScreen", () => {
     expect(confirmBtn.disabled).toBe(false);
 
     await act(async () => { confirmBtn.click(); });
-    expect(dataRights.deleteMyAccount).toHaveBeenCalledWith(AUTH.user);
+    // Must be the real auth.currentUser, not the context's possibly-POJO
+    // `user` - deleteUser() needs a genuine Firebase User instance.
+    expect(dataRights.deleteMyAccount).toHaveBeenCalledWith(REAL_USER);
   });
 
   it("downloads a data export on request", async () => {
     const el = await mount();
     const dl = [...el.querySelectorAll("button")].find((b) => b.textContent === "Download");
     await act(async () => { dl.click(); });
-    expect(dataRights.exportMyData).toHaveBeenCalledWith(AUTH.user);
+    // Same reasoning: the real user, so providerData/metadata are present.
+    expect(dataRights.exportMyData).toHaveBeenCalledWith(REAL_USER);
     expect(dataRights.downloadMyData).toHaveBeenCalled();
   });
 });

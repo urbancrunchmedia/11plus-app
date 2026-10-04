@@ -8,6 +8,7 @@ import LegalModal, { CONTACT } from "./LegalModal";
 import Icon from "./Icon";
 import { formatDate } from "./SubscriptionSuccess";
 import { exportMyData, downloadMyData, deleteMyAccount } from "../utils/dataRights";
+import { auth } from "../firebase";
 
 const GOALS = [3, 5, 10];
 const DIFFS = [
@@ -58,7 +59,12 @@ export default function SettingsScreen({ onOpenReport, onOpenBadges }) {
     if (exportBusy) return;
     setExportBusy(true);
     try {
-      downloadMyData(await exportMyData(user));
+      // auth.currentUser, not the context's `user` — after a display-name
+      // change, `user` here is a plain display-only object (so React notices
+      // the rename and re-renders), missing providerData/metadata and the
+      // real SDK instance exportMyData/deleteMyAccount need underneath.
+      // auth.currentUser is always the live, real Firebase User.
+      downloadMyData(await exportMyData(auth.currentUser));
       setToast("Your data file has downloaded");
     } catch {
       setToast("Couldn't prepare your data. Please try again.");
@@ -72,7 +78,7 @@ export default function SettingsScreen({ onOpenReport, onOpenBadges }) {
     setDeleteBusy(true);
     setDeleteError("");
     try {
-      await deleteMyAccount(user);
+      await deleteMyAccount(auth.currentUser);
       // Auth state flips to signed-out on its own; AuthProvider/App.jsx
       // already route an unauthenticated user to the login screen.
     } catch (e) {
@@ -353,7 +359,7 @@ export default function SettingsScreen({ onOpenReport, onOpenBadges }) {
             <div className="set-sheet-sub">
               The app will open without a PIN, and any lock that relies on it will switch off too.
             </div>
-            <button className="set-sheet-confirm" onClick={() => { update("childPin", ""); update("parentPinLock", false); setConfirmPinOff(false); setToast("Child PIN turned off"); }}>Turn it off</button>
+            <button className="set-sheet-confirm" onClick={() => { update("childPin", ""); update("parentPinLock", false); setConfirmPinOff(false); setToast("Child PIN turned off"); setTimeout(() => setToast(null), 2200); }}>Turn it off</button>
             <button className="set-sheet-cancel" onClick={() => setConfirmPinOff(false)}>Keep the PIN</button>
           </div>
         </div>
