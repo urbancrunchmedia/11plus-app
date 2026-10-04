@@ -6,9 +6,13 @@ import Icon, { SKILL_ICON } from "./Icon";
 function buildWordMap() {
   const map = {};
   function addEntry(level, item, type) {
-    if (!map[item.word]) map[item.word] = { synonym: null, antonym: null, definition: null, levels: new Set() };
-    if (type === "synonyms") map[item.word].synonym = item.match;
-    if (type === "antonyms") map[item.word].antonym = item.match;
+    if (!map[item.word]) map[item.word] = { synonyms: [], antonyms: [], definition: null, levels: new Set() };
+    // A word can have more than one valid synonym/antonym (e.g. "Cool" ->
+    // Chilly and Awesome are both real, just different senses) — collect
+    // every one seen rather than letting a later match overwrite an earlier
+    // one, so the glossary doesn't silently drop options.
+    if (type === "synonyms" && !map[item.word].synonyms.includes(item.match)) map[item.word].synonyms.push(item.match);
+    if (type === "antonyms" && !map[item.word].antonyms.includes(item.match)) map[item.word].antonyms.push(item.match);
     if (type === "definitionMatch") map[item.word].definition = item.match;
     map[item.word].levels.add(level);
   }
@@ -22,7 +26,7 @@ function buildWordMap() {
     for (const item of (types.definitionMatch || [])) addEntry(level, item, "definitionMatch");
   }
   return Object.entries(map)
-    .map(([word, d]) => ({ word, synonym: d.synonym, antonym: d.antonym, definition: d.definition, levels: [...d.levels].sort() }))
+    .map(([word, d]) => ({ word, synonyms: d.synonyms, antonyms: d.antonyms, definition: d.definition, levels: [...d.levels].sort() }))
     .sort((a, b) => a.word.localeCompare(b.word));
 }
 
@@ -105,14 +109,14 @@ export default function WordListScreen() {
                     <div className="wl2-rel">
                       <div className="wl2-rel-col">
                         <div className="wl2-rel-lbl">SAME AS</div>
-                        <div className="wl2-rel-val">{w.synonym || "—"}</div>
+                        <div className="wl2-rel-val">{w.synonyms.length ? w.synonyms.join(", ") : "—"}</div>
                       </div>
                       <div className="wl2-rel-col">
                         <div className="wl2-rel-lbl">OPPOSITE</div>
-                        <div className="wl2-rel-val">{w.antonym || "—"}</div>
+                        <div className="wl2-rel-val">{w.antonyms.length ? w.antonyms.join(", ") : "—"}</div>
                       </div>
                     </div>
-                    {!w.definition && !w.synonym && !w.antonym && (
+                    {!w.definition && !w.synonyms.length && !w.antonyms.length && (
                       <div className="wl2-defn wl2-defn--muted">No extra detail for this word yet.</div>
                     )}
                   </div>
@@ -135,14 +139,14 @@ export default function WordListScreen() {
             <div className="wl2-rel">
               <div className="wl2-rel-col">
                 <div className="wl2-rel-lbl">SAME AS</div>
-                <div className="wl2-rel-val">{sel.synonym || "—"}</div>
+                <div className="wl2-rel-val">{sel.synonyms.length ? sel.synonyms.join(", ") : "—"}</div>
               </div>
               <div className="wl2-rel-col">
                 <div className="wl2-rel-lbl">OPPOSITE</div>
-                <div className="wl2-rel-val">{sel.antonym || "—"}</div>
+                <div className="wl2-rel-val">{sel.antonyms.length ? sel.antonyms.join(", ") : "—"}</div>
               </div>
             </div>
-            {!sel.definition && !sel.synonym && !sel.antonym && (
+            {!sel.definition && !sel.synonyms.length && !sel.antonyms.length && (
               <div className="wl2-defn wl2-defn--muted">No extra detail for this word yet.</div>
             )}
           </div>
