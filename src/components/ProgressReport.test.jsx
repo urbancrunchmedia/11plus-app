@@ -10,10 +10,10 @@ import ProgressReport from "./ProgressReport";
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 
-async function mount(onPractise = () => {}) {
+async function mount(onPractise = () => {}, onPracticeSkill = () => {}) {
   const container = document.createElement("div");
   document.body.appendChild(container);
-  await act(async () => { createRoot(container).render(<ProgressReport onBack={() => {}} onPractise={onPractise} />); });
+  await act(async () => { createRoot(container).render(<ProgressReport onBack={() => {}} onPractise={onPractise} onPracticeSkill={onPracticeSkill} />); });
   return container;
 }
 
@@ -54,5 +54,43 @@ describe("ProgressReport", () => {
     const el = await mount();
     expect(el.querySelector(".report-locked")).toBeNull();
     expect(el.textContent).toContain("elusive");
+  });
+
+  it("groups weak words by skill, each with its own Practice button", async () => {
+    premium = { isPremium: true, openPaywall: vi.fn() };
+    recordAttempt({ skill: "fillInBlanks", word: "abundant", correct: false, meaning: "x" });
+    recordAttempt({ skill: "spelling", word: "necessary", correct: false, meaning: "y" });
+    const el = await mount();
+    const groups = el.querySelectorAll(".report-skill-group");
+    expect(groups.length).toBe(2);
+    expect(el.querySelectorAll(".report-skill-cta").length).toBe(2);
+  });
+
+  it("calls onPracticeSkill with the skill id when its Practice button is clicked", async () => {
+    premium = { isPremium: true, openPaywall: vi.fn() };
+    recordAttempt({ skill: "spelling", word: "necessary", correct: false, meaning: "x" });
+    const onPracticeSkill = vi.fn();
+    const el = await mount(() => {}, onPracticeSkill);
+    await act(async () => { el.querySelector(".report-skill-cta").click(); });
+    expect(onPracticeSkill).toHaveBeenCalledWith("spelling");
+  });
+
+  it("omits the Practice button for the frozen legacy 'wordMatch' skill (no live game to launch)", async () => {
+    premium = { isPremium: true, openPaywall: vi.fn() };
+    recordAttempt({ skill: "wordMatch", word: "old-word", correct: false, meaning: "x" });
+    const el = await mount();
+    expect(el.querySelector(".report-skill-group")).toBeTruthy();
+    expect(el.querySelector(".report-skill-cta")).toBeNull();
+  });
+
+  it("still shows a clickable Practice button for free accounts even though the words themselves are blurred", async () => {
+    recordAttempt({ skill: "fillInBlanks", word: "abundant", correct: false, meaning: "x" });
+    const onPracticeSkill = vi.fn();
+    const el = await mount(() => {}, onPracticeSkill);
+    const cta = el.querySelector(".report-skill-cta");
+    expect(cta).toBeTruthy();
+    expect(cta.closest(".report-blur")).toBeNull();
+    await act(async () => { cta.click(); });
+    expect(onPracticeSkill).toHaveBeenCalledWith("fillInBlanks");
   });
 });

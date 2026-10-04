@@ -271,6 +271,7 @@ function AppInner() {
               <ProgressReport
                 onBack={() => handleSelectGame("me")}
                 onPractise={() => handleSelectGame("fillInBlanks")}
+                onPracticeSkill={(skill) => handleSelectGame(skill)}
               />
             )
           )}

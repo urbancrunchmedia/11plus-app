@@ -2910,11 +2910,17 @@ body {
 .report-bar-fill { height: 100%; border-radius: 999px; transition: width 0.4s; }
 .report-bar-pct { flex: 0 0 40px; text-align: right; font-size: 13px; font-weight: 800; color: var(--muted); }
 
+.report-skill-group { margin-bottom: 16px; }
+.report-skill-group:last-child { margin-bottom: 0; }
+.report-skill-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+.report-skill-head-lbl { font-size: 12.5px; font-weight: 700; color: var(--brand-ink); background: #eef6ff; padding: 3px 9px; border-radius: 999px; }
+.report-skill-cta { font-size: 13px; font-weight: 700; color: var(--brand-ink); background: none; border: none; padding: 2px 4px; cursor: pointer; }
+.report-skill-cta:hover { text-decoration: underline; }
+
 .report-words { list-style: none; padding: 0; margin: 0; display: grid; gap: 10px; }
 .report-word { position: relative; border: 1.5px solid var(--line); border-radius: 14px; padding: 12px 14px; }
 .report-word-main { display: flex; align-items: baseline; gap: 10px; }
 .report-word-txt { font-size: 16px; font-weight: 800; color: var(--ink); text-transform: capitalize; }
-.report-word-skill { font-size: 11px; font-weight: 700; color: var(--brand-ink); background: #eef6ff; padding: 2px 8px; border-radius: 999px; }
 .report-word-meaning { font-size: 13px; color: var(--muted); margin-top: 3px; }
 .report-word-misses { position: absolute; top: 12px; right: 14px; font-size: 12px; font-weight: 700; color: #c0512b; }
 

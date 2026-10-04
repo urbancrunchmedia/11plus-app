@@ -3,15 +3,37 @@ import { getWeakWords, getSkillAccuracy, getProgressSummary, SKILL_LABEL } from 
 import { usePremium } from "../contexts/PremiumContext";
 import Icon from "./Icon";
 
+// Skills with a live game a "Practice" button can jump straight into.
+// "wordMatch" is frozen historical data from before Word Match split into
+// Synonyms/Antonyms — there's no game by that name to launch any more.
+const PRACTISABLE_SKILLS = new Set([
+  "synonyms", "antonyms", "compoundWords", "fillInBlanks", "punctuation", "spelling", "wordClass",
+]);
+
+// Groups an already-sorted (hardest-first) weak-word list by skill, keeping
+// each group in that same hardest-first order, and preserving the order
+// skills first appear in (so the worst skill overall leads).
+function groupBySkill(words) {
+  const order = [];
+  const groups = new Map();
+  for (const w of words) {
+    if (!groups.has(w.skill)) { groups.set(w.skill, []); order.push(w.skill); }
+    groups.get(w.skill).push(w);
+  }
+  return order.map((skill) => ({ skill, words: groups.get(skill) }));
+}
+
 // A parent-facing snapshot: where the child is strong, and exactly which words
 // to revise next. Premium — free users see a blurred teaser + upgrade.
-export default function ProgressReport({ onBack, onPractise }) {
+export default function ProgressReport({ onBack, onPractise, onPracticeSkill }) {
   const { isPremium, openPaywall } = usePremium();
   const [summary]  = useState(getProgressSummary);
   const [skills]   = useState(getSkillAccuracy);
   const [weak]     = useState(() => getWeakWords(30));
 
   const empty = summary.attempts === 0;
+  const visibleWeak = isPremium ? weak : weak.slice(0, 4);
+  const weakGroups = groupBySkill(visibleWeak);
 
   return (
     <div className="report">
@@ -75,20 +97,29 @@ export default function ProgressReport({ onBack, onPractise }) {
             {weak.length === 0 ? (
               <div className="report-none">No weak words right now. Nice!</div>
             ) : (
-              <div className={!isPremium ? "report-blur" : ""}>
-                <ul className="report-words">
-                  {(isPremium ? weak : weak.slice(0, 4)).map((w) => (
-                    <li key={`${w.skill}:${w.word}`} className="report-word">
-                      <div className="report-word-main">
-                        <span className="report-word-txt">{w.word}</span>
-                        <span className="report-word-skill">{SKILL_LABEL[w.skill] || w.skill}</span>
-                      </div>
-                      {w.meaning && <div className="report-word-meaning">{w.meaning}</div>}
-                      <span className="report-word-misses">missed {w.misses}×</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
+              weakGroups.map((g) => (
+                <div key={g.skill} className="report-skill-group">
+                  <div className="report-skill-head">
+                    <span className="report-skill-head-lbl">{SKILL_LABEL[g.skill] || g.skill}</span>
+                    {onPracticeSkill && PRACTISABLE_SKILLS.has(g.skill) && (
+                      <button className="report-skill-cta" onClick={() => onPracticeSkill(g.skill)}>Practice →</button>
+                    )}
+                  </div>
+                  <div className={!isPremium ? "report-blur" : ""}>
+                    <ul className="report-words">
+                      {g.words.map((w) => (
+                        <li key={`${w.skill}:${w.word}`} className="report-word">
+                          <div className="report-word-main">
+                            <span className="report-word-txt">{w.word}</span>
+                          </div>
+                          {w.meaning && <div className="report-word-meaning">{w.meaning}</div>}
+                          <span className="report-word-misses">missed {w.misses}×</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              ))
             )}
 
             {!isPremium && weak.length > 0 && (
