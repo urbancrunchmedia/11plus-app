@@ -49,6 +49,13 @@ export const SKILL_ICON = {
   wordList:      { name: "book",     stroke: "#12a5ff", bg: "#eaf4fc" },
 };
 
+// Lets Gem.jsx reuse this set's glyphs inside its own nested icon <svg>
+// (badges/rank crest) instead of maintaining a second icon set.
+// eslint-disable-next-line react-refresh/only-export-components -- a lookup helper, not a component; not worth a separate file for a dev-only warning.
+export function getIconMarkup(name) {
+  return ICONS[name] || null;
+}
+
 export default function Icon({ name, size = 24, stroke = "currentColor", strokeWidth = 1.9, className }) {
   const inner = ICONS[name];
   if (!inner) return null;

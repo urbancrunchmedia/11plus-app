@@ -3,6 +3,12 @@ import { useAuth } from "../contexts/AuthContext";
 import { getProfile, getLeaderboard, addFriendByCode, removeFriend, syncProfile } from "../utils/cloudScores";
 import Icon from "./Icon";
 import { msUntilReset, formatResetIn } from "../utils/weekly";
+import { RANK_TIERS } from "../utils/rank";
+import Gem from "./Gem";
+
+function rankTierInfo(id) {
+  return RANK_TIERS.find((t) => t.id === id) || RANK_TIERS[0];
+}
 
 function initials(name) {
   return (name || "?").trim().slice(0, 1).toUpperCase();
@@ -151,12 +157,20 @@ export default function LeaderboardScreen({ onPlay, onExit }) {
         <div className="board-empty">Loading leaderboard…</div>
       ) : (
         <div className="board-rows">
-          {rows.map((p, i) => (
+          {rows.map((p, i) => {
+            const tier = rankTierInfo(p.rankTier);
+            return (
             <div key={p.uid} className={`board-row ${p.isMe ? "me" : ""}`}>
               <span className={`board-rank ${!noScores && i < 3 ? `board-rank--${i + 1}` : ""}`}>{i + 1}</span>
               <span className={`board-avatar ${p.isMe ? "me" : ""}`}>{initials(p.displayName)}</span>
-              <span className="board-name">
-                {p.displayName || "Player"}{p.isMe && <span className="board-you"> (you)</span>}
+              <span className="board-namecol">
+                <span className="board-name">
+                  {p.displayName || "Player"}{p.isMe && <span className="board-you"> (you)</span>}
+                </span>
+                <span className="board-rankchip">
+                  <Gem size={20} facetCount={tier.facets} colorLight={tier.colors[0]} colorMid={tier.colors[1]} colorDark={tier.colors[2]} />
+                  {tier.label}
+                </span>
               </span>
               {p.isMe && (
                 <button className="board-rename" onClick={() => { setNameInput(myName); setNameError(""); setNameSheet(true); }}>Edit name</button>
@@ -166,7 +180,8 @@ export default function LeaderboardScreen({ onPlay, onExit }) {
                 <button className="board-remove" onClick={() => setRemoveTarget(p)} aria-label={`Remove ${p.displayName || "friend"}`} title={`Remove ${p.displayName || "friend"}`}>✕</button>
               )}
             </div>
-          ))}
+            );
+          })}
         </div>
       )}
 

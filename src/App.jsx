@@ -18,6 +18,7 @@ import FlashcardScreen from "./components/FlashcardScreen";
 import ComingSoon from "./components/ComingSoon";
 import WordListScreen from "./components/WordListScreen";
 import LeaderboardScreen from "./components/LeaderboardScreen";
+import BadgesScreen from "./components/BadgesScreen";
 import ProgressReport from "./components/ProgressReport";
 import SubscriptionSuccess, { formatDate } from "./components/SubscriptionSuccess";
 import LoginScreen from "./components/LoginScreen";
@@ -225,9 +226,11 @@ function AppInner() {
   const isFillInBlanks   = selectedGame === "fillInBlanks";
   const isWordList       = selectedGame === "wordList";
   const isLeaderboard    = selectedGame === "leaderboard";
+  const isBadges         = selectedGame === "badges";
   const isKnown =
     isDashboard || isMe || isSynonyms || isAntonyms || isCompoundWords ||
-    isPunctuation || isSpelling || isWordClass || isFillInBlanks || isWordList || isLeaderboard || isReport;
+    isPunctuation || isSpelling || isWordClass || isFillInBlanks || isWordList ||
+    isLeaderboard || isReport || isBadges;
 
   return (
     <div className="app-layout">
@@ -240,6 +243,7 @@ function AppInner() {
             <HomeDashboard
               onPlaySkill={(id) => handleSelectGame(id)}
               onOpenBoard={() => handleSelectGame("leaderboard")}
+              onOpenBadges={() => handleSelectGame("badges")}
             />
           )}
 
@@ -261,6 +265,7 @@ function AppInner() {
               <SettingsScreen
                 onHome={() => handleSelectGame("home")}
                 onOpenReport={() => handleSelectGame("report")}
+                onOpenBadges={() => handleSelectGame("badges")}
               />
             ) : (
               <ProgressReport
@@ -379,6 +384,8 @@ function AppInner() {
           {isWordList && <WordListScreen />}
 
           {isLeaderboard && <LeaderboardScreen onPlay={() => handleSelectGame("synonyms")} onExit={() => handleSelectGame("home")} />}
+
+          {isBadges && <BadgesScreen onExit={() => handleSelectGame("home")} />}
 
           {!isKnown && <ComingSoon gameId={selectedGame} />}
         </div>

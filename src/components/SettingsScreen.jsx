@@ -26,7 +26,7 @@ const PARENT_TOGGLES = [
 
 function initial(name) { return name ? name.trim().charAt(0).toUpperCase() : "A"; }
 
-export default function SettingsScreen({ onOpenReport }) {
+export default function SettingsScreen({ onOpenReport, onOpenBadges }) {
   const { user, signOut, updateDisplayName } = useAuth();
   const { isPremium, subscription, openPaywall, loading: subLoading } = usePremium();
   const stats = getStats();
@@ -234,6 +234,11 @@ export default function SettingsScreen({ onOpenReport }) {
         <div className="set-row">
           <div className="set-row-txt"><div className="set-row-label">Progress report</div><div className="set-row-sub">See accuracy by skill and the words to revise next</div></div>
           <button className="set-ghost" onClick={onOpenReport}>View {!isPremium && <Icon className="inline-ico" name="lock" size={12} stroke="currentColor" strokeWidth={2.2} />}</button>
+        </div>
+        <div className="set-divider" />
+        <div className="set-row">
+          <div className="set-row-txt"><div className="set-row-label">Badges</div><div className="set-row-sub">{stats.rank.label} Rank and every badge earned so far</div></div>
+          <button className="set-ghost" onClick={onOpenBadges}>View</button>
         </div>
         <div className="set-divider" />
         {PARENT_TOGGLES.map((t, i) => (

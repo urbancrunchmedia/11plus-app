@@ -4,6 +4,7 @@ import {
 } from "firebase/firestore";
 import { db } from "../firebase";
 import { getWeeklyPoints, weekKey, weeklyPointsOf, WEEK_POINTS_KEY } from "./weekly";
+import { getRank } from "./rank";
 import { getProgressData, setProgressData } from "./progress";
 import { setSetting } from "./leaderboard";
 
@@ -161,6 +162,7 @@ export async function syncProfile(user) {
       weekPoints: getWeeklyPoints(),
       weekKey: weekKey(),
       byGame,
+      rankTier: getRank().tier,
       updatedAt: new Date().toISOString(),
     }, { merge: true });
     // Keep the code -> {uid, displayName} lookup in step. This IS the

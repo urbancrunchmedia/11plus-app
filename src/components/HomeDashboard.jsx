@@ -3,6 +3,7 @@ import { getStats } from "../utils/gamify";
 import { getLeaderboard } from "../utils/cloudScores";
 import { useAuth } from "../contexts/AuthContext";
 import Icon, { SKILL_ICON } from "./Icon";
+import Gem from "./Gem";
 
 const SKILL_BAR = {
   synonyms:      "var(--brand)",
@@ -18,7 +19,7 @@ function initial(name) {
   return name ? name.trim().charAt(0).toUpperCase() : "?";
 }
 
-export default function HomeDashboard({ onPlaySkill, onOpenBoard }) {
+export default function HomeDashboard({ onPlaySkill, onOpenBoard, onOpenBadges }) {
   const { user } = useAuth();
   const stats = getStats();
   const name  = user?.displayName || "there";
@@ -42,9 +43,20 @@ export default function HomeDashboard({ onPlaySkill, onOpenBoard }) {
 
   return (
     <div className="dash">
-      {/* Header */}
+      {/* Header — the Rank crest is the dominant element, not a small chip,
+          so a kid has somewhere to point and say "that's me." */}
       <div className="dash-head">
-        <div>
+        <button className="dash-rank" onClick={onOpenBadges} aria-label={`${stats.rank.label} Rank — view badges`}>
+          <Gem
+            size={64}
+            facetCount={stats.rank.facets}
+            colorLight={stats.rank.colors[0]}
+            colorMid={stats.rank.colors[1]}
+            colorDark={stats.rank.colors[2]}
+          />
+          <div className="dash-rank-label">{stats.rank.label}</div>
+        </button>
+        <div className="dash-head-mid">
           <div className="dash-name">Hi, {name}</div>
           <div className="dash-sub">Level {stats.level} · {stats.title} · {stats.xp.toLocaleString()} XP</div>
         </div>

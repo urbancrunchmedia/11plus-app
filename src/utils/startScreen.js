@@ -12,7 +12,7 @@
 
 export const VALID_SCREENS = [
   "home", "me", "synonyms", "antonyms", "compoundWords",
-  "punctuation", "spelling", "wordClass", "fillInBlanks", "wordList", "leaderboard", "report",
+  "punctuation", "spelling", "wordClass", "fillInBlanks", "wordList", "leaderboard", "report", "badges",
 ];
 
 export const GROWN_UP_SCREENS = ["me", "report"];

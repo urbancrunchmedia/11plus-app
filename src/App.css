@@ -2037,6 +2037,12 @@ body {
 /* ── Dashboard ── */
 .dash { width: 100%; max-width: 1280px; display: flex; flex-direction: column; gap: 22px; }
 .dash-head { display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; }
+.dash-rank {
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  background: none; border: none; cursor: pointer; padding: 0; flex: none;
+}
+.dash-rank-label { font-weight: 800; font-size: 0.78rem; color: var(--ink); }
+.dash-head-mid { flex: 1; min-width: 140px; }
 .dash-name { font-weight: 800; font-size: 1.8rem; color: var(--ink); letter-spacing: -0.02em; }
 .dash-sub  { font-weight: 600; font-size: 0.9rem; color: var(--muted, #6b7a8c); margin-top: 4px; }
 .dash-head-pills { display: flex; gap: 10px; flex-wrap: wrap; justify-content: flex-end; }
@@ -2251,6 +2257,65 @@ body {
 .dash-friend.me .dash-friend-pts { color: var(--accent); }
 .dash-friend-empty { color: rgba(255,255,255,0.6); font-weight: 600; font-size: 0.85rem; padding: 8px 0; flex: 1; }
 
+/* ── Badges screen ── */
+.badges-screen { width: 100%; max-width: 640px; display: flex; flex-direction: column; gap: 14px; }
+.badges-title { font-size: 1.3rem; font-weight: 800; color: var(--ink); }
+.badges-rankcard {
+  background: linear-gradient(135deg, #fff8e8 0%, #fff 60%);
+  border-radius: 18px; padding: 16px; border: 1px solid #f1e3b8;
+  display: flex; gap: 14px; align-items: center;
+}
+.badges-rankcard-gem { flex-shrink: 0; }
+.badges-rankcard-body { flex: 1; min-width: 0; }
+.badges-rankcard-name { font-weight: 800; font-size: 1rem; color: var(--ink); }
+.badges-rankcard-sub { font-size: 0.78rem; color: #8a6a0d; font-weight: 700; margin-top: 2px; }
+.badges-rankcard-bar { height: 6px; border-radius: 4px; background: #f1e3b8; margin-top: 8px; overflow: hidden; }
+.badges-rankcard-bar-fill { height: 100%; border-radius: 4px; transition: width 0.3s ease; }
+.badges-headsup {
+  background: #f6f3ff; border: 1px solid #e7ddff; border-radius: 14px;
+  padding: 10px 12px; display: flex; gap: 9px; align-items: flex-start;
+  font-size: 0.8rem; color: #5b4b8a; font-weight: 600; line-height: 1.4;
+}
+.badges-headsup-ic { font-size: 0.9rem; flex-shrink: 0; }
+.badges-collection { font-size: 0.85rem; font-weight: 800; color: var(--ink); }
+.badges-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.badges-card {
+  background: var(--surface); border: 1px solid var(--line); border-radius: 16px;
+  padding: 12px 8px; display: flex; flex-direction: column; align-items: center; text-align: center;
+}
+.badges-card.locked { opacity: 0.92; }
+.badges-card-name { font-size: 0.72rem; font-weight: 700; color: var(--ink); margin-top: 6px; }
+.badges-card-status { font-size: 0.66rem; font-weight: 700; color: var(--muted); margin-top: 2px; }
+.badges-card-status.earned { color: #16a34a; }
+
+/* ── Celebration modal (badge unlock / rank promotion) ── */
+.celebrate-overlay {
+  position: fixed; inset: 0; z-index: 90;
+  background: rgba(14,17,22,0.55);
+  display: grid; place-items: center;
+  animation: celebrate-fade 0.2s ease;
+}
+@keyframes celebrate-fade { from { opacity: 0; } to { opacity: 1; } }
+.celebrate-confetti { position: absolute; width: 8px; height: 8px; border-radius: 50%; }
+.celebrate-confetti--bar { width: 9px; height: 15px; border-radius: 2px; }
+.celebrate-card {
+  position: relative; width: min(90vw, 320px);
+  background: var(--surface); border-radius: 24px;
+  padding: 30px 26px 24px; box-sizing: border-box; text-align: center;
+  box-shadow: 0 24px 48px rgba(0,0,0,0.35);
+  animation: celebrate-pop 0.3s cubic-bezier(.2,1.2,.3,1);
+}
+@keyframes celebrate-pop { from { transform: scale(0.85); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+.celebrate-gem { display: flex; justify-content: center; margin-bottom: 4px; }
+.celebrate-title { font-size: 1.25rem; font-weight: 800; color: var(--ink); line-height: 1.25; }
+.celebrate-subtitle { font-size: 0.82rem; color: var(--muted); font-weight: 600; margin-top: 8px; }
+.celebrate-btn {
+  margin-top: 18px; width: 100%; background: var(--ink); color: #fff;
+  font-weight: 800; font-size: 0.9rem; padding: 13px; border: none;
+  border-radius: 999px; cursor: pointer;
+}
+.celebrate-btn:hover { opacity: 0.9; }
+
 /* ── Leaderboard (prototype board) ── */
 .board { width: 100%; max-width: 1000px; display: flex; flex-direction: column; gap: 14px; }
 .board-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
@@ -2287,8 +2352,11 @@ body {
 
 .board-avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--track, #e7eef5); color: var(--ink); display: grid; place-items: center; font-weight: 800; font-size: 0.95rem; flex: none; }
 .board-avatar.me { background: #fff; color: var(--brand); }
-.board-name { flex: 1; font-weight: 700; font-size: 1.05rem; color: var(--ink); min-width: 0; }
+.board-namecol { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.board-name { font-weight: 700; font-size: 1.05rem; color: var(--ink); min-width: 0; }
 .board-row.me .board-name { color: #fff; }
+.board-rankchip { display: flex; align-items: center; gap: 4px; font-weight: 700; font-size: 0.78rem; color: var(--muted); }
+.board-row.me .board-rankchip { color: rgba(255,255,255,0.85); }
 .board-you { font-weight: 500; color: rgba(255,255,255,0.75); }
 .board-pts { font-weight: 800; font-size: 1.05rem; color: var(--ink); }
 .board-row.me .board-pts { color: var(--accent); }

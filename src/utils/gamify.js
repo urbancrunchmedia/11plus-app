@@ -3,6 +3,7 @@
 // streak, per-skill mastery and badges are all computed from real play data.
 import { getAllHistory, getSetting } from "./leaderboard";
 import { getSkillAccuracy } from "./progress";
+import { evaluateWeeklyRank, getRank, rankEverReached, RANK_TIERS } from "./rank";
 
 // Skills shown on the dashboard, each mapping to the score gameTypes it covers.
 export const SKILLS = [
@@ -117,27 +118,23 @@ export function getStats() {
   const stars   = runs.reduce((s, r) => s + (r.stars || 0), 0);
   const mastery = getSkillMastery();
   const streak  = getStreak();
-
-  // Badges: simple milestone count from real achievements.
   const perfect = runs.some((r) => r.wrong === 0 && r.stars > 0);
-  const badges = [
-    runs.length >= 1,
-    runs.length >= 10,
-    runs.length >= 50,
-    streak >= 3,
-    streak >= 7,
-    perfect,
-    mastery.some((m) => m.pct >= 80),
-    mastery.every((m) => m.pct >= 50) && mastery.length > 0,
-  ].filter(Boolean).length;
+
+  // Score a completed week against Rank the moment we next render — no
+  // separate effect wiring needed, this is the one place every screen reads.
+  evaluateWeeklyRank();
+  const rankState = getRank();
+  const rankInfo  = RANK_TIERS.find((t) => t.id === rankState.tier) || RANK_TIERS[0];
 
   return {
     ...getLevelInfo(xp),
     stars,
     rounds: runs.length,
     streak,
-    badges,
+    perfect,
     mastery,
     daily: getDailyChallenge(),
+    rank: { id: rankInfo.id, label: rankInfo.label, facets: rankInfo.facets, colors: rankInfo.colors },
+    rankEverReached,
   };
 }
