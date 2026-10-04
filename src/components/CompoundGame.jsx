@@ -20,6 +20,7 @@ export default function CompoundGame({ level, totalQuestions = 20, onHome, pract
   const [questions, setQuestions] = useState(() => build());
   const [idx, setIdx]         = useState(0);
   const [wrongCount, setWrong] = useState(0);   // wrong picks on the current question
+  const [triedWrong, setTriedWrong] = useState([]); // option indices already tried for this question
   const [flash, setFlash]     = useState(null); // index flashing red
   const [justRight, setJustRight] = useState(null); // index flashing correct
   const [results, setResults] = useState([]);
@@ -56,16 +57,22 @@ export default function CompoundGame({ level, totalQuestions = 20, onHome, pract
       setTimeout(() => {
         setJustRight(null);
         setWrong(0);
+        setTriedWrong([]);
         locked.current = false;
         if (idx + 1 >= questions.length) setDone(true);
         else setIdx(idx + 1);
       }, 600);
     } else {
-      addMiss(SKILL, `${q.first}${q.second}`.toLowerCase(), { first: q.first, second: q.second });
+      // Only the first time this option is picked for this question counts
+      // against it — repeating the same wrong option just re-flashes red.
+      if (!triedWrong.includes(i)) {
+        addMiss(SKILL, `${q.first}${q.second}`.toLowerCase(), { first: q.first, second: q.second });
+        setWrong((w) => w + 1);
+        setTotalWrong((w) => w + 1);
+        setStreak(0);
+        setTriedWrong((t) => [...t, i]);
+      }
       if (!muted) playWrong();
-      setWrong((w) => w + 1);
-      setTotalWrong((w) => w + 1);
-      setStreak(0);
       setFlash(i);
       setTimeout(() => setFlash(null), 500);
     }
@@ -75,7 +82,7 @@ export default function CompoundGame({ level, totalQuestions = 20, onHome, pract
     const avoidKeys = new Set(questions.map((q) => (q.first + q.second).toLowerCase()));
     setStartTime(Date.now());
     setQuestions(build(avoidKeys));
-    setIdx(0); setWrong(0); setFlash(null); setJustRight(null);
+    setIdx(0); setWrong(0); setTriedWrong([]); setFlash(null); setJustRight(null);
     setResults([]); setTotalWrong(0); setStreak(0); setElapsed(0); setDone(false);
     locked.current = false;
   }
@@ -86,7 +93,7 @@ export default function CompoundGame({ level, totalQuestions = 20, onHome, pract
     if (!missed.length) return;
     setStartTime(Date.now());
     setQuestions(makeCompoundQuestionsFromTargets(missed));
-    setIdx(0); setWrong(0); setFlash(null); setJustRight(null);
+    setIdx(0); setWrong(0); setTriedWrong([]); setFlash(null); setJustRight(null);
     setResults([]); setTotalWrong(0); setStreak(0); setElapsed(0); setDone(false);
     locked.current = false;
   }

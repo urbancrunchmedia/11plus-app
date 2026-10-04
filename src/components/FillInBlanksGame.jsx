@@ -43,6 +43,7 @@ export default function FillInBlanksGame({ level, totalQuestions = 20, onHome, m
   const total = questions.length;
   const [current, setCurrent]       = useState(0);
   const [wrongCount, setWrongCount] = useState(0);
+  const [triedWrong, setTriedWrong] = useState([]); // option indices already tried for this question
   const [results, setResults]       = useState([]);
   const [totalWrong, setTotalWrong] = useState(0);
   const [streak, setStreak]         = useState(0);
@@ -76,14 +77,19 @@ export default function FillInBlanksGame({ level, totalQuestions = 20, onHome, m
         setFlash(null);
         setResults(newResults);
         if (newResults.length >= total) setGameComplete(true);
-        else { setCurrent((c) => c + 1); setWrongCount(0); }
+        else { setCurrent((c) => c + 1); setWrongCount(0); setTriedWrong([]); }
       }, 700);
     } else {
-      addMiss(SKILL, id, { word: q.word, sentence: q.sentence, definition: q.definition });
+      // Only the first time this option is picked for this question counts
+      // against it — repeating the same wrong option just re-flashes red.
+      if (!triedWrong.includes(idx)) {
+        addMiss(SKILL, id, { word: q.word, sentence: q.sentence, definition: q.definition });
+        setWrongCount((w) => w + 1);
+        setTotalWrong((w) => w + 1);
+        setStreak(0);
+        setTriedWrong((t) => [...t, idx]);
+      }
       if (!muted) playWrong();
-      setWrongCount((w) => w + 1);
-      setTotalWrong((w) => w + 1);
-      setStreak(0);
       setFlash({ idx, type: "wrong" });
       setTimeout(() => setFlash(null), 500);
     }
@@ -98,6 +104,7 @@ export default function FillInBlanksGame({ level, totalQuestions = 20, onHome, m
     setStartTime(Date.now());
     setCurrent(0);
     setWrongCount(0);
+    setTriedWrong([]);
     setResults([]);
     setTotalWrong(0);
     setStreak(0);
@@ -115,6 +122,7 @@ export default function FillInBlanksGame({ level, totalQuestions = 20, onHome, m
     setStartTime(Date.now());
     setCurrent(0);
     setWrongCount(0);
+    setTriedWrong([]);
     setResults([]);
     setTotalWrong(0);
     setStreak(0);

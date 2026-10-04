@@ -61,7 +61,7 @@ function buildPrioritisedList(allPairs, performance, avoidWords) {
 
 let _uid = 0;
 function makeItem(pair) {
-  return { uid: _uid++, word: pair.word, match: pair.match, wrongCount: 0 };
+  return { uid: _uid++, word: pair.word, match: pair.match, wrongCount: 0, triedWrong: [] };
 }
 
 // Picks `length` pairs for the round, preferring ones whose word AND match
@@ -250,18 +250,26 @@ export default function GameScreen({ level, gameType, totalQuestions = 20, onHom
       }, 700);
 
     } else {
-      // Wrong — increment wrongCount for this slot and queue the word for practice.
+      // Wrong — but only the first time this exact pair is tried for this
+      // word counts against it. Nothing stops a kid tapping the identical
+      // wrong answer again, and that repeat shouldn't cost a second star —
+      // it still flashes red, just without piling on the penalty.
       const missItem = board[leftIdx];
-      if (missItem) addMiss(SKILL, missItem.word.toLowerCase(), { word: missItem.word, match: missItem.match });
-      setGame((prev) => ({
-        ...prev,
-        board: prev.board.map((slot, i) =>
-          i === leftIdx ? { ...slot, wrongCount: slot.wrongCount + 1 } : slot
-        ),
-      }));
+      const wrongMatch = board[boardIdxForRight]?.match;
+      const alreadyTried = missItem?.triedWrong.includes(wrongMatch);
+
+      if (!alreadyTried) {
+        if (missItem) addMiss(SKILL, missItem.word.toLowerCase(), { word: missItem.word, match: missItem.match });
+        setGame((prev) => ({
+          ...prev,
+          board: prev.board.map((slot, i) =>
+            i === leftIdx ? { ...slot, wrongCount: slot.wrongCount + 1, triedWrong: [...slot.triedWrong, wrongMatch] } : slot
+          ),
+        }));
+        setTotalWrong((w) => w + 1);
+        setStreak(0);
+      }
       if (!muted) playWrong();
-      setTotalWrong((w) => w + 1);
-      setStreak(0);
       setWrongFlash({ leftIdx, rightIdx });
       setTimeout(() => {
         setWrongFlash(null);
