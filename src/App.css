@@ -2936,7 +2936,8 @@ body {
 .report-empty-sub { font-size: 14px; color: var(--muted); margin: 6px auto 18px; max-width: 320px; line-height: 1.45; }
 
 @media (max-width: 520px) {
-  .report-tiles { grid-template-columns: 1fr; }
+  .report-tile { padding: 14px 8px; }
+  .report-tile-val { font-size: 22px; }
   .report-bar-lbl { flex-basis: 92px; font-size: 12.5px; }
 }
 
