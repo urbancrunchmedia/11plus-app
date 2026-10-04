@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { weekKey } from "./weekly";
-import { RANK_TIERS, getRank, rankEverReached, evaluateWeeklyRank, getRankProgress } from "./rank";
+import { RANK_TIERS, getRank, rankEverReached, evaluateWeeklyRank, getRankProgress, claimPendingPromotion } from "./rank";
 
 const at = (iso) => new Date(iso);
 const WEEK1 = at("2026-09-08T10:00:00Z"); // Tue, week of 7 Sep
@@ -130,6 +130,45 @@ describe("rank", () => {
     for (let i = 1; i < RANK_TIERS.length; i++) {
       expect(RANK_TIERS[i].facets).toBeGreaterThan(RANK_TIERS[i - 1].facets);
     }
+  });
+
+  it("queues a promotion for later claiming, since the flip can be detected anywhere (e.g. HomeDashboard on app open), long before a kid reaches GameComplete", () => {
+    storeRawWeek(WEEK1, 1000);
+    evaluateWeeklyRank(WEEK2); // promotes to silver — e.g. this ran from HomeDashboard's mount
+
+    // Any number of other screens calling getStats()/evaluateWeeklyRank()
+    // in between (Settings, BadgesScreen, Home again) must not lose it.
+    evaluateWeeklyRank(WEEK2);
+    evaluateWeeklyRank(WEEK2);
+
+    // The round finishes later — GameComplete claims it exactly once.
+    expect(claimPendingPromotion()).toEqual({ tier: "silver" });
+    expect(claimPendingPromotion()).toBeNull(); // already claimed, not shown twice
+  });
+
+  it("never queues a demotion for celebration", () => {
+    storeRawWeek(WEEK1, 1000);
+    evaluateWeeklyRank(WEEK2); // -> silver
+    storeRawWeek(WEEK2, 1000);
+    evaluateWeeklyRank(WEEK3); // -> gold
+    claimPendingPromotion(); // clear the gold promotion first
+
+    storeRawWeek(WEEK3, 0);
+    evaluateWeeklyRank(WEEK4);
+    storeRawWeek(WEEK4, 0);
+    evaluateWeeklyRank(at("2026-10-06T10:00:00Z")); // demotes to silver
+
+    expect(claimPendingPromotion()).toBeNull();
+  });
+
+  it("a second promotion queues even if the first was never claimed", () => {
+    storeRawWeek(WEEK1, 1000);
+    evaluateWeeklyRank(WEEK2); // -> silver (never claimed)
+    storeRawWeek(WEEK2, 1000);
+    evaluateWeeklyRank(WEEK3); // -> gold
+
+    // Only the latest promotion is worth showing, not a backlog of two.
+    expect(claimPendingPromotion()).toEqual({ tier: "gold" });
   });
 
   it("getRankProgress reports distance to the next tier", () => {

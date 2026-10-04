@@ -98,8 +98,29 @@ export function evaluateWeeklyRank(now = new Date()) {
   const bestIdx = Math.max(tierIndex(state.bestTier || "bronze"), tierIndex(nextTier));
   const bestTier = RANK_TIERS[bestIdx].id;
 
-  write({ tier: nextTier, evaluatedWeekKey: raw.key, weakWeeks, bestTier });
+  // A promotion can be *detected* anywhere getStats() happens to run first
+  // (HomeDashboard mounts before a kid ever reaches GameComplete), long
+  // before there's a screen worth popping a celebration over. So the write
+  // and the celebration are decoupled: this only ever records that an
+  // unclaimed promotion exists; claimPendingPromotion() is what actually
+  // surfaces it, the next time a suitable moment (finishing a round) comes
+  // along, however much later that is. A demotion is never queued here —
+  // per the plan, drops are never celebrated, only shown gently elsewhere.
+  const pending = direction === "up" ? { tier: nextTier } : state.pending || null;
+
+  write({ tier: nextTier, evaluatedWeekKey: raw.key, weakWeeks, bestTier, pending });
   return { changed: nextTier !== state.tier, direction, tier: nextTier };
+}
+
+// Consumes a promotion once, wherever it's first checked for — so the
+// celebration fires the next time a kid finishes a round, even if the
+// actual tier flip was written earlier (e.g. on app open, days before).
+export function claimPendingPromotion() {
+  const state = read();
+  if (!state?.pending) return null;
+  const { pending } = state;
+  write({ ...state, pending: null });
+  return pending;
 }
 
 // For the Badges screen / dashboard: how this week's live total sits

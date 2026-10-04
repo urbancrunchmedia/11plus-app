@@ -2,12 +2,19 @@ import React, { useState } from "react";
 import { saveIfBest, saveRun, formatTime } from "../utils/leaderboard";
 import { xpToRunReward, getLevelInfo, getStreak, getStats } from "../utils/gamify";
 import { getBadges, BADGE_VISUAL } from "../utils/badges";
-import { RANK_TIERS } from "../utils/rank";
+import { RANK_TIERS, claimPendingPromotion } from "../utils/rank";
 import { pushToCloud } from "../utils/cloudScores";
 import { addWeeklyPoints } from "../utils/weekly";
 import { useAuth } from "../contexts/AuthContext";
 import Icon from "./Icon";
 import CelebrationModal from "./CelebrationModal";
+
+// Every tier label is an existing word, not a generated one — "a/an" just
+// needs the one genuine exception (Adventurer) rather than a phonetic rule.
+const AN_LABELS = new Set(["Adventurer"]);
+function article(label) {
+  return AN_LABELS.has(label) ? "an" : "a";
+}
 
 export default function GameComplete({ results, totalWrong, timeTaken, onPlayAgain, onPracticeMisses, onHome, level, gameType, totalQuestions }) {
   const totalStars = results.reduce((sum, r) => sum + r.stars, 0);
@@ -22,7 +29,7 @@ export default function GameComplete({ results, totalWrong, timeTaken, onPlayAga
   // Snapshot BEFORE this round's save, so we can tell what's genuinely new.
   const [before] = useState(() => {
     const s = getStats();
-    return { badgeIds: new Set(getBadges(s).filter((b) => b.earned).map((b) => b.id)), rankId: s.rank.id };
+    return { badgeIds: new Set(getBadges(s).filter((b) => b.earned).map((b) => b.id)) };
   });
 
   const [isNewBest] = useState(() => {
@@ -52,12 +59,14 @@ export default function GameComplete({ results, totalWrong, timeTaken, onPlayAga
           gem: { facetCount: visual.facets || 3, colors: visual.colors || ["#e2e5e9", "#b8c0c9", "#8f99a3"], icon: visual.icon },
         };
       });
-    const beforeIdx = RANK_TIERS.findIndex((t) => t.id === before.rankId);
-    const afterIdx  = RANK_TIERS.findIndex((t) => t.id === after.rank.id);
-    if (afterIdx > beforeIdx) {
-      const tier = RANK_TIERS[afterIdx];
+    // A promotion may have been written long before this round (e.g. on
+    // app open, the moment last week's final tally rolled in) — claim it
+    // here regardless of when it actually happened, so it's never missed.
+    const promo = claimPendingPromotion();
+    if (promo) {
+      const tier = RANK_TIERS.find((t) => t.id === promo.tier) || RANK_TIERS[0];
       queue.push({
-        title: `You're a ${tier.label} now!`,
+        title: `You're ${article(tier.label)} ${tier.label} now!`,
         subtitle: `Nice one, ${firstName} — ${tier.label} Rank unlocked this week.`,
         gem: { facetCount: tier.facets, colors: tier.colors, icon: null },
       });

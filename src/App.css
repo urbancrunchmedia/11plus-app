@@ -2040,6 +2040,7 @@ body {
 .dash-rank {
   display: flex; flex-direction: column; align-items: center; gap: 2px;
   background: none; border: none; cursor: pointer; padding: 0; flex: none;
+  align-self: flex-start; /* stay flush with the gem even when a sibling block is taller */
 }
 .dash-rank-label { font-weight: 800; font-size: 0.78rem; color: var(--ink); }
 .dash-head-mid { flex: 1; min-width: 140px; }

@@ -34,12 +34,10 @@ export default function Gem({
     <svg
       className={className}
       width={size}
-      height={size * 1.5}
-      viewBox="0 0 100 150"
+      height={size}
+      viewBox="0 0 100 100"
       aria-hidden="true"
     >
-      {/* Ribbon-less gem sits in the top 0-100 of a 150-tall box so the
-          same viewBox works whether or not a caller wants it full-height. */}
       <polygon points="30,20 70,20 58,40 42,40" fill={colorLight} />
       <polygon points="30,20 10,40 42,40" fill={colorMid} />
       <polygon points="70,20 90,40 58,40" fill={colorDark} />
