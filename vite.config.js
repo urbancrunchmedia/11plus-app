@@ -42,7 +42,7 @@ export default defineConfig({
         // Precache the built app so it opens and plays offline.
         globPatterns: ['**/*.{js,css,html,svg,png,woff2}'],
         navigateFallback: '/index.html',
-        navigateFallbackDenylist: [/^\/api\//],
+        navigateFallbackDenylist: [/^\/api\//, /^\/__\//],
         runtimeCaching: [
           {
             // Google Fonts stylesheets + files — cache so text renders offline.
