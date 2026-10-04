@@ -19,7 +19,7 @@ const HISTORY_KEY = "11plus_history";
 const UID_KEY     = "11plus_uid";
 
 // localStorage is shared by everyone who signs in on this device. When the
-// account changes, wipe the previous user's local progress FIRST so their XP,
+// account changes, wipe the previous user's local progress FIRST so their
 // scores and review words don't leak into the new account. Call before
 // mergeFromCloud on every sign-in.
 export function prepareLocalForUser(uid) {

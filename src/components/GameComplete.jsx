@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { saveIfBest, saveRun, formatTime } from "../utils/leaderboard";
-import { xpToRunReward, getLevelInfo, getStreak, getStats } from "../utils/gamify";
+import { getStreak, getStats } from "../utils/gamify";
 import { getBadges, BADGE_VISUAL } from "../utils/badges";
 import { RANK_TIERS, claimPendingPromotion } from "../utils/rank";
 import { pushToCloud } from "../utils/cloudScores";
@@ -41,9 +41,8 @@ export default function GameComplete({ results, totalWrong, timeTaken, onPlayAga
     return newBest;
   });
 
-  // Read AFTER the run is saved so XP/level/streak reflect it.
-  const xpEarned = xpToRunReward(totalStars);
-  const [payout] = useState(() => ({ level: getLevelInfo(), streak: getStreak() }));
+  // Read AFTER the run is saved so the streak reflects it.
+  const [streak] = useState(getStreak);
 
   // Anything newly unlocked by this round, queued one at a time. A rank
   // *drop* never celebrates — only promotions do.
@@ -97,17 +96,11 @@ export default function GameComplete({ results, totalWrong, timeTaken, onPlayAga
           <div className="gc-tile gc-tile--lime"><div className="gc-tile-val"><Icon className="inline-ico" name="star" size={15} stroke="var(--ink)" strokeWidth={2} /> {totalStars}</div><div className="gc-tile-lbl">stars</div></div>
         </div>
 
-        <div className="gc-xpcard">
-          <div className="gc-xpcard-top">
-            <span className="gc-xpcard-xp">+{xpEarned} XP</span>
-            <span className="gc-xpcard-lvl">Level {payout.level.level} · {payout.level.title}</span>
-          </div>
-          <div className="gc-xpbar2"><div className="gc-xpbar2-fill" style={{ width: `${payout.level.pct}%` }} /></div>
-          <div className="gc-xpcard-note">{payout.level.toNext} XP to Level {payout.level.level + 1}</div>
+        <div className="gc-streakcard">
           <div className="gc-streakrow">
             <div className="gc-streak-ic">🔥</div>
             <div>
-              <div className="gc-streak-title">Day {payout.streak} streak</div>
+              <div className="gc-streak-title">Day {streak} streak</div>
               <div className="gc-streak-sub">Play again tomorrow to keep it going</div>
             </div>
           </div>

@@ -1,5 +1,5 @@
 // Gamification metrics DERIVED from the scores/history the app already saves in
-// localStorage (see leaderboard.js). Nothing here needs a backend — XP, level,
+// localStorage (see leaderboard.js). Nothing here needs a backend — stars,
 // streak, per-skill mastery and badges are all computed from real play data.
 import { getAllHistory, getSetting } from "./leaderboard";
 import { getSkillAccuracy } from "./progress";
@@ -15,13 +15,6 @@ export const SKILLS = [
   { id: "spelling",      label: "Spelling",       icon: "🔤", types: ["spelling"] },
   { id: "wordClass",     label: "Parts of Speech", icon: "🏷️", types: ["wordClass"] },
 ];
-
-const TITLES = [
-  "Word Rookie", "Word Explorer", "Word Builder", "Word Ranger",
-  "Word Wrangler", "Word Master", "Word Wizard", "Word Legend",
-];
-const XP_PER_LEVEL = 250;
-const XP_PER_STAR  = 6;
 
 // key format: `${level}-${gameType}-${totalQuestions}`  (no field contains "-")
 function parseKey(key) {
@@ -47,28 +40,6 @@ function allRuns() {
     for (const r of arr) runs.push({ ...r, gameType, total });
   }
   return runs;
-}
-
-export function getXp() {
-  return allRuns().reduce((sum, r) => sum + (r.stars || 0) * XP_PER_STAR, 0);
-}
-
-export function xpToRunReward(stars) {
-  return stars * XP_PER_STAR;
-}
-
-export function getLevelInfo(xp = getXp()) {
-  const level     = Math.floor(xp / XP_PER_LEVEL) + 1;
-  const intoLevel = xp - (level - 1) * XP_PER_LEVEL;
-  const title     = TITLES[Math.min(level - 1, TITLES.length - 1)];
-  return {
-    xp,
-    level,
-    title,
-    intoLevel,
-    toNext: XP_PER_LEVEL - intoLevel,
-    pct: Math.round((intoLevel / XP_PER_LEVEL) * 100),
-  };
 }
 
 // Consecutive days (ending today or yesterday) with at least one run.
@@ -114,7 +85,6 @@ export function getDailyChallenge(target = getSetting("dailyGoal", 3)) {
 
 export function getStats() {
   const runs    = allRuns();
-  const xp      = runs.reduce((s, r) => s + (r.stars || 0) * XP_PER_STAR, 0);
   const stars   = runs.reduce((s, r) => s + (r.stars || 0), 0);
   const mastery = getSkillMastery();
   const streak  = getStreak();
@@ -127,7 +97,6 @@ export function getStats() {
   const rankInfo  = RANK_TIERS.find((t) => t.id === rankState.tier) || RANK_TIERS[0];
 
   return {
-    ...getLevelInfo(xp),
     stars,
     rounds: runs.length,
     streak,

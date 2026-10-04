@@ -58,7 +58,7 @@ export default function HomeDashboard({ onPlaySkill, onOpenBoard, onOpenBadges }
         </button>
         <div className="dash-head-mid">
           <div className="dash-name">Hi, {name}</div>
-          <div className="dash-sub">Level {stats.level} · {stats.title} · {stats.xp.toLocaleString()} XP</div>
+          <div className="dash-sub"><Icon className="inline-ico" name="star" size={13} stroke="var(--muted)" strokeWidth={2.2} /> {stats.stars.toLocaleString()} stars earned</div>
         </div>
         <div className="dash-head-pills">
           <span className="dash-pill dash-pill--dark">🔥 {stats.streak} day streak</span>

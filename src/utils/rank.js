@@ -1,6 +1,6 @@
-// Weekly Rank — a tier that can rise OR fall, unlike the XP Level system
-// (which only ever goes up). Judged against fixed star targets, not other
-// players — works identically whether a kid has zero friends or five.
+// Weekly Rank — a tier that can rise OR fall, unlike lifetime stars (which
+// only ever go up). Judged against fixed star targets, not other players —
+// works identically whether a kid has zero friends or five.
 import { weekKey, getWeeklyPoints } from "./weekly";
 
 const RANK_KEY = "11plus_rank";

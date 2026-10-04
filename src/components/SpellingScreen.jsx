@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { spellingSpot } from "../data/spellingSpot";
 import { getPrefs, savePrefs } from "../utils/leaderboard";
-import { getSkillMastery, getXp } from "../utils/gamify";
+import { getSkillMastery } from "../utils/gamify";
 import { usePremium } from "../contexts/PremiumContext";
 import { isLevelFree } from "../utils/entitlement";
 import Icon, { SKILL_ICON } from "./Icon";
@@ -85,7 +85,6 @@ export default function SpellingScreen({ onPlay, onExit }) {
           <h1 className="landing-h1">Spelling</h1>
           <div className="landing-sub">Spot the spelling mistake{skillM.attempted ? ` · ${masteryPct}% accuracy` : ""}</div>
         </div>
-        <span className="landing-xp">{getXp().toLocaleString()} XP</span>
       </div>
 
       <div className="samp-card">

@@ -131,7 +131,7 @@ export default function SettingsScreen({ onOpenReport, onOpenBadges }) {
         <div className="set-avatar">{initial(name)}</div>
         <div className="set-head-txt">
           <div className="set-name">{name}</div>
-          <div className="set-sub">Level {stats.level} · {stats.title} · {stats.xp.toLocaleString()} XP · 🔥 {stats.streak} day streak</div>
+          <div className="set-sub">⭐ {stats.stars.toLocaleString()} stars · 🔥 {stats.streak} day streak</div>
         </div>
         <button className="set-editname" onClick={openNameSheet}>Edit name</button>
       </div>
@@ -310,7 +310,7 @@ export default function SettingsScreen({ onOpenReport, onOpenBadges }) {
         <div className="set-row-txt">
           <div className="set-row-label">Signed in as {name}</div>
           {user?.email && <div className="set-row-email">{user.email}</div>}
-          <div className="set-row-sub">Logging out keeps your XP, badges and streak safe.</div>
+          <div className="set-row-sub">Logging out keeps your stars, badges and streak safe.</div>
         </div>
         <button className="set-logout" onClick={() => setSheet(true)}>Log out</button>
       </div>
@@ -328,7 +328,7 @@ export default function SettingsScreen({ onOpenReport, onOpenBadges }) {
           <div className="set-sheet board-sheet" onClick={(e) => e.stopPropagation()}>
             <div className="set-sheet-title">Delete your account?</div>
             <div className="set-sheet-sub">
-              This permanently removes your progress, XP, streak, friends and login for {user?.email || "this account"}.
+              This permanently removes your progress, stars, streak, friends and login for {user?.email || "this account"}.
               This can't be undone. Downloading your data first is a good idea.
             </div>
             <div className="board-fieldlbl">Type DELETE to confirm</div>

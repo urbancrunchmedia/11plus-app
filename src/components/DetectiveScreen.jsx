@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { fillInBlanksData } from "../data/fillInBlanks";
 import { getPrefs, savePrefs } from "../utils/leaderboard";
-import { getSkillMastery, getXp } from "../utils/gamify";
+import { getSkillMastery } from "../utils/gamify";
 import SampleQuiz from "./SampleQuiz";
 import PracticeButton from "./PracticeButton";
 import Icon, { SKILL_ICON } from "./Icon";
@@ -41,7 +41,6 @@ export default function DetectiveScreen({ onPlay, onLearn, onExit }) {
           <h1 className="landing-h1">Word Detective</h1>
           <div className="landing-sub">Words from every level, mixed together{skillM.attempted ? ` · ${masteryPct}% accuracy` : ""}</div>
         </div>
-        <span className="landing-xp">{getXp().toLocaleString()} XP</span>
       </div>
 
       <div className="samp-card">

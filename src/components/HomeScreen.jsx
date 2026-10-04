@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { getPrefs, savePrefs, getSetting } from "../utils/leaderboard";
-import { getSkillMastery, getXp } from "../utils/gamify";
+import { getSkillMastery } from "../utils/gamify";
 import { compoundWords } from "../data/compoundWords";
 import { usePremium } from "../contexts/PremiumContext";
 import { isLevelFree } from "../utils/entitlement";
@@ -112,7 +112,6 @@ export default function HomeScreen({ gameType, onPlay, onLearn, initialConfig, o
           <h1 className="landing-h1">{meta.title}</h1>
           <div className="landing-sub">{meta.sub}{skillM.attempted ? ` · ${masteryPct}% accuracy` : ""}</div>
         </div>
-        <span className="landing-xp">{getXp().toLocaleString()} XP</span>
       </div>
 
       {/* Free sample puzzle — Compound Words only */}
