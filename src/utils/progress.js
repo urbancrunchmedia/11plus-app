@@ -63,12 +63,20 @@ export function recordAttempt({ skill, word, correct, meaning }) {
   save(p);
 }
 
+// Skills no game writes to any more (e.g. "wordMatch", retired when Word
+// Match split into Synonyms/Antonyms). A word missed under one of these can
+// never reach REMASTER_HITS again — nothing will ever record a hit against
+// it — so it would otherwise sit in "words to review" forever with no way
+// to act on it. Excluded here; still shown as a historical bar in
+// getSkillAccuracy(), which doesn't claim anything is actionable.
+const RETIRED_SKILLS = new Set(["wordMatch"]);
+
 // Words still worth revising: missed at least once and not yet re-mastered.
 // Sorted hardest-first (most misses, then most recently missed).
 export function getWeakWords(limit = 20) {
   const p = load();
   return Object.values(p.words)
-    .filter((w) => w.misses > 0 && w.hitsSinceMiss < REMASTER_HITS)
+    .filter((w) => w.misses > 0 && w.hitsSinceMiss < REMASTER_HITS && !RETIRED_SKILLS.has(w.skill))
     .sort((a, b) => (b.misses - a.misses) || String(b.lastMissed || "").localeCompare(String(a.lastMissed || "")))
     .slice(0, limit);
 }

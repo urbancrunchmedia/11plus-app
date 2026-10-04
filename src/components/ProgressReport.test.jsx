@@ -75,12 +75,12 @@ describe("ProgressReport", () => {
     expect(onPracticeSkill).toHaveBeenCalledWith("spelling");
   });
 
-  it("omits the Practice button for the frozen legacy 'wordMatch' skill (no live game to launch)", async () => {
+  it("excludes the frozen legacy 'wordMatch' skill from words to review entirely (nothing can ever re-master it)", async () => {
     premium = { isPremium: true, openPaywall: vi.fn() };
     recordAttempt({ skill: "wordMatch", word: "old-word", correct: false, meaning: "x" });
     const el = await mount();
-    expect(el.querySelector(".report-skill-group")).toBeTruthy();
-    expect(el.querySelector(".report-skill-cta")).toBeNull();
+    expect(el.querySelector(".report-skill-group")).toBeNull();
+    expect(el.textContent).toContain("No weak words right now");
   });
 
   it("still shows a clickable Practice button for free accounts even though the words themselves are blurred", async () => {

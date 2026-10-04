@@ -35,6 +35,16 @@ describe("weak-word tracking", () => {
     expect(set.has("benevolent")).toBe(true);
     expect(set.has("waterfall")).toBe(false);
   });
+
+  // "wordMatch" was retired when Word Match split into Synonyms/Antonyms —
+  // nothing writes to it any more, so a word missed under it could never
+  // reach REMASTER_HITS again and would sit in "words to review" forever
+  // with no way to clear it. Excluded entirely rather than left as a
+  // permanent dead end.
+  it("never lists a word missed under a retired skill (nothing can ever re-master it)", () => {
+    recordAttempt({ skill: "wordMatch", word: "stalwart", correct: false });
+    expect(getWeakWords().map((w) => w.word)).not.toContain("stalwart");
+  });
 });
 
 describe("getSkillAccuracy", () => {
