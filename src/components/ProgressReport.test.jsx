@@ -66,13 +66,14 @@ describe("ProgressReport", () => {
     expect(el.querySelectorAll(".report-skill-cta").length).toBe(2);
   });
 
-  it("calls onPracticeSkill with the skill id when its Practice button is clicked", async () => {
+  it("calls onPracticeSkill with the skill id when its Practice button is clicked, for a paying account", async () => {
     premium = { isPremium: true, openPaywall: vi.fn() };
     recordAttempt({ skill: "spelling", word: "necessary", correct: false, meaning: "x" });
     const onPracticeSkill = vi.fn();
     const el = await mount(() => {}, onPracticeSkill);
     await act(async () => { el.querySelector(".report-skill-cta").click(); });
     expect(onPracticeSkill).toHaveBeenCalledWith("spelling");
+    expect(premium.openPaywall).not.toHaveBeenCalled();
   });
 
   it("excludes the frozen legacy 'wordMatch' skill from words to review entirely (nothing can ever re-master it)", async () => {
@@ -83,14 +84,18 @@ describe("ProgressReport", () => {
     expect(el.textContent).toContain("No weak words right now");
   });
 
-  it("still shows a clickable Practice button for free accounts even though the words themselves are blurred", async () => {
+  it("sends a free account to the paywall when Practice is clicked, instead of launching the game", async () => {
+    // Practice would otherwise deliver the same spaced-repetition benefit
+    // the report is selling for free (selectWithReview isn't premium-gated),
+    // so the action itself needs Full Access, not just the word list.
     recordAttempt({ skill: "fillInBlanks", word: "abundant", correct: false, meaning: "x" });
     const onPracticeSkill = vi.fn();
     const el = await mount(() => {}, onPracticeSkill);
     const cta = el.querySelector(".report-skill-cta");
     expect(cta).toBeTruthy();
-    expect(cta.closest(".report-blur")).toBeNull();
+    expect(cta.closest(".report-blur")).toBeNull(); // still visible, not hidden away
     await act(async () => { cta.click(); });
-    expect(onPracticeSkill).toHaveBeenCalledWith("fillInBlanks");
+    expect(premium.openPaywall).toHaveBeenCalledWith("report");
+    expect(onPracticeSkill).not.toHaveBeenCalled();
   });
 });

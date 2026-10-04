@@ -101,8 +101,17 @@ export default function ProgressReport({ onBack, onPractise, onPracticeSkill }) 
                 <div key={g.skill} className="report-skill-group">
                   <div className="report-skill-head">
                     <span className="report-skill-head-lbl">{SKILL_LABEL[g.skill] || g.skill}</span>
-                    {onPracticeSkill && PRACTISABLE_SKILLS.has(g.skill) && (
-                      <button className="report-skill-cta" onClick={() => onPracticeSkill(g.skill)}>Practice →</button>
+                    {PRACTISABLE_SKILLS.has(g.skill) && (
+                      <button
+                        className="report-skill-cta"
+                        // Practice quietly delivers the same spaced-repetition
+                        // benefit this report is selling (selectWithReview
+                        // isn't premium-gated) — so acting on it needs Full
+                        // Access too, not just seeing the word list.
+                        onClick={() => (isPremium ? onPracticeSkill?.(g.skill) : openPaywall("report"))}
+                      >
+                        Practice →
+                      </button>
                     )}
                   </div>
                   <div className={!isPremium ? "report-blur" : ""}>
