@@ -107,9 +107,9 @@ export default function WordClassScreen({ onPlay, onExit }) {
             <div className="hero-select-wrap">
               <select className="hero-select" value={level} onChange={(e) => handleLevelChange(e.target.value)} aria-label="Set">
                 <option value="A">Easy</option>
-                <option value="B">{isPremium ? "Medium" : "Medium · Premium"}</option>
-                <option value="C">{isPremium ? "Hard" : "Hard · Premium"}</option>
-                <option value="all">{isPremium ? "Mixed" : "Mixed · Premium"}</option>
+                <option value="B">{isPremium ? "Medium" : "Medium 🔒"}</option>
+                <option value="C">{isPremium ? "Hard" : "Hard 🔒"}</option>
+                <option value="all">{isPremium ? "Mixed" : "Mixed 🔒"}</option>
               </select>
               <span className="hero-select-chev">▾</span>
             </div>

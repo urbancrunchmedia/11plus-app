@@ -4,7 +4,7 @@
 //          plus the parent progress report.
 // Keep these numbers here so the free/paid line is easy to tune in one place.
 
-export const FREE_DAILY_ROUNDS = 8;                 // generous; premium = unlimited
+export const FREE_DAILY_ROUNDS = 5;                 // comfortably covers the default daily goal (3); premium = unlimited
 export const isLevelFree = (level) => level === "A"; // A is free; B, C and "all" are premium
 
 function todayKey() {
