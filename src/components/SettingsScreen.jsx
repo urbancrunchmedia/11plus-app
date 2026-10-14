@@ -4,10 +4,12 @@ import { getStats } from "../utils/gamify";
 import { useAuth } from "../contexts/AuthContext";
 import { usePremium } from "../contexts/PremiumContext";
 import { openBillingPortal } from "../utils/subscription";
-import LegalModal, { CONTACT } from "./LegalModal";
+import LegalModal from "./LegalModal";
 import Icon from "./Icon";
+import Dropdown from "./Dropdown";
 import { formatDate } from "./SubscriptionSuccess";
 import { exportMyData, downloadMyData, deleteMyAccount } from "../utils/dataRights";
+import { submitSupportRequest, SUPPORT_CATEGORIES } from "../utils/support";
 import { auth } from "../firebase";
 
 const GOALS = [3, 5, 10];
@@ -54,6 +56,32 @@ export default function SettingsScreen({ onOpenReport, onOpenBadges }) {
   const [deleteConfirmText, setDeleteConfirmText] = useState("");
   const [deleteBusy, setDeleteBusy] = useState(false);
   const [deleteError, setDeleteError] = useState("");
+  const [supportSheet, setSupportSheet] = useState(false);
+  const [supportCategory, setSupportCategory] = useState(SUPPORT_CATEGORIES[0].id);
+  const [supportMessage, setSupportMessage] = useState("");
+  const [supportBusy, setSupportBusy] = useState(false);
+  const [supportError, setSupportError] = useState("");
+  const [supportSent, setSupportSent] = useState(false);
+
+  async function handleSupportSubmit() {
+    if (supportBusy) return;
+    setSupportBusy(true);
+    setSupportError("");
+    try {
+      await submitSupportRequest(auth.currentUser, { category: supportCategory, message: supportMessage });
+      setSupportSent(true);
+    } catch (e) {
+      setSupportError(e.message || "Couldn't send that. Please try again.");
+    }
+    setSupportBusy(false);
+  }
+
+  function closeSupportSheet() {
+    setSupportSheet(false);
+    // Reset after the close animation would run, so a reopen starts fresh
+    // rather than showing the last request's "Sent" state again.
+    setTimeout(() => { setSupportSent(false); setSupportMessage(""); setSupportCategory(SUPPORT_CATEGORIES[0].id); setSupportError(""); }, 200);
+  }
 
   async function handleExport() {
     if (exportBusy) return;
@@ -264,10 +292,7 @@ export default function SettingsScreen({ onOpenReport, onOpenBadges }) {
         <div className="set-divider" />
         <div className="set-row">
           <div className="set-row-txt"><div className="set-row-label">Contact support</div><div className="set-row-sub">Questions, problems or billing? We'll reply by email</div></div>
-          <a
-            className="set-ghost"
-            href={`mailto:${CONTACT}?subject=${encodeURIComponent("11 Plus Lab support")}&body=${encodeURIComponent(`\n\n---\nAccount: ${user?.email || "(not signed in)"}\nPlan: ${isPremium ? "Full Access" : "Free"}`)}`}
-          >Email us</a>
+          <button className="set-ghost" onClick={() => setSupportSheet(true)}>Contact us</button>
         </div>
         <div className="set-divider" />
         <div className="set-row">
@@ -281,7 +306,7 @@ export default function SettingsScreen({ onOpenReport, onOpenBadges }) {
         </div>
         <div className="set-divider" />
         <div className="set-row">
-          <div className="set-row-txt"><div className="set-row-label">Child PIN</div><div className="set-row-sub">A 4-digit PIN to start a session (soft lock)</div></div>
+          <div className="set-row-txt"><div className="set-row-label">Child PIN</div><div className="set-row-sub">A 4-digit PIN that protects grown-up settings</div></div>
           {!editingPin ? (
             <div className="set-pin-actions">
               {s.childPin ? (
@@ -326,8 +351,10 @@ export default function SettingsScreen({ onOpenReport, onOpenBadges }) {
       {deleteSheet && (
         <div className="set-sheet-overlay" onClick={() => !deleteBusy && setDeleteSheet(false)}>
           <div className="set-sheet board-sheet" onClick={(e) => e.stopPropagation()}>
-            <div className="set-sheet-title">Delete your account?</div>
-            <div className="set-sheet-sub">
+            <div className="set-sheet-title set-sheet-title--danger">
+              <Icon className="inline-ico" name="warning" size={22} stroke="#c0392b" strokeWidth={2.2} /> Delete your account?
+            </div>
+            <div className="board-danger-callout">
               This permanently removes your progress, stars, streak, friends and login for {user?.email || "this account"}.
               This can't be undone. Downloading your data first is a good idea.
             </div>
@@ -348,6 +375,54 @@ export default function SettingsScreen({ onOpenReport, onOpenBadges }) {
               {deleteBusy ? "Deleting…" : "Delete my account"}
             </button>
             <button className="set-sheet-cancel" onClick={() => setDeleteSheet(false)} disabled={deleteBusy}>Keep my account</button>
+          </div>
+        </div>
+      )}
+
+      {supportSheet && (
+        <div className="set-sheet-overlay" onClick={() => !supportBusy && closeSupportSheet()}>
+          <div className="set-sheet board-sheet" onClick={(e) => e.stopPropagation()}>
+            {supportSent ? (
+              <>
+                <div className="set-sheet-title">Message sent</div>
+                <div className="set-sheet-sub">
+                  Thanks — we'll reply to {user?.email || "your account email"} as soon as we can.
+                </div>
+                <button className="set-sheet-confirm" onClick={closeSupportSheet}>Done</button>
+              </>
+            ) : (
+              <>
+                <div className="set-sheet-title">Contact support</div>
+                <div className="set-sheet-sub">We'll reply to {user?.email || "your account email"}.</div>
+                <div className="board-fieldlbl">What's this about?</div>
+                <Dropdown
+                  ariaLabel="What's this about?"
+                  value={supportCategory}
+                  onChange={setSupportCategory}
+                  options={SUPPORT_CATEGORIES.map((c) => ({ value: c.id, label: c.label }))}
+                  className="support-category-dd"
+                />
+                <div className="board-fieldlbl">Message</div>
+                <textarea
+                  className="support-textarea"
+                  value={supportMessage}
+                  onChange={(e) => setSupportMessage(e.target.value)}
+                  placeholder="Tell us what's going on…"
+                  rows={5}
+                  maxLength={2000}
+                  autoFocus
+                />
+                {supportError && <div className="board-msg err">{supportError}</div>}
+                <button
+                  className="set-sheet-confirm"
+                  disabled={!supportMessage.trim() || supportBusy}
+                  onClick={handleSupportSubmit}
+                >
+                  {supportBusy ? "Sending…" : "Send message"}
+                </button>
+                <button className="set-sheet-cancel" onClick={closeSupportSheet} disabled={supportBusy}>Cancel</button>
+              </>
+            )}
           </div>
         </div>
       )}

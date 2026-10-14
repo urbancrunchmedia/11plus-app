@@ -113,7 +113,6 @@ function AppInner() {
   const [config, setConfig] = useState(null);
   const [playKey, setPlayKey] = useState(0);
   const [lastPunctConfig, setLastPunctConfig] = useState(null);
-  const [childUnlocked, setChildUnlocked] = useState(false);
   const [parentUnlocked, setParentUnlocked] = useState(false);
   // Badges is reachable from both Home (the rank crest) and Settings — its
   // back button needs to return wherever it was actually opened from, not
@@ -170,18 +169,14 @@ function AppInner() {
 
   if (user === null) return <LoginScreen />;
 
-  // Soft child-PIN gate (opt-in via Settings; a grown-up reset avoids lockouts).
   const childPin = getSetting("childPin", "");
-  if (childPin && !childUnlocked) {
-    return (
-      <ChildGate
-        name={user.displayName}
-        pin={childPin}
-        onUnlock={() => setChildUnlocked(true)}
-        onReset={() => { setSetting("childPin", ""); setChildUnlocked(true); }}
-      />
-    );
-  }
+  // A whole-app "who's learning today?" PIN gate used to sit here on every
+  // open. Removed: it implied profile-switching this app doesn't actually
+  // have (there's one profile per account), so it was just an extra tap on
+  // every launch with no real protection beyond what "PIN-protect grown-up
+  // settings" below already provides on its own. That one's kept — it's the
+  // part with genuine value (keeping a kid out of Settings). Logic and
+  // ChildGate itself are untouched, just not invoked here; easy to restore.
 
   // First-run "set up a learner" step — only when no proper name is set yet.
   const needsOnboarding = !onboarded && (!user.displayName || user.displayName === "Player");

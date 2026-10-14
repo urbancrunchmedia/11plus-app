@@ -2166,13 +2166,10 @@ body {
 
 .ig-hud { display: flex; gap: 8px; }
 .ig-card { flex: 1; background: #fff; border-radius: 16px; padding: 10px 12px; box-shadow: var(--shadow-xs); }
-.ig-card--combo { background: var(--ink); }
 .ig-card-val { font-weight: 800; font-size: 1.2rem; line-height: 1; color: var(--ink); }
-.ig-card--combo .ig-card-val { color: var(--accent); }
 .ig-card-val--correct { color: var(--correct); }
 .ig-card-val--wrong { color: var(--wrong); }
 .ig-card-lbl { font-weight: 600; font-size: 0.66rem; color: var(--muted, #6b7a8c); margin-top: 4px; }
-.ig-card--combo .ig-card-lbl { color: rgba(255,255,255,0.6); }
 
 /* ── Worksheet header ── */
 .ws-head-title { display: flex; align-items: baseline; gap: 8px; flex: 1; min-width: 0; }
@@ -2378,7 +2375,27 @@ body {
 .board-sheet-input--code { letter-spacing: 2px; }
 .board-sheet-input:focus { outline: none; background: #fff; border-color: var(--brand); }
 .board-sheet .set-sheet-confirm { margin-top: 14px; }
-.board-danger { background: #d1622c; }
+/* The Dropdown trigger is styled for the blue hero banners by default (white
+   text on a translucent fill) — override to a plain light control here, on a
+   white modal sheet. */
+.support-category-dd .dd-trigger { background: var(--surface-2, #f4f9ff); color: var(--ink); margin-bottom: 14px; }
+.support-category-dd .dd-chev { color: var(--muted); }
+.support-textarea {
+  width: 100%; background: var(--surface-2, #f4f9ff); border: 2px solid transparent; border-radius: 16px;
+  padding: 14px 16px; font: inherit; font-size: 0.95rem; font-weight: 500; color: var(--ink);
+  resize: vertical; min-height: 100px; margin-bottom: 14px;
+}
+.support-textarea:focus { outline: none; background: #fff; border-color: var(--brand); }
+/* Compound selector so this reliably wins over .set-sheet-confirm's own
+   background further down the cascade, regardless of source order. */
+.set-sheet-confirm.board-danger { background: #dc2626; }
+.set-sheet-confirm.board-danger:hover { background: #b91c1c; }
+.set-sheet-title--danger { display: flex; align-items: center; gap: 8px; }
+.board-danger-callout {
+  font-size: 13.5px; font-weight: 600; color: #7a1f1f; line-height: 1.5;
+  background: #fdecec; border: 1px solid #f5c6c6; border-radius: 12px;
+  padding: 12px 14px; margin: 8px 0 4px;
+}
 .board-msg { font-weight: 700; font-size: 0.8rem; margin-top: 10px; }
 .board-msg.ok { color: var(--correct); }
 .board-msg.err { color: var(--wrong); }
@@ -2439,30 +2456,6 @@ body {
 .hero-chips { display: flex; gap: 8px; margin-bottom: 16px; }
 .hero-chip { border: none; border-radius: var(--r-full); padding: 9px 18px; font-weight: 700; font-size: 0.85rem; background: rgba(255,255,255,0.2); color: #fff; }
 .hero-chip.active { background: var(--ink); color: #fff; }
-
-/* ── Sample "try one" card (Detective / Punctuation) ── */
-.samp-card { background: #fff; border-radius: 26px; padding: 24px; box-shadow: var(--shadow-xs); }
-.samp-top { display: flex; justify-content: space-between; align-items: center; }
-.samp-label { font-weight: 800; font-size: 0.7rem; letter-spacing: 0.09em; color: var(--muted); }
-.samp-counter { font-weight: 700; font-size: 0.75rem; color: var(--brand-ink); }
-.samp-sentence { font-weight: 700; font-size: 1.3rem; line-height: 1.45; color: var(--ink); margin-top: 18px; }
-.samp-blank { display: inline-block; background: var(--accent); border-radius: 6px; padding: 2px 22px; margin: 0 3px; vertical-align: middle; }
-.samp-options { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 22px; }
-.samp-opt { background: var(--surface-2, #f4f9ff); border: 2px solid transparent; border-radius: 16px; padding: 15px; text-align: center; font-weight: 700; font-size: 1rem; color: var(--ink); transition: all 0.12s; }
-@media (hover: hover) { .samp-opt:hover:not(:disabled):not(.correct):not(.wrong) { border-color: var(--brand); } }
-.samp-opt.correct { background: var(--accent); color: var(--ink); }
-.samp-opt.wrong { background: var(--wrong-bg); color: var(--wrong); border-color: var(--wrong); }
-.samp-opt.faded { opacity: 0.45; }
-.samp-opt:disabled { cursor: default; }
-.samp-opt:disabled:hover { border-color: transparent; }
-.samp-opt.correct:disabled:hover { border-color: transparent; }
-.samp-fbrow { display: flex; align-items: center; gap: 18px; margin-top: 20px; flex-wrap: wrap; }
-.samp-fb { flex: 1; min-width: 180px; font-weight: 600; font-size: 0.85rem; line-height: 1.5; color: var(--muted); }
-.samp-fb.ok { color: var(--correct); }
-.samp-fb.no { color: var(--wrong); }
-.samp-next { flex: none; display: inline-flex; align-items: center; gap: 10px; background: var(--ink); color: #fff; border: none; border-radius: var(--r-full); padding: 15px 26px; font-weight: 800; font-size: 0.92rem; transition: transform 0.1s; }
-.samp-next:hover { transform: translateY(-2px); }
-.samp-next-arrow { color: var(--accent); font-weight: 700; }
 
 /* ── Landing hero as a row (Detective/Punctuation start banner) ── */
 .landing-hero--row { display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap; }
@@ -2601,6 +2594,14 @@ body {
 .login2-submit:disabled { opacity: 0.6; }
 .login2-divider { display: flex; align-items: center; gap: 12px; margin: 18px 0; color: var(--muted); font-weight: 600; font-size: 0.8rem; }
 .login2-divider::before, .login2-divider::after { content: ""; flex: 1; height: 1px; background: var(--border); }
+
+/* Two-button choice screen (Google / email) shown before the email form
+   itself — the standard pattern, instead of always showing every field. */
+.login2-choice { display: flex; flex-direction: column; gap: 12px; margin-top: 22px; }
+.login2-emailcta { width: 100%; border: 2px solid var(--border); background: #fff; border-radius: var(--r-full); padding: 14px; font-weight: 700; font-size: 0.95rem; color: var(--ink); }
+.login2-emailcta:hover { border-color: var(--brand); color: var(--brand-ink); }
+.login2-emailback { align-self: center; margin-top: 16px; background: none; border: none; cursor: pointer; color: var(--muted); font-weight: 700; font-size: 0.85rem; padding: 4px 2px; }
+.login2-emailback:hover { color: var(--brand-ink); }
 .login2-google { width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px; border: 2px solid var(--border); background: #fff; border-radius: var(--r-full); padding: 14px; font-weight: 700; font-size: 0.95rem; color: var(--ink); }
 .login2-toggle { text-align: center; margin-top: 18px; font-weight: 500; font-size: 0.85rem; color: var(--muted); }
 .login2-toggle button { border: none; background: none; color: var(--brand-ink); font-weight: 800; font-size: 0.85rem; }
@@ -2623,14 +2624,15 @@ body {
    email, password, the actual submit button — below the fold with nothing
    on screen to hint there was more content to scroll to. */
 @media (max-width: 480px) {
-  .login2-games { display: none; }
   .login2-hero { padding: 24px 24px 20px; }
   .login2-hero-mid { margin: 0; }
+  .login2-games { grid-template-columns: 1fr; max-width: none; }
+  .login2-game--wide { grid-column: auto; }
 }
 
 /* ── Settings PIN control ── */
 .set-pin-actions { display: flex; gap: 8px; align-items: center; flex: none; }
-.set-pin-input { width: 74px; border: 2px solid var(--border); border-radius: 10px; padding: 9px 10px; font: inherit; font-weight: 800; letter-spacing: 4px; text-align: center; color: var(--ink); }
+.set-pin-input { width: 104px; border: 2px solid var(--border); border-radius: 10px; padding: 9px 10px; font: inherit; font-size: 18px; font-weight: 800; letter-spacing: 4px; text-align: center; color: var(--ink); }
 .set-pin-input:focus { outline: none; border-color: var(--brand); }
 
 /* ══════════════ Child PIN gate ══════════════ */
@@ -2663,6 +2665,33 @@ body {
 .hero-select:focus { outline: none; box-shadow: 0 0 0 3px rgba(255,255,255,0.35); }
 .hero-select option { color: var(--ink); }
 .hero-select-chev { position: absolute; right: 15px; font-size: 0.7rem; color: #fff; pointer-events: none; }
+
+/* Custom Level/Length dropdown — replaces the native <select> above so a
+   locked option can show the app's real lock icon and the menu renders
+   identically everywhere, not however each browser's own picker looks. */
+.dd-wrap { position: relative; flex: none; }
+.dd-trigger {
+  width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  background: rgba(255,255,255,0.16); border: none; border-radius: var(--r-full);
+  padding: 14px 18px; font: inherit; font-weight: 700; font-size: 0.9rem;
+  color: #fff; cursor: pointer; text-align: left;
+}
+.dd-trigger:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(255,255,255,0.35); }
+.dd-chev { font-size: 0.7rem; color: #fff; }
+.dd-menu {
+  position: absolute; top: calc(100% + 6px); left: 0; right: 0; z-index: 20;
+  background: #fff; border-radius: 16px; padding: 6px; list-style: none;
+  box-shadow: 0 14px 34px rgba(11,30,60,0.22); border: 1px solid var(--line);
+}
+.dd-opt {
+  width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  background: none; border: none; border-radius: 10px; padding: 11px 12px;
+  font: inherit; font-weight: 700; font-size: 0.92rem; color: var(--ink); cursor: pointer; text-align: left;
+}
+.dd-opt:hover { background: var(--track); }
+.dd-opt.active { background: var(--selected-bg); color: var(--brand-ink); }
+.dd-opt.locked { color: var(--muted); }
+.dd-opt.locked svg { flex: none; }
 
 /* ══════════════ Onboarding (set up a learner) ══════════════ */
 .onb { min-height: 100dvh; width: 100%; background: var(--brand); display: grid; place-items: center; padding: 24px; }
@@ -2853,12 +2882,18 @@ body {
    ============================================================ */
 .report { max-width: 720px; margin: 0 auto; padding: 8px 4px 40px; }
 .report-head { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; }
-.report-back {
+/* Shared round back button — every screen's back nav uses this, not just
+   the report (originally built for it, generalised once we unified on it).
+   The --standalone modifier adds its own bottom margin for screens where
+   the button sits alone above the header, rather than inside a flex row
+   that already provides spacing via gap (like .report-head). */
+.round-back-btn {
   flex-shrink: 0; width: 40px; height: 40px; border-radius: 12px;
   border: 1.5px solid var(--line); background: #fff; color: var(--ink);
   font-size: 18px; cursor: pointer;
 }
-.report-back:hover { background: var(--track); }
+.round-back-btn:hover { background: var(--track); }
+.round-back-btn--standalone { margin-bottom: 14px; }
 .report-title { font-size: 24px; font-weight: 800; color: var(--ink); }
 .report-sub { font-size: 13px; color: var(--muted); margin-top: 2px; }
 
@@ -2957,16 +2992,6 @@ body {
 }
 @keyframes set-toast-in { from { opacity: 0; transform: translate(-50%, 8px); } to { opacity: 1; transform: translate(-50%, 0); } }
 
-/* Punctuation landing — spot-the-mistake sample */
-.spotsamp-q { font-weight: 700; font-size: 1rem; color: var(--ink); margin: 10px 0 12px; }
-.spotsamp-fb { display: flex; align-items: center; gap: 12px; justify-content: space-between; margin-top: 14px; flex-wrap: wrap; }
-.spotsamp-why { font-size: 0.9rem; color: var(--muted); flex: 1; min-width: 180px; }
-.spotsamp-next {
-  border: none; cursor: pointer; background: var(--brand-solid); color: #fff;
-  font-weight: 800; font-size: 0.9rem; padding: 9px 16px; border-radius: 12px; flex: none;
-}
-.spotsamp-next:hover { background: var(--brand-dark); }
-
 /* ============================================================
    Spot-the-mistake — sentence reads as ONE line, A/B/C/D under each part
    ============================================================ */
@@ -3032,10 +3057,6 @@ body {
    tapping it by mistake instead of the last real answer. */
 .spot-ans--n { margin-left: 20px; }
 
-/* Spot sample feedback colour */
-.spotsamp-why.ok { color: var(--correct); }
-.spotsamp-why.no { color: var(--wrong); }
-
 /* White card wrapping the in-round play area (question + answers), so the soft
    grey buttons stand out — same look as the sample cards. */
 .play-card {
@@ -3051,14 +3072,6 @@ body {
 /* Detective clue inside the white play-card (no inner card) */
 .fib-sentence-plain { display: flex; flex-direction: column; gap: 10px; }
 
-/* "All games" back link on each game landing */
-.landing-back {
-  display: inline-flex; align-items: center; gap: 6px;
-  background: none; border: none; cursor: pointer;
-  color: var(--muted); font-weight: 700; font-size: 0.88rem;
-  padding: 4px 2px; margin-bottom: 10px;
-}
-.landing-back:hover { color: var(--brand-ink); }
 
 /* "Practice your misses" — an ACTION inside the blue banner, so it gets a solid
    white pill (distinct from the translucent Level/Length selectors and the lime
@@ -3267,7 +3280,6 @@ body {
 .spot-part.wrong   .spot-part-bar { background: transparent; border-color: var(--wrong); }
 
 /* Login: forgot-password link + success notice */
-.login2-googlehint { color: var(--muted); font-size: 0.78rem; font-weight: 600; margin-top: -3px; }
 .login2-forgot { align-self: flex-end; background: none; border: none; cursor: pointer; color: var(--brand-ink); font-weight: 700; font-size: 0.8rem; padding: 2px 0; }
 .login2-forgot:hover { text-decoration: underline; }
 .login2-notice { background: #eefaf0; color: #15803d; border-radius: 12px; padding: 10px 12px; font-size: 0.85rem; font-weight: 600; line-height: 1.45; }
