@@ -1,27 +1,13 @@
 import React, { useState } from "react";
-import { fillInBlanksData } from "../data/fillInBlanks";
 import { getPrefs, savePrefs } from "../utils/leaderboard";
 import { getSkillMastery } from "../utils/gamify";
-import SampleQuiz from "./SampleQuiz";
 import PracticeButton from "./PracticeButton";
 import Icon, { SKILL_ICON } from "./Icon";
+import Dropdown from "./Dropdown";
 
 const Q_OPTIONS = [5, 10, 20, 30];
 
-function shuffle(a) { return [...a].sort(() => Math.random() - 0.5); }
-
-// Build a few free sample clues from the real Word Detective data.
-function buildSamples() {
-  const all = [...(fillInBlanksData.A || []), ...(fillInBlanksData.B || []), ...(fillInBlanksData.C || [])];
-  return shuffle(all).slice(0, 5).map((c) => {
-    const decoys = shuffle(all.filter((x) => x.word !== c.word)).slice(0, 3).map((x) => x.word);
-    const options = shuffle([c.word, ...decoys]);
-    return { sentence: c.sentence, options, answer: options.indexOf(c.word), teach: c.definition };
-  });
-}
-
 export default function DetectiveScreen({ onPlay, onLearn, onExit }) {
-  const [samples] = useState(buildSamples);
   const [totalQuestions, setTotal] = useState(() => {
     const saved = getPrefs("fillInBlanks");
     return Q_OPTIONS.includes(saved?.totalQuestions) ? saved.totalQuestions : 10;
@@ -34,17 +20,13 @@ export default function DetectiveScreen({ onPlay, onLearn, onExit }) {
 
   return (
     <div className="landing">
-      {onExit && <button className="landing-back" onClick={onExit}>← All games</button>}
+      {onExit && <button className="round-back-btn round-back-btn--standalone" onClick={onExit} aria-label="Back to all games">←</button>}
       <div className="landing-head">
         <div className="landing-icon" style={{ background: SKILL_ICON.fillInBlanks.bg }}><Icon name="detect" stroke={SKILL_ICON.fillInBlanks.stroke} size={26} /></div>
         <div className="landing-head-txt">
           <h1 className="landing-h1">Word Detective</h1>
           <div className="landing-sub">Words from every level, mixed together{skillM.attempted ? ` · ${masteryPct}% accuracy` : ""}</div>
         </div>
-      </div>
-
-      <div className="samp-card">
-        <SampleQuiz label="TRY A CLUE · FREE, NO STREAK RISK" items={samples} blank="_____" hint="Every clue teaches the word in a real sentence." nextLabel="Next clue" />
       </div>
 
       <div className="landing-hero landing-hero--row">
@@ -54,12 +36,12 @@ export default function DetectiveScreen({ onPlay, onLearn, onExit }) {
         </div>
         <div className="landing-hero-actions">
           <div className="hero-selects">
-            <div className="hero-select-wrap">
-              <select className="hero-select" value={totalQuestions} onChange={(e) => setTotal(Number(e.target.value))} aria-label="Length">
-                {Q_OPTIONS.map((q) => <option key={q} value={q}>{q} words</option>)}
-              </select>
-              <span className="hero-select-chev">▾</span>
-            </div>
+            <Dropdown
+              ariaLabel="Length"
+              value={totalQuestions}
+              onChange={(v) => setTotal(Number(v))}
+              options={Q_OPTIONS.map((q) => ({ value: q, label: `${q} words` }))}
+            />
           </div>
           <button className="landing-start" onClick={() => onPlay({ level: "all", totalQuestions })}>
             <span>Start round</span><span className="dash-hero-arrow">→</span>

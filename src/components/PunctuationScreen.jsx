@@ -1,39 +1,13 @@
 import React, { useState, useEffect } from "react";
-import { punctuationSpot } from "../data/punctuationSpot";
-import { getPrefs, savePrefs } from "../utils/leaderboard";
+import { getPrefs, savePrefs, getSetting } from "../utils/leaderboard";
 import { getSkillMastery } from "../utils/gamify";
 import { usePremium } from "../contexts/PremiumContext";
 import { isLevelFree } from "../utils/entitlement";
 import Icon, { SKILL_ICON } from "./Icon";
-import SpotSentence from "./SpotSentence";
 import PracticeButton from "./PracticeButton";
+import Dropdown from "./Dropdown";
 
 const Q_OPTIONS = [5, 10, 20, 30];
-
-// Free "spot the mistake" demo — mirrors the real game: read the sentence and
-// pick the section (A–D) with the mistake, or N for no mistake.
-function SpotSample({ items }) {
-  const [i, setI] = useState(0);
-  const [picked, setPicked] = useState(null);
-  const q = items[i];
-  const done = picked !== null;
-  const classFor = (idx) => (done && idx === q.answer ? "correct" : done && idx === picked && picked !== q.answer ? "wrong" : "");
-  return (
-    <div className="spotsamp">
-      <div className="samp-label">TRY ONE · FREE, NO STREAK RISK</div>
-      <p className="spotsamp-q">Which section has the mistake?</p>
-      <SpotSentence segments={q.segments} classFor={classFor} onPick={(idx) => !done && setPicked(idx)} disabled={done} />
-      {done && (
-        <div className="spotsamp-fb">
-          <span className={`spotsamp-why ${picked === q.answer ? "ok" : "no"}`}>
-            {picked === q.answer ? "Correct! " : "Not quite. "}{q.why}
-          </span>
-          <button className="spotsamp-next" onClick={() => { setI((i + 1) % items.length); setPicked(null); }}>Next →</button>
-        </div>
-      )}
-    </div>
-  );
-}
 
 const SETS = [
   { id: "A",   emoji: "🌱", label: "Easy", topics: "Full stops · question marks · commas in lists · contractions" },
@@ -42,18 +16,10 @@ const SETS = [
   { id: "all", emoji: "🎲", label: "Mixed", topics: "Exam-style mix of every set, shuffled" },
 ];
 
-function shuffle(a) { return [...a].sort(() => Math.random() - 0.5); }
-
-function buildSamples() {
-  const all = [...(punctuationSpot.A || []), ...(punctuationSpot.B || []), ...(punctuationSpot.C || [])];
-  return shuffle(all).slice(0, 6);
-}
-
 export default function PunctuationScreen({ onPlay, onExit }) {
-  const [samples] = useState(buildSamples);
   const [level, setLevel] = useState(() => {
     const s = getPrefs("punctuation");
-    return ["A", "B", "C", "all"].includes(s?.level) ? s.level : "all";
+    return ["A", "B", "C", "all"].includes(s?.level) ? s.level : getSetting("defaultDifficulty", "A");
   });
   const [totalQuestions, setTotal] = useState(() => {
     const s = getPrefs("punctuation");
@@ -78,17 +44,13 @@ export default function PunctuationScreen({ onPlay, onExit }) {
 
   return (
     <div className="landing">
-      {onExit && <button className="landing-back" onClick={onExit}>← All games</button>}
+      {onExit && <button className="round-back-btn round-back-btn--standalone" onClick={onExit} aria-label="Back to all games">←</button>}
       <div className="landing-head">
         <div className="landing-icon" style={{ background: SKILL_ICON.punctuation.bg }}><Icon name="punct" stroke={SKILL_ICON.punctuation.stroke} size={26} /></div>
         <div className="landing-head-txt">
           <h1 className="landing-h1">Punctuation</h1>
           <div className="landing-sub">Spot the punctuation mistake{skillM.attempted ? ` · ${masteryPct}% accuracy` : ""}</div>
         </div>
-      </div>
-
-      <div className="samp-card">
-        <SpotSample items={samples} />
       </div>
 
       <div className="landing-hero landing-hero--row">
@@ -98,21 +60,23 @@ export default function PunctuationScreen({ onPlay, onExit }) {
         </div>
         <div className="landing-hero-actions">
           <div className="hero-selects">
-            <div className="hero-select-wrap">
-              <select className="hero-select" value={level} onChange={(e) => handleLevelChange(e.target.value)} aria-label="Set">
-                <option value="A">Easy</option>
-                <option value="B">{isPremium ? "Medium" : "Medium 🔒"}</option>
-                <option value="C">{isPremium ? "Hard" : "Hard 🔒"}</option>
-                <option value="all">{isPremium ? "Mixed" : "Mixed 🔒"}</option>
-              </select>
-              <span className="hero-select-chev">▾</span>
-            </div>
-            <div className="hero-select-wrap">
-              <select className="hero-select" value={totalQuestions} onChange={(e) => setTotal(Number(e.target.value))} aria-label="Length">
-                {Q_OPTIONS.map((q) => <option key={q} value={q}>{q} questions</option>)}
-              </select>
-              <span className="hero-select-chev">▾</span>
-            </div>
+            <Dropdown
+              ariaLabel="Set"
+              value={level}
+              onChange={handleLevelChange}
+              options={[
+                { value: "A", label: "Easy" },
+                { value: "B", label: "Medium", locked: !isPremium },
+                { value: "C", label: "Hard", locked: !isPremium },
+                { value: "all", label: "Mixed", locked: !isPremium },
+              ]}
+            />
+            <Dropdown
+              ariaLabel="Length"
+              value={totalQuestions}
+              onChange={(v) => setTotal(Number(v))}
+              options={Q_OPTIONS.map((q) => ({ value: q, label: `${q} questions` }))}
+            />
           </div>
           <button className="landing-start" onClick={() => onPlay({ level, totalQuestions })}>
             <span>Start round</span><span className="dash-hero-arrow">→</span>

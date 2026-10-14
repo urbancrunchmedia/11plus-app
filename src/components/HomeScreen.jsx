@@ -1,24 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { getPrefs, savePrefs, getSetting } from "../utils/leaderboard";
 import { getSkillMastery } from "../utils/gamify";
-import { compoundWords } from "../data/compoundWords";
 import { usePremium } from "../contexts/PremiumContext";
 import { isLevelFree } from "../utils/entitlement";
-import SampleQuiz from "./SampleQuiz";
 import PracticeButton from "./PracticeButton";
 import Icon, { SKILL_ICON } from "./Icon";
-
-function shuffle(a) { return [...a].sort(() => Math.random() - 0.5); }
-
-// Free sample puzzles for the Compound Words landing (real compound data).
-function buildCompoundSamples() {
-  const all = [...(compoundWords.A || []), ...(compoundWords.B || []), ...(compoundWords.C || [])];
-  return shuffle(all).slice(0, 5).map((c) => {
-    const decoys = shuffle(all.filter((x) => x.second !== c.second)).slice(0, 3).map((x) => x.second);
-    const options = shuffle([c.second, ...decoys]);
-    return { sentence: `${c.first} + _____`, options, answer: options.indexOf(c.second), teach: `Makes "${c.first}${c.second}".` };
-  });
-}
+import Dropdown from "./Dropdown";
 
 const LEVELS = [
   { id: "A",   label: "Easy",   desc: "Easiest",      emoji: "🌱" },
@@ -70,7 +57,6 @@ export default function HomeScreen({ gameType, onPlay, onLearn, initialConfig, o
     return 10;
   });
 
-  const [compSamples] = useState(() => (gameType === "compoundWords" ? buildCompoundSamples() : []));
 
   const { isPremium, openPaywall } = usePremium();
   // Free users can't sit on a premium level — snap back to A once we know.
@@ -102,7 +88,7 @@ export default function HomeScreen({ gameType, onPlay, onLearn, initialConfig, o
 
   return (
     <div className="landing">
-      {onExit && <button className="landing-back" onClick={onExit}>← All games</button>}
+      {onExit && <button className="round-back-btn round-back-btn--standalone" onClick={onExit} aria-label="Back to all games">←</button>}
       {/* Header */}
       <div className="landing-head">
         <div className="landing-icon" style={{ background: (SKILL_ICON[gameType] || SKILL_ICON.synonyms).bg }}>
@@ -114,18 +100,6 @@ export default function HomeScreen({ gameType, onPlay, onLearn, initialConfig, o
         </div>
       </div>
 
-      {/* Free sample puzzle — Compound Words only */}
-      {gameType === "compoundWords" && (
-        <div className="samp-card">
-          <SampleQuiz
-            label="TRY A PUZZLE · FREE"
-            items={compSamples}
-            blank="_____"
-            hint="Pick the word that joins on to make a real compound word."
-            nextLabel="Next puzzle"
-          />
-        </div>
-      )}
 
       {/* Picked-for-you hero */}
       <div className="landing-hero">
@@ -136,22 +110,24 @@ export default function HomeScreen({ gameType, onPlay, onLearn, initialConfig, o
         <div className="landing-hero-actions">
           <div className="hero-selects">
             {!noLevel && (
-              <div className="hero-select-wrap">
-                <select className="hero-select" value={level} onChange={(e) => handleLevelChange(e.target.value)} aria-label="Level">
-                  <option value="A">Easy</option>
-                  <option value="B">{isPremium ? "Medium" : "Medium 🔒"}</option>
-                  <option value="C">{isPremium ? "Hard" : "Hard 🔒"}</option>
-                  <option value="all">{isPremium ? "Mixed" : "Mixed 🔒"}</option>
-                </select>
-                <span className="hero-select-chev">▾</span>
-              </div>
+              <Dropdown
+                ariaLabel="Level"
+                value={level}
+                onChange={handleLevelChange}
+                options={[
+                  { value: "A", label: "Easy" },
+                  { value: "B", label: "Medium", locked: !isPremium },
+                  { value: "C", label: "Hard", locked: !isPremium },
+                  { value: "all", label: "Mixed", locked: !isPremium },
+                ]}
+              />
             )}
-            <div className="hero-select-wrap">
-              <select className="hero-select" value={totalQuestions} onChange={(e) => setTotal(Number(e.target.value))} aria-label="Length">
-                {Q_OPTIONS.map((q) => <option key={q} value={q}>{q} words</option>)}
-              </select>
-              <span className="hero-select-chev">▾</span>
-            </div>
+            <Dropdown
+              ariaLabel="Length"
+              value={totalQuestions}
+              onChange={(v) => setTotal(Number(v))}
+              options={Q_OPTIONS.map((q) => ({ value: q, label: `${q} words` }))}
+            />
           </div>
           <button className="landing-start" onClick={handlePlay}>
             <span>Start round</span><span className="dash-hero-arrow">→</span>
