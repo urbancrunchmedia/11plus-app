@@ -25,6 +25,16 @@ const dataRights = vi.hoisted(() => ({
   deleteMyAccount: vi.fn(async () => {}),
 }));
 vi.mock("../utils/dataRights", () => dataRights);
+const support = vi.hoisted(() => ({
+  submitSupportRequest: vi.fn(async () => {}),
+  SUPPORT_CATEGORIES: [
+    { id: "billing",   label: "Billing or subscription" },
+    { id: "technical", label: "Something isn't working" },
+    { id: "feedback",  label: "Feedback or a suggestion" },
+    { id: "other",     label: "Something else" },
+  ],
+}));
+vi.mock("../utils/support", () => support);
 
 import SettingsScreen from "./SettingsScreen";
 
@@ -142,5 +152,52 @@ describe("SettingsScreen", () => {
     // Same reasoning: the real user, so providerData/metadata are present.
     expect(dataRights.exportMyData).toHaveBeenCalledWith(REAL_USER);
     expect(dataRights.downloadMyData).toHaveBeenCalled();
+  });
+
+  describe("Contact support", () => {
+    beforeEach(() => support.submitSupportRequest.mockClear());
+
+    it("replaced the old mailto link with a real form", async () => {
+      const el = await mount();
+      expect(el.querySelector('a[href^="mailto:"]')).toBeNull();
+      const contactBtn = [...el.querySelectorAll("button")].find((b) => b.textContent === "Contact us");
+      expect(contactBtn).toBeTruthy();
+    });
+
+    it("keeps Send disabled until a message is entered, then submits with the real user and picked category", async () => {
+      const el = await mount();
+      await act(async () => { [...el.querySelectorAll("button")].find((b) => b.textContent === "Contact us").click(); });
+
+      const send = () => [...document.querySelectorAll("button")].find((b) => b.textContent.startsWith("Send"));
+      expect(send().disabled).toBe(true);
+
+      const textarea = document.querySelector(".support-textarea");
+      await act(async () => {
+        Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, "value").set.call(textarea, "My question");
+        textarea.dispatchEvent(new Event("input", { bubbles: true }));
+      });
+      expect(send().disabled).toBe(false);
+
+      await act(async () => { send().click(); });
+      expect(support.submitSupportRequest).toHaveBeenCalledWith(
+        REAL_USER,
+        { category: "billing", message: "My question" }
+      );
+      expect(document.body.textContent).toMatch(/Message sent/);
+    });
+
+    it("shows an error instead of a silent failure when the request fails", async () => {
+      support.submitSupportRequest.mockRejectedValueOnce(new Error("Network error"));
+      const el = await mount();
+      await act(async () => { [...el.querySelectorAll("button")].find((b) => b.textContent === "Contact us").click(); });
+      const textarea = document.querySelector(".support-textarea");
+      await act(async () => {
+        Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, "value").set.call(textarea, "Help!");
+        textarea.dispatchEvent(new Event("input", { bubbles: true }));
+      });
+      const send = [...document.querySelectorAll("button")].find((b) => b.textContent.startsWith("Send"));
+      await act(async () => { send.click(); });
+      expect(document.querySelector(".board-msg.err").textContent).toMatch(/Network error/);
+    });
   });
 });

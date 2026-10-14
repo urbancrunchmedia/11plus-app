@@ -65,5 +65,17 @@ service cloud.firestore {
                     && request.resource.data.uids.size() == 2;
       allow delete: if signedIn() && request.auth.uid in resource.data.uids;
     }
+
+    // In-app support form — a parent can file a request; only reviewable via
+    // the Firebase Console, never read, listed, edited or deleted from the
+    // client (so one user can never see another's message).
+    match /supportRequests/{id} {
+      allow create: if signedIn()
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.category is string
+        && request.resource.data.message is string
+        && request.resource.data.message.size() > 0
+        && request.resource.data.message.size() <= 2000;
+    }
   }
 }
