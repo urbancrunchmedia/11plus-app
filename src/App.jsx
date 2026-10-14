@@ -115,6 +115,11 @@ function AppInner() {
   const [lastPunctConfig, setLastPunctConfig] = useState(null);
   const [childUnlocked, setChildUnlocked] = useState(false);
   const [parentUnlocked, setParentUnlocked] = useState(false);
+  // Badges is reachable from both Home (the rank crest) and Settings — its
+  // back button needs to return wherever it was actually opened from, not
+  // always Home.
+  const [badgesReturnTo, setBadgesReturnTo] = useState("home");
+  function openBadges(from) { setBadgesReturnTo(from); handleSelectGame("badges"); }
   // Returning from Stripe: ?checkout=success | ?checkout=cancel | ?billing=return
   const [billingEvent, setBillingEvent] = useState(null);
   const [billingNote, setBillingNote] = useState(null);
@@ -186,7 +191,9 @@ function AppInner() {
 
   function handleSelectGame(id) {
     // Re-lock only when leaving the grown-up area (Settings + Report) entirely.
-    if (id !== "me" && id !== "report") setParentUnlocked(false);
+    // Badges is excluded too — reached from Settings as much as Home, so
+    // stepping into it and back shouldn't force a parent to re-enter the PIN.
+    if (id !== "me" && id !== "report" && id !== "badges") setParentUnlocked(false);
     setSelectedGame(id);
     setScreen("home");
   }
@@ -243,7 +250,7 @@ function AppInner() {
             <HomeDashboard
               onPlaySkill={(id) => handleSelectGame(id)}
               onOpenBoard={() => handleSelectGame("leaderboard")}
-              onOpenBadges={() => handleSelectGame("badges")}
+              onOpenBadges={() => openBadges("home")}
             />
           )}
 
@@ -265,7 +272,7 @@ function AppInner() {
               <SettingsScreen
                 onHome={() => handleSelectGame("home")}
                 onOpenReport={() => handleSelectGame("report")}
-                onOpenBadges={() => handleSelectGame("badges")}
+                onOpenBadges={() => openBadges("me")}
               />
             ) : (
               <ProgressReport
@@ -386,7 +393,7 @@ function AppInner() {
 
           {isLeaderboard && <LeaderboardScreen onPlay={() => handleSelectGame("synonyms")} onExit={() => handleSelectGame("home")} />}
 
-          {isBadges && <BadgesScreen onExit={() => handleSelectGame("home")} />}
+          {isBadges && <BadgesScreen onExit={() => handleSelectGame(badgesReturnTo)} />}
 
           {!isKnown && <ComingSoon gameId={selectedGame} />}
         </div>
