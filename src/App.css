@@ -2600,8 +2600,6 @@ body {
 .login2-choice { display: flex; flex-direction: column; gap: 12px; margin-top: 22px; }
 .login2-emailcta { width: 100%; border: 2px solid var(--border); background: #fff; border-radius: var(--r-full); padding: 14px; font-weight: 700; font-size: 0.95rem; color: var(--ink); }
 .login2-emailcta:hover { border-color: var(--brand); color: var(--brand-ink); }
-.login2-emailback { align-self: center; margin-top: 16px; background: none; border: none; cursor: pointer; color: var(--muted); font-weight: 700; font-size: 0.85rem; padding: 4px 2px; }
-.login2-emailback:hover { color: var(--brand-ink); }
 .login2-google { width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px; border: 2px solid var(--border); background: #fff; border-radius: var(--r-full); padding: 14px; font-weight: 700; font-size: 0.95rem; color: var(--ink); }
 .login2-toggle { text-align: center; margin-top: 18px; font-weight: 500; font-size: 0.85rem; color: var(--muted); }
 .login2-toggle button { border: none; background: none; color: var(--brand-ink); font-weight: 800; font-size: 0.85rem; }

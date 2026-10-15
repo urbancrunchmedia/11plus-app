@@ -77,9 +77,20 @@ describe("LoginScreen", () => {
     const el = await render();
     await openEmailForm(el);
     expect(el.querySelector(".login2-pw")).toBeTruthy();
-    await act(async () => { el.querySelector(".login2-emailback").click(); });
+    await act(async () => { el.querySelector(".round-back-btn").click(); });
     expect(el.querySelector(".login2-pw")).toBeNull();
     expect(el.querySelector(".login2-emailcta")).toBeTruthy();
+  });
+
+  // Google should always be one tap away, not just on the choice screen.
+  it("still offers Google once the email form is open", async () => {
+    const el = await render();
+    expect(el.querySelector(".round-back-btn")).toBeNull();
+    await openEmailForm(el);
+    expect(el.querySelector(".round-back-btn")).toBeTruthy();
+    expect(el.querySelector(".login2-google")).toBeTruthy();
+    await act(async () => { el.querySelector(".login2-google").click(); });
+    expect(AUTH.signInWithGoogle).toHaveBeenCalled();
   });
 
   // In-app browsers (WhatsApp, Instagram) often can't complete the Google

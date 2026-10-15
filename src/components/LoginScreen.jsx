@@ -157,6 +157,9 @@ export default function LoginScreen() {
             </div>
           ) : (
             <>
+              {showEmailForm && (
+                <button type="button" className="round-back-btn round-back-btn--standalone" onClick={() => setShowEmailForm(false)} aria-label="Back">←</button>
+              )}
               <div className="login2-h">{mode === "signin" ? "Grown-up sign in" : "Create an account"}</div>
               <div className="login2-p">See progress, set daily goals and manage profiles.</div>
 
@@ -225,7 +228,10 @@ export default function LoginScreen() {
                       {loading ? "Please wait…" : mode === "signin" ? "Log in" : "Create account"}
                     </button>
                   </form>
-                  <button type="button" className="login2-emailback" onClick={() => setShowEmailForm(false)}>← Use Google instead</button>
+                  <div className="login2-divider">or</div>
+                  <button className="login2-google" onClick={handleGoogle} disabled={loading}>
+                    <GoogleIcon /> Continue with Google
+                  </button>
                 </>
               )}
 
