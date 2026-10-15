@@ -6,7 +6,9 @@ const ICONS = {
   home:     '<path d="M4 10.5 12 4l8 6.5"/><path d="M6.5 9.5V20h11V9.5"/><path d="M10 20v-5h4v5"/>',
   book:     '<path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3z"/><path d="M5 17h14"/><path d="M9 8h6"/><path d="M9 11.5h4"/>',
   board:    '<path d="M8 4h8v5a4 4 0 0 1-8 0z"/><path d="M8 5.5H5V7a3.5 3.5 0 0 0 3.3 3.5"/><path d="M16 5.5h3V7a3.5 3.5 0 0 1-3.3 3.5"/><path d="M12 13v3.5"/><path d="M9 20h6"/><path d="M10 20l.4-3.5h3.2L14 20"/>',
-  match:    '<path d="M4 8h13"/><path d="M14 5l3 3-3 3"/><path d="M20 16H7"/><path d="M10 13l-3 3 3 3"/>',
+  // Synonyms — an equals sign: unambiguous "same meaning", no arrow metaphor
+  // to misread (kids this age already know "=" from maths).
+  match:    '<path d="M5 9.5h14"/><path d="M5 14.5h14"/>',
   detect:   '<circle cx="11" cy="11" r="6"/><path d="M20 20l-4.5-4.5"/><path d="M9 11h4"/>',
   punct:    '<circle cx="7" cy="11" r="2.2"/><path d="M7 13.2c0 2.4-1 3.9-2.6 4.8"/><circle cx="17" cy="16" r="2.2"/>',
   compound: '<rect x="3" y="4" width="8" height="8" rx="2.5"/><rect x="13" y="12" width="8" height="8" rx="2.5"/><path d="M11 8h3a2 2 0 0 1 2 2v2"/>',
@@ -30,10 +32,15 @@ const ICONS = {
   check:    '<path d="M5 12.5l4.5 4.5L19 7"/>',
   trash:    '<path d="M4.5 7h15"/><path d="M9.5 7V4.8h5V7"/><path d="M6.6 7l1 12.2h8.8L17.4 7"/>',
   chart:    '<path d="M4 4v16h16"/><rect x="7.5" y="11" width="3" height="6" rx="1"/><rect x="12.5" y="7" width="3" height="10" rx="1"/><rect x="17.5" y="13" width="3" height="4" rx="1"/>',
-  tag:      '<path d="M12 3h6a2 2 0 0 1 2 2v6l-9 9-8-8z"/><circle cx="16" cy="8" r="1.4"/>',
-  // Antonyms — two arrows pointing apart, reading as "opposite" rather than
-  // `match`'s pairing arrows (which point toward each other).
-  oppose:   '<path d="M4 9h11"/><path d="M11 5l-3 4 3 4"/><path d="M20 15H9"/><path d="M13 19l3-4-3-4"/>',
+  // Parts of Speech — a word bracketed out of a sentence, reading as
+  // "identify/label this part" rather than a generic price-tag.
+  tag:      '<path d="M9 6.5v11"/><path d="M9 6.5h3"/><path d="M9 17.5h3"/><path d="M15 6.5v11"/><path d="M15 6.5h-3"/><path d="M15 17.5h-3"/><circle cx="12" cy="12" r="1.3"/>',
+  // Antonyms — a "not equal" sign: the direct negation of synonyms' "=",
+  // reading as "opposite meaning" far more clearly than mirrored arrows.
+  oppose:   '<path d="M5 9.5h14"/><path d="M5 14.5h14"/><path d="M16 5 8 19"/>',
+  // Destructive-action warning (account deletion) — a plain triangle + "!",
+  // the universal "this is dangerous" signal.
+  warning:  '<path d="M12 4.5 2.5 20h19z"/><path d="M12 10v4"/><path d="M12 17v.01"/>',
 };
 
 // Per-skill icon name + stroke + tile background, matching the design.
