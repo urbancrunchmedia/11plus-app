@@ -163,7 +163,7 @@ export default function LoginScreen() {
           {!showEmailForm ? (
             <div className="login2-choice">
               <button className="login2-google" onClick={handleGoogle} disabled={loading}>
-                <GoogleIcon /> Continue with Google
+                <GoogleIcon /> {mode === "signin" ? "Continue with Google" : "Sign up with Google"}
               </button>
               <button type="button" className="login2-emailcta" onClick={() => setShowEmailForm(true)}>
                 {mode === "signin" ? "Sign in with email" : "Sign up with email"}
@@ -215,7 +215,7 @@ export default function LoginScreen() {
               </form>
               <div className="login2-divider">or</div>
               <button className="login2-google" onClick={handleGoogle} disabled={loading}>
-                <GoogleIcon /> Continue with Google
+                <GoogleIcon /> {mode === "signin" ? "Continue with Google" : "Sign up with Google"}
               </button>
             </>
           )}
