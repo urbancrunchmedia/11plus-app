@@ -2,13 +2,18 @@ import React, { useState } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import Icon, { SKILL_ICON } from "./Icon";
 
-// What the app actually contains, shown before anyone signs in.
+// What the app actually contains, shown before anyone signs in. Same order
+// and labels as the SKILLS list in gamify.js (the dashboard's source of
+// truth) so this strip can't quietly drift out of sync with the real games
+// again.
 const GAME_STRIP = [
-  { skill: "synonyms",      label: "Word Match",     hook: "Pair words with the same or opposite meaning" },
-  { skill: "fillInBlanks",  label: "Word Detective", hook: "Crack the clue to find the missing word" },
-  { skill: "punctuation",   label: "Punctuation",    hook: "Spot the punctuation mistake" },
-  { skill: "spelling",      label: "Spelling",       hook: "Spot the misspelled section" },
-  { skill: "compoundWords", label: "Compound Words", hook: "Join two words into one" },
+  { skill: "synonyms",      label: "Synonyms",        hook: "Pair words with the same meaning" },
+  { skill: "antonyms",      label: "Antonyms",         hook: "Pair words with the opposite meaning" },
+  { skill: "compoundWords", label: "Compound Words",   hook: "Join two words into one" },
+  { skill: "fillInBlanks",  label: "Word Detective",   hook: "Crack the clue to find the missing word" },
+  { skill: "punctuation",   label: "Punctuation",      hook: "Spot the punctuation mistake" },
+  { skill: "spelling",      label: "Spelling",         hook: "Spot the misspelled section" },
+  { skill: "wordClass",     label: "Parts of Speech",  hook: "Spot the noun, verb or adjective" },
 ];
 
 function GoogleIcon() {

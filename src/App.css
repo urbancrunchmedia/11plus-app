@@ -2619,15 +2619,20 @@ body {
 }
 
 /* Phone portrait specifically (tablets are >=768px wide even in portrait, and
-   have the height to spare): the 5-game strip is decorative context, not
-   needed to sign in, and on a short screen it was pushing the entire form —
-   email, password, the actual submit button — below the fold with nothing
-   on screen to hint there was more content to scroll to. */
+   have the height to spare): the game strip is decorative context, not
+   needed to sign in, and full-width cards with a description line were
+   pushing the entire form — email, password, the actual submit button —
+   below the fold with nothing on screen to hint there was more content to
+   scroll to. Dropping the description and packing cards 3-up keeps the
+   whole strip to a couple of short rows. */
 @media (max-width: 480px) {
   .login2-hero { padding: 24px 24px 20px; }
   .login2-hero-mid { margin: 0; }
-  .login2-games { grid-template-columns: 1fr; max-width: none; }
+  .login2-games { grid-template-columns: repeat(3, 1fr); max-width: none; gap: 6px; }
   .login2-game--wide { grid-column: auto; }
+  .login2-game { flex-direction: column; align-items: center; text-align: center; gap: 5px; padding: 10px 4px; border-radius: 14px; }
+  .login2-game-hook { display: none; }
+  .login2-game-name { font-size: 0.66rem; }
 }
 
 /* ── Settings PIN control ── */
