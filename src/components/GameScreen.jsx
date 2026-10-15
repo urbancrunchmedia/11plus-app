@@ -355,12 +355,8 @@ export default function GameScreen({ level, gameType, totalQuestions = 20, onHom
         </button>
       </div>
 
-      {/* HUD: combo · time · wrong */}
+      {/* HUD: time · correct · wrong */}
       <div className="ig-hud">
-        <div className="ig-card ig-card--combo">
-          <div className="ig-card-val">×{streak}</div>
-          <div className="ig-card-lbl">combo</div>
-        </div>
         <div className="ig-card">
           <div className="ig-card-val">{Math.floor(elapsed / 60)}:{String(elapsed % 60).padStart(2, "0")}</div>
           <div className="ig-card-lbl">time</div>

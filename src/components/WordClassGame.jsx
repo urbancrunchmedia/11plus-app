@@ -65,7 +65,6 @@ export default function WordClassGame({ level, totalQuestions = 20, onHome, mute
   const [results, setResults]       = useState([]);
   const [totalWrong, setTotalWrong] = useState(0);
   const [correctCount, setCorrect]  = useState(0);
-  const [streak, setStreak]         = useState(0);
   const [gameComplete, setGameComplete] = useState(false);
   const [muted, setMuted]           = useState(mutedProp ?? false);
   const [confirmLeave, setConfirmLeave] = useState(false);
@@ -91,12 +90,10 @@ export default function WordClassGame({ level, totalQuestions = 20, onHome, mute
     if (correct) {
       if (!muted) playCorrect();
       clearMiss(SKILL, id);
-      setStreak((v) => v + 1);
       setCorrect((c) => c + 1);
     } else {
       if (!muted) playWrong();
       addMiss(SKILL, id, { segments: q.segments, answer: q.answer, askFor: q.askFor, why: q.why });
-      setStreak(0);
       setTotalWrong((w) => w + 1);
     }
     setResults((r) => [...r, { word: q.segments.join(" "), match: "", stars: correct ? 3 : 0 }]);
@@ -119,7 +116,6 @@ export default function WordClassGame({ level, totalQuestions = 20, onHome, mute
     setResults([]);
     setTotalWrong(0);
     setCorrect(0);
-    setStreak(0);
     setElapsed(0);
     setGameComplete(false);
   }
@@ -136,7 +132,6 @@ export default function WordClassGame({ level, totalQuestions = 20, onHome, mute
     setResults([]);
     setTotalWrong(0);
     setCorrect(0);
-    setStreak(0);
     setElapsed(0);
     setGameComplete(false);
   }
@@ -167,7 +162,6 @@ export default function WordClassGame({ level, totalQuestions = 20, onHome, mute
       </div>
 
       <div className="ig-hud">
-        <div className="ig-card ig-card--combo"><div className="ig-card-val">×{streak}</div><div className="ig-card-lbl">combo</div></div>
         <div className="ig-card"><div className="ig-card-val">{Math.floor(elapsed / 60)}:{String(elapsed % 60).padStart(2, "0")}</div><div className="ig-card-lbl">time</div></div>
         <div className="ig-card"><div className="ig-card-val ig-card-val--correct">✓ {correctCount}</div><div className="ig-card-lbl">correct</div></div>
         <div className="ig-card"><div className="ig-card-val ig-card-val--wrong">{totalWrong}</div><div className="ig-card-lbl">wrong</div></div>

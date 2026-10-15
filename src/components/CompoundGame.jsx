@@ -25,7 +25,6 @@ export default function CompoundGame({ level, totalQuestions = 20, onHome, pract
   const [justRight, setJustRight] = useState(null); // index flashing correct
   const [results, setResults] = useState([]);
   const [totalWrong, setTotalWrong] = useState(0);
-  const [streak, setStreak]   = useState(0);
   const [elapsed, setElapsed] = useState(0);
   const [muted, setMuted]     = useState(false);
   const [confirmLeave, setConfirmLeave] = useState(false);
@@ -51,7 +50,6 @@ export default function CompoundGame({ level, totalQuestions = 20, onHome, pract
       if (wrongCount === 0) clearMiss(SKILL, `${q.first}${q.second}`.toLowerCase());
       if (!muted) playCorrect();
       setJustRight(i);
-      setStreak((v) => (wrongCount === 0 ? v + 1 : 0));
       const newResults = [...results, { word: q.first, match: q.second, stars: s }];
       setResults(newResults);
       setTimeout(() => {
@@ -69,7 +67,6 @@ export default function CompoundGame({ level, totalQuestions = 20, onHome, pract
         addMiss(SKILL, `${q.first}${q.second}`.toLowerCase(), { first: q.first, second: q.second });
         setWrong((w) => w + 1);
         setTotalWrong((w) => w + 1);
-        setStreak(0);
         setTriedWrong((t) => [...t, i]);
       }
       if (!muted) playWrong();
@@ -83,7 +80,7 @@ export default function CompoundGame({ level, totalQuestions = 20, onHome, pract
     setStartTime(Date.now());
     setQuestions(build(avoidKeys));
     setIdx(0); setWrong(0); setTriedWrong([]); setFlash(null); setJustRight(null);
-    setResults([]); setTotalWrong(0); setStreak(0); setElapsed(0); setDone(false);
+    setResults([]); setTotalWrong(0); setElapsed(0); setDone(false);
     locked.current = false;
   }
 
@@ -94,7 +91,7 @@ export default function CompoundGame({ level, totalQuestions = 20, onHome, pract
     setStartTime(Date.now());
     setQuestions(makeCompoundQuestionsFromTargets(missed));
     setIdx(0); setWrong(0); setTriedWrong([]); setFlash(null); setJustRight(null);
-    setResults([]); setTotalWrong(0); setStreak(0); setElapsed(0); setDone(false);
+    setResults([]); setTotalWrong(0); setElapsed(0); setDone(false);
     locked.current = false;
   }
 
@@ -133,7 +130,6 @@ export default function CompoundGame({ level, totalQuestions = 20, onHome, pract
       </div>
 
       <div className="ig-hud">
-        <div className="ig-card ig-card--combo"><div className="ig-card-val">×{streak}</div><div className="ig-card-lbl">combo</div></div>
         <div className="ig-card"><div className="ig-card-val">{Math.floor(elapsed / 60)}:{String(elapsed % 60).padStart(2, "0")}</div><div className="ig-card-lbl">time</div></div>
         <div className="ig-card"><div className="ig-card-val ig-card-val--correct">✓ {results.length}</div><div className="ig-card-lbl">correct</div></div>
         <div className="ig-card"><div className="ig-card-val ig-card-val--wrong">{totalWrong}</div><div className="ig-card-lbl">wrong</div></div>

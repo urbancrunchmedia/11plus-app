@@ -46,7 +46,6 @@ export default function FillInBlanksGame({ level, totalQuestions = 20, onHome, m
   const [triedWrong, setTriedWrong] = useState([]); // option indices already tried for this question
   const [results, setResults]       = useState([]);
   const [totalWrong, setTotalWrong] = useState(0);
-  const [streak, setStreak]         = useState(0);
   const [flash, setFlash]           = useState(null); // { idx, type }
   const [gameComplete, setGameComplete] = useState(false);
   const [muted, setMuted]           = useState(mutedProp ?? false);
@@ -71,7 +70,6 @@ export default function FillInBlanksGame({ level, totalQuestions = 20, onHome, m
       if (!muted) playCorrect();
       const stars = getStars(wrongCount);
       const newResults = [...results, { word: q.word, match: "", stars }];
-      setStreak((v) => (wrongCount === 0 ? v + 1 : 0));
       setFlash({ idx, type: "correct" });
       setTimeout(() => {
         setFlash(null);
@@ -86,7 +84,6 @@ export default function FillInBlanksGame({ level, totalQuestions = 20, onHome, m
         addMiss(SKILL, id, { word: q.word, sentence: q.sentence, definition: q.definition });
         setWrongCount((w) => w + 1);
         setTotalWrong((w) => w + 1);
-        setStreak(0);
         setTriedWrong((t) => [...t, idx]);
       }
       if (!muted) playWrong();
@@ -107,7 +104,6 @@ export default function FillInBlanksGame({ level, totalQuestions = 20, onHome, m
     setTriedWrong([]);
     setResults([]);
     setTotalWrong(0);
-    setStreak(0);
     setFlash(null);
     setElapsed(0);
     setGameComplete(false);
@@ -125,7 +121,6 @@ export default function FillInBlanksGame({ level, totalQuestions = 20, onHome, m
     setTriedWrong([]);
     setResults([]);
     setTotalWrong(0);
-    setStreak(0);
     setFlash(null);
     setElapsed(0);
     setGameComplete(false);
@@ -161,7 +156,6 @@ export default function FillInBlanksGame({ level, totalQuestions = 20, onHome, m
       </div>
 
       <div className="ig-hud">
-        <div className="ig-card ig-card--combo"><div className="ig-card-val">×{streak}</div><div className="ig-card-lbl">combo</div></div>
         <div className="ig-card"><div className="ig-card-val">{Math.floor(elapsed / 60)}:{String(elapsed % 60).padStart(2, "0")}</div><div className="ig-card-lbl">time</div></div>
         <div className="ig-card"><div className="ig-card-val ig-card-val--correct">✓ {results.length}</div><div className="ig-card-lbl">correct</div></div>
         <div className="ig-card"><div className="ig-card-val ig-card-val--wrong">{totalWrong}</div><div className="ig-card-lbl">wrong</div></div>
