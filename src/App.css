@@ -2571,9 +2571,6 @@ body {
 
 .login2-panel { flex: 1; background: var(--surface, #fff); display: grid; place-items: center; padding: 32px; }
 .login2-card { width: 100%; max-width: 400px; }
-.login2-tabs { display: flex; gap: 8px; background: var(--surface-2, #f4f9ff); border-radius: var(--r-full); padding: 5px; margin-bottom: 26px; }
-.login2-tab { flex: 1; border: none; background: transparent; border-radius: var(--r-full); padding: 12px; font-weight: 700; font-size: 0.9rem; color: var(--muted); }
-.login2-tab.active { background: var(--ink); color: #fff; }
 .login2-h { font-weight: 800; font-size: 1.7rem; color: var(--ink); letter-spacing: -0.02em; }
 .login2-p { font-weight: 500; font-size: 0.9rem; color: var(--muted); margin-top: 6px; line-height: 1.5; }
 .login2-form { display: flex; flex-direction: column; gap: 14px; margin-top: 22px; }
@@ -2603,10 +2600,6 @@ body {
 .login2-google { width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px; border: 2px solid var(--border); background: #fff; border-radius: var(--r-full); padding: 14px; font-weight: 700; font-size: 0.95rem; color: var(--ink); }
 .login2-toggle { text-align: center; margin-top: 18px; font-weight: 500; font-size: 0.85rem; color: var(--muted); }
 .login2-toggle button { border: none; background: none; color: var(--brand-ink); font-weight: 800; font-size: 0.85rem; }
-.login2-child { text-align: center; padding: 10px 0; }
-.login2-child-emoji { font-size: 2.6rem; }
-.login2-child .login2-h { margin-top: 12px; }
-.login2-child .login2-submit { width: 100%; margin-top: 22px; }
 
 @media (max-width: 860px) {
   .login2 { flex-direction: column; }
