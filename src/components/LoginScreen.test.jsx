@@ -22,11 +22,34 @@ async function render() {
   return container;
 }
 
+// The standard two-step flow: Google + "Sign in with email" first, the
+// actual email/password fields only once that's tapped.
+async function openEmailForm(el) {
+  await act(async () => { el.querySelector(".login2-emailcta").click(); });
+}
+
 describe("LoginScreen", () => {
   beforeEach(() => { document.body.innerHTML = ""; AUTH.signInWithEmail.mockReset(); });
 
+  // The choice screen is what a parent sees first — Google front and centre,
+  // no email/password fields yet.
+  it("shows Google and a 'sign in with email' choice before any form fields", async () => {
+    const el = await render();
+    expect(el.querySelector(".login2-google")).toBeTruthy();
+    expect(el.querySelector(".login2-emailcta").textContent).toMatch(/sign in with email/i);
+    expect(el.querySelector(".login2-pw")).toBeNull();
+  });
+
+  it("reveals the email/password form after choosing to sign in with email", async () => {
+    const el = await render();
+    await openEmailForm(el);
+    expect(el.querySelector(".login2-pw input")).toBeTruthy();
+    expect(el.querySelector('input[type="email"]')).toBeTruthy();
+  });
+
   it("reveals and re-hides the password", async () => {
     const el = await render();
+    await openEmailForm(el);
     const pw = () => el.querySelector(".login2-pw input");
     expect(pw().type).toBe("password");
     await act(async () => { el.querySelector(".login2-eye").click(); });
@@ -40,6 +63,7 @@ describe("LoginScreen", () => {
   it("points at Google when the credentials are rejected", async () => {
     AUTH.signInWithEmail.mockRejectedValue({ code: "auth/invalid-credential" });
     const el = await render();
+    await openEmailForm(el);
     el.querySelector('input[type="email"]').value = "a@b.com";
     await act(async () => { el.querySelector("form").dispatchEvent(new Event("submit", { bubbles: true, cancelable: true })); });
     expect(el.querySelector(".login2-error").textContent).toMatch(/Google/);
@@ -47,26 +71,15 @@ describe("LoginScreen", () => {
     expect(AUTH.signInWithGoogle).toHaveBeenCalled();
   });
 
-  // Two identical "Continue with Google" buttons on screen at once (the one
-  // inside this error plus the standalone one below) is exactly what was
-  // reported as looking broken.
-  it("hides the standalone Google button while the inline one is already showing", async () => {
-    AUTH.signInWithEmail.mockRejectedValue({ code: "auth/invalid-credential" });
+  // A way back to the Google-first choice screen, rather than being stuck
+  // once the email form is open.
+  it("can step back from the email form to the Google/email choice", async () => {
     const el = await render();
-    expect(el.querySelectorAll(".login2-google").length).toBe(1);
-
-    el.querySelector('input[type="email"]').value = "a@b.com";
-    await act(async () => { el.querySelector("form").dispatchEvent(new Event("submit", { bubbles: true, cancelable: true })); });
-    expect(el.querySelectorAll(".login2-error-cta").length).toBe(1);
-    expect(el.querySelectorAll(".login2-google").length).toBe(0); // the redundant one is gone
-
-    // Retrying (even one that's about to fail differently) drops the old
-    // error state — the standalone button shouldn't stay hidden forever
-    // after a single bad attempt.
-    AUTH.signInWithEmail.mockRejectedValue({ code: "auth/too-many-requests" });
-    await act(async () => { el.querySelector("form").dispatchEvent(new Event("submit", { bubbles: true, cancelable: true })); });
-    expect(el.querySelectorAll(".login2-error-cta").length).toBe(0);
-    expect(el.querySelectorAll(".login2-google").length).toBe(1);
+    await openEmailForm(el);
+    expect(el.querySelector(".login2-pw")).toBeTruthy();
+    await act(async () => { el.querySelector(".login2-emailback").click(); });
+    expect(el.querySelector(".login2-pw")).toBeNull();
+    expect(el.querySelector(".login2-emailcta")).toBeTruthy();
   });
 
   // In-app browsers (WhatsApp, Instagram) often can't complete the Google
@@ -77,13 +90,5 @@ describe("LoginScreen", () => {
     const el = await render();
     expect(el.querySelector(".login2-error").textContent).toMatch(/sign in with email/i);
     AUTH.redirectError = null;
-  });
-
-  // A saved-looking autofilled password is what gets people stuck here in the
-  // first place, so the hint has to be visible before they ever submit —
-  // not only after the login attempt has already failed.
-  it("hints at Google sign-in on the sign-in form before any attempt is made", async () => {
-    const el = await render();
-    expect(el.textContent).toMatch(/Signed up with Google\?/);
   });
 });

@@ -65,6 +65,7 @@ export default function LoginScreen() {
 
   const [tab, setTab]           = useState("parent"); // "child" | "parent"
   const [mode, setMode]         = useState("signin");  // "signin" | "signup"
+  const [showEmailForm, setShowEmailForm] = useState(false);
   const [name, setName]         = useState("");
   const [email, setEmail]       = useState("");
   const [password, setPassword] = useState("");
@@ -154,76 +155,72 @@ export default function LoginScreen() {
               <div className="login2-h">{mode === "signin" ? "Grown-up sign in" : "Create an account"}</div>
               <div className="login2-p">See progress, set daily goals and manage profiles.</div>
 
-              <form className="login2-form" onSubmit={handleSubmit}>
-                {mode === "signup" && (
-                  <label className="login2-field">
-                    <span>CHILD NAME</span>
-                    <input type="text" placeholder="Your child's name" value={name} onChange={(e) => setName(e.target.value)} required autoComplete="name" />
-                  </label>
-                )}
-                <label className="login2-field">
-                  <span>EMAIL</span>
-                  <input type="email" placeholder="you@email.com" value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="email" />
-                </label>
-                <label className="login2-field">
-                  <span>PASSWORD</span>
-                  <span className="login2-pw">
-                    <input
-                      type={showPw ? "text" : "password"}
-                      placeholder="••••••••"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      required
-                      autoComplete={mode === "signup" ? "new-password" : "current-password"}
-                    />
-                    <button
-                      type="button"
-                      className="login2-eye"
-                      onClick={() => setShowPw((v) => !v)}
-                      aria-label={showPw ? "Hide password" : "Show password"}
-                      title={showPw ? "Hide password" : "Show password"}
-                    >
-                      <EyeIcon off={showPw} />
+              {(error || redirectError) && (
+                <div className="login2-error">
+                  {error || friendlyError(redirectError) || "Sign-in error"}
+                  {credFail && (
+                    <button type="button" className="login2-error-cta" onClick={handleGoogle}>
+                      <GoogleIcon /> Continue with Google
                     </button>
-                  </span>
-                </label>
+                  )}
+                </div>
+              )}
+              {notice && <div className="login2-notice">{notice}</div>}
 
-                {mode === "signin" && (
-                  <>
-                    {/* Shown always, not just after a failed attempt — a browser
-                        that's autofilled email+password looks trustworthy enough
-                        that people submit it without reading an error first. */}
-                    <div className="login2-googlehint">Signed up with Google? Use the button below instead.</div>
-                    <button type="button" className="login2-forgot" onClick={handleForgot}>Forgot password?</button>
-                  </>
-                )}
-
-                {(error || redirectError) && (
-                  <div className="login2-error">
-                    {error || friendlyError(redirectError) || "Sign-in error"}
-                    {credFail && (
-                      <button type="button" className="login2-error-cta" onClick={handleGoogle}>
-                        <GoogleIcon /> Continue with Google
-                      </button>
-                    )}
-                  </div>
-                )}
-                {notice && <div className="login2-notice">{notice}</div>}
-
-                <button className="login2-submit" type="submit" disabled={loading}>
-                  {loading ? "Please wait…" : mode === "signin" ? "Log in" : "Create account"}
-                </button>
-              </form>
-
-              {/* The credential-mismatch error above already offers its own
-                  Google button right where it's needed — showing this one
-                  too, right underneath, would just be the same button twice. */}
-              {!credFail && (
-                <>
-                  <div className="login2-divider"><span>or</span></div>
+              {!showEmailForm ? (
+                <div className="login2-choice">
                   <button className="login2-google" onClick={handleGoogle} disabled={loading}>
                     <GoogleIcon /> Continue with Google
                   </button>
+                  <button type="button" className="login2-emailcta" onClick={() => setShowEmailForm(true)}>
+                    {mode === "signin" ? "Sign in with email" : "Sign up with email"}
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <form className="login2-form" onSubmit={handleSubmit}>
+                    {mode === "signup" && (
+                      <label className="login2-field">
+                        <span>CHILD NAME</span>
+                        <input type="text" placeholder="Your child's name" value={name} onChange={(e) => setName(e.target.value)} required autoComplete="name" />
+                      </label>
+                    )}
+                    <label className="login2-field">
+                      <span>EMAIL</span>
+                      <input type="email" placeholder="you@email.com" value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="email" />
+                    </label>
+                    <label className="login2-field">
+                      <span>PASSWORD</span>
+                      <span className="login2-pw">
+                        <input
+                          type={showPw ? "text" : "password"}
+                          placeholder="••••••••"
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                          required
+                          autoComplete={mode === "signup" ? "new-password" : "current-password"}
+                        />
+                        <button
+                          type="button"
+                          className="login2-eye"
+                          onClick={() => setShowPw((v) => !v)}
+                          aria-label={showPw ? "Hide password" : "Show password"}
+                          title={showPw ? "Hide password" : "Show password"}
+                        >
+                          <EyeIcon off={showPw} />
+                        </button>
+                      </span>
+                    </label>
+
+                    {mode === "signin" && (
+                      <button type="button" className="login2-forgot" onClick={handleForgot}>Forgot password?</button>
+                    )}
+
+                    <button className="login2-submit" type="submit" disabled={loading}>
+                      {loading ? "Please wait…" : mode === "signin" ? "Log in" : "Create account"}
+                    </button>
+                  </form>
+                  <button type="button" className="login2-emailback" onClick={() => setShowEmailForm(false)}>← Use Google instead</button>
                 </>
               )}
 
