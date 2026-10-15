@@ -131,7 +131,7 @@ export default function LeaderboardScreen({ onPlay, onExit }) {
 
   return (
     <div className="board">
-      {onExit && <button className="landing-back" onClick={onExit}>← Home</button>}
+      {onExit && <button className="round-back-btn round-back-btn--standalone" onClick={onExit} aria-label="Back home">←</button>}
       <div className="board-head">
         <div className="board-head-left">
           <div className="board-icon"><Icon name="trophy" size={22} stroke="currentColor" strokeWidth={2} /></div>

@@ -54,11 +54,11 @@ describe("LeaderboardScreen", () => {
   // the one dead end when it wasn't given an onExit handler.
   it("has no back button unless given one, and uses it when given one", async () => {
     const noExit = await render();
-    expect(noExit.querySelector(".landing-back")).toBeNull();
+    expect(noExit.querySelector(".round-back-btn")).toBeNull();
 
     const onExit = vi.fn();
     const withExit = await render({ onExit });
-    await act(async () => { withExit.querySelector(".landing-back").click(); });
+    await act(async () => { withExit.querySelector(".round-back-btn").click(); });
     expect(onExit).toHaveBeenCalled();
   });
 

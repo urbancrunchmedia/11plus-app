@@ -38,7 +38,7 @@ export default function ProgressReport({ onBack, onPractise, onPracticeSkill }) 
   return (
     <div className="report">
       <div className="report-head">
-        <button className="report-back" onClick={onBack} aria-label="Back">←</button>
+        <button className="round-back-btn" onClick={onBack} aria-label="Back">←</button>
         <div>
           <h1 className="report-title">Progress report</h1>
           <div className="report-sub">What to revise next (for grown-ups)</div>

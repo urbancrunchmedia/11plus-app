@@ -57,7 +57,7 @@ export default function WordListScreen({ onExit }) {
 
   return (
     <div className="wordlist">
-      {onExit && <button className="landing-back" onClick={onExit}>← Home</button>}
+      {onExit && <button className="round-back-btn round-back-btn--standalone" onClick={onExit} aria-label="Back home">←</button>}
       <div className="wordlist-head">
         <div className="landing-icon" style={{ background: SKILL_ICON.wordList.bg }}><Icon name="book" stroke={SKILL_ICON.wordList.stroke} size={26} /></div>
         <div className="landing-head-txt">
