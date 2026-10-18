@@ -14,6 +14,16 @@ function initials(name) {
   return (name || "?").trim().slice(0, 1).toUpperCase();
 }
 
+// A stalled Firestore request (bad connection, not an outright failure)
+// never rejects on its own — without this, the screen would be stuck on
+// "Loading leaderboard…" forever with no way out but reloading the page.
+function withTimeout(promise, ms) {
+  return Promise.race([
+    promise,
+    new Promise((_, reject) => setTimeout(() => reject(new Error("Timed out")), ms)),
+  ]);
+}
+
 // Codes look like "WM-7H2K9". Auto-insert the hyphen after the 2-letter prefix
 // so users never type it themselves.
 function formatCode(raw) {
@@ -26,6 +36,7 @@ export default function LeaderboardScreen({ onPlay, onExit }) {
   const [me, setMe]           = useState(null);
   const [people, setPeople]   = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const [managing, setManaging]       = useState(false);
   const [addSheet, setAddSheet]       = useState(false);
   const [removeTarget, setRemoveTarget] = useState(null);
@@ -46,11 +57,21 @@ export default function LeaderboardScreen({ onPlay, onExit }) {
   const load = useCallback(async () => {
     if (!user) return;
     setLoading(true);
-    await syncProfile(user);
-    const [profile, board] = await Promise.all([getProfile(user.uid), getLeaderboard(user.uid)]);
-    setMe(profile);
-    setPeople(board);
-    setLoading(false);
+    setLoadError(false);
+    try {
+      await withTimeout(syncProfile(user), 15000);
+      const [profile, board] = await withTimeout(
+        Promise.all([getProfile(user.uid), getLeaderboard(user.uid)]),
+        15000
+      );
+      setMe(profile);
+      setPeople(board);
+    } catch (e) {
+      console.error("LeaderboardScreen load:", e);
+      setLoadError(true);
+    } finally {
+      setLoading(false);
+    }
   }, [user]);
 
   useEffect(() => {
@@ -144,7 +165,7 @@ export default function LeaderboardScreen({ onPlay, onExit }) {
           </div>
         </div>
         <div className="board-head-actions">
-          {!loading && rows.length > 1 && (
+          {!loading && !loadError && rows.length > 1 && (
             <button className={`board-manage ${managing ? "on" : ""}`} onClick={() => setManaging((v) => !v)}>
               {managing ? "Done" : "Manage"}
             </button>
@@ -155,6 +176,12 @@ export default function LeaderboardScreen({ onPlay, onExit }) {
 
       {loading ? (
         <div className="board-empty">Loading leaderboard…</div>
+      ) : loadError ? (
+        <div className="board-empty">
+          <div className="board-empty-title">Couldn't load the leaderboard</div>
+          <div className="board-empty-sub">Check your connection and try again.</div>
+          <button className="board-addbtn board-empty-retry" onClick={load}>Try again</button>
+        </div>
       ) : (
         <div className="board-rows">
           {rows.map((p, i) => {
@@ -185,14 +212,14 @@ export default function LeaderboardScreen({ onPlay, onExit }) {
         </div>
       )}
 
-      {!loading && rows.length <= 1 && (
+      {!loading && !loadError && rows.length <= 1 && (
         <div className="board-empty">
           <div className="board-empty-title">No friends yet</div>
           <div className="board-empty-sub">Swap codes with a friend to see each other on the leaderboard.</div>
         </div>
       )}
 
-      {!loading && rows.length > 1 && (
+      {!loading && !loadError && rows.length > 1 && (
         <div className="board-foot">
           <div>
             <div className="board-foot-title">{gapLine}</div>

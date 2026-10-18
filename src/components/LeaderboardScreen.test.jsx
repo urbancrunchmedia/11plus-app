@@ -169,4 +169,27 @@ describe("LeaderboardScreen", () => {
     expect(el.querySelector(".board-rank--1")).toBeTruthy();
     expect(el.textContent).toContain("top of the board");
   });
+
+  // A stalled Firestore request (flaky connection) never rejects on its own —
+  // without a timeout the screen would be stuck on "Loading leaderboard…"
+  // forever, with no error and no way out but reloading the page.
+  it("shows an error with a retry instead of hanging forever when a fetch stalls", async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    const { getLeaderboard } = await import("../utils/cloudScores");
+    getLeaderboard.mockImplementationOnce(() => new Promise(() => {})); // never settles
+    const el = await render();
+
+    await act(async () => { await vi.advanceTimersByTimeAsync(15000); });
+    expect(el.querySelector(".board-empty-title").textContent).toMatch(/Couldn't load/);
+
+    getLeaderboard.mockResolvedValueOnce([
+      { uid: "u1", displayName: "Ava", points: 120, weekPoints: 40, isMe: true },
+      { uid: "u2", displayName: "Sam", points: 900, weekPoints: 12 },
+    ]);
+    await act(async () => { el.querySelector(".board-empty-retry").click(); });
+    expect(el.querySelector(".board-empty-title")).toBeNull();
+    expect(el.textContent).toContain("Sam");
+
+    vi.useRealTimers();
+  });
 });

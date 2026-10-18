@@ -1,6 +1,6 @@
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
-import { getFirestore } from "firebase/firestore";
+import { initializeFirestore } from "firebase/firestore";
 
 // Trim each value — Vercel env vars were stored with trailing newlines, which
 // corrupt the Firebase auth iframe URL ("Illegal url for new iframe").
@@ -30,4 +30,8 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
-export const db   = getFirestore(app);
+// Firestore's default streaming connection (WebChannel) is known to hang
+// silently in Safari under ITP/some proxies/ad blockers, rather than erroring
+// — a request just never resolves. This probes once and falls back to
+// long-polling when streaming wouldn't work.
+export const db = initializeFirestore(app, { experimentalAutoDetectLongPolling: true });
