@@ -114,3 +114,35 @@ describe("onAuthStateChanged — shared-device account switch", () => {
     expect(syncProfile).toHaveBeenCalledWith(expect.objectContaining({ uid: "kid-b" }));
   });
 });
+
+describe("onAuthStateChanged — restoring a persisted session", () => {
+  beforeEach(() => { authStateCallback = null; renders = []; vi.clearAllMocks(); });
+
+  // Regression: a persisted session restoring from storage (Safari/iOS under
+  // ITP, or just a slow IndexedDB read) can fire this listener once with
+  // "logged out" before correcting itself a moment later with the real user
+  // — flashing the login screen on every reload. A short grace period should
+  // let that correction land before committing to "logged out".
+  it("never commits to logged-out if the real user arrives within the grace period", async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    await mount();
+    act(() => { authStateCallback(null); });
+    await act(async () => { await vi.advanceTimersByTimeAsync(200); });
+    act(() => { authStateCallback({ uid: "u1", displayName: "Ava", photoURL: null, email: "a@b.com" }); });
+    await act(async () => { await vi.advanceTimersByTimeAsync(400); });
+
+    expect(renders).not.toContain(null);
+    expect(renders.some((u) => u?.uid === "u1")).toBe(true);
+    vi.useRealTimers();
+  });
+
+  it("does commit to logged-out once the grace period passes with no correction", async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    await mount();
+    act(() => { authStateCallback(null); });
+    await act(async () => { await vi.advanceTimersByTimeAsync(400); });
+
+    expect(renders).toContain(null);
+    vi.useRealTimers();
+  });
+});

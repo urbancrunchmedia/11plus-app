@@ -45,6 +45,14 @@ export function AuthProvider({ children }) {
   // swap) can tell it's stale and skip writing — syncProfile() computes its
   // stats from local storage, which by then belongs to the NEW account.
   const latestUidRef = useRef(null);
+  // A persisted session restoring from storage — especially Safari/iOS,
+  // under ITP or a slow IndexedDB read — can fire this listener once with
+  // "logged out" before correcting itself a moment later with the real
+  // signed-in user, flashing the login screen on every reload. Holding a
+  // "logged out" result for a short grace period lets that correction land
+  // first; a genuinely logged-out visitor just sees the login screen a
+  // few hundred ms later, which is imperceptible.
+  const pendingLogoutTimer = useRef(null);
 
   useEffect(() => {
     // Complete any sign-in that used the redirect fallback.
@@ -55,18 +63,24 @@ export function AuthProvider({ children }) {
 
     const unsub = onAuthStateChanged(auth, (u) => {
       if (signingUpRef.current) return;
-      setUser(u ?? null);
-      latestUidRef.current = u ? u.uid : null;
-      if (u) {
-        // Clear any previous account's local progress on this device, THEN merge
-        // this account's cloud scores and publish a profile (friend code + points).
-        prepareLocalForUser(u.uid);
-        mergeFromCloud(u.uid)
-          .then(() => { if (latestUidRef.current === u.uid) return syncProfile(u); })
-          .catch(console.error);
+      clearTimeout(pendingLogoutTimer.current);
+      if (!u) {
+        pendingLogoutTimer.current = setTimeout(() => {
+          setUser(null);
+          latestUidRef.current = null;
+        }, 400);
+        return;
       }
+      setUser(u);
+      latestUidRef.current = u.uid;
+      // Clear any previous account's local progress on this device, THEN merge
+      // this account's cloud scores and publish a profile (friend code + points).
+      prepareLocalForUser(u.uid);
+      mergeFromCloud(u.uid)
+        .then(() => { if (latestUidRef.current === u.uid) return syncProfile(u); })
+        .catch(console.error);
     });
-    return unsub;
+    return () => { unsub(); clearTimeout(pendingLogoutTimer.current); };
   }, []);
 
   async function signInWithGoogle() {
