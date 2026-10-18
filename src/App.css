@@ -2133,7 +2133,10 @@ body {
 .chip { flex: 1; border: none; border-radius: var(--r-full); padding: 12px 0; font-weight: 700; font-size: 0.9rem; background: #fff; color: var(--muted, #6b7a8c); box-shadow: var(--shadow-xs); transition: all 0.15s; }
 .chip.active { background: var(--ink); color: #fff; }
 
-.landing-hero { background: var(--brand-gradient); color: #fff; border-radius: 28px; padding: 26px; position: relative; overflow: hidden; }
+/* No overflow:hidden here — the gradient background already respects the
+   rounded corners on its own, and clipping would cut off the Level/Length
+   dropdown menus that pop out below this card. */
+.landing-hero { background: var(--brand-gradient); color: #fff; border-radius: 28px; padding: 26px; position: relative; }
 .landing-hero-title { font-weight: 800; font-size: 1.7rem; letter-spacing: -0.02em; margin: 14px 0 8px; }
 .landing-hero-blurb { font-weight: 500; font-size: 0.92rem; line-height: 1.5; color: rgba(255,255,255,0.85); max-width: 440px; }
 .landing-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
