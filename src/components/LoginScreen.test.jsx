@@ -82,6 +82,21 @@ describe("LoginScreen", () => {
     expect(el.querySelector(".login2-emailcta")).toBeTruthy();
   });
 
+  // Stepping back from a failed-login error screen left the old error (with
+  // its own "Continue with Google" button) stacked on top of the choice
+  // screen's own Google button, rendering it twice.
+  it("clears the error when stepping back, instead of leaving a stale Google button behind", async () => {
+    AUTH.signInWithEmail.mockRejectedValue({ code: "auth/invalid-credential" });
+    const el = await render();
+    await openEmailForm(el);
+    el.querySelector('input[type="email"]').value = "a@b.com";
+    await act(async () => { el.querySelector("form").dispatchEvent(new Event("submit", { bubbles: true, cancelable: true })); });
+    expect(el.querySelector(".login2-error")).toBeTruthy();
+    await act(async () => { el.querySelector(".round-back-btn").click(); });
+    expect(el.querySelector(".login2-error")).toBeNull();
+    expect(el.querySelectorAll(".login2-google").length).toBe(1);
+  });
+
   // Google should always be one tap away, not just on the choice screen.
   it("still offers Google once the email form is open", async () => {
     const el = await render();

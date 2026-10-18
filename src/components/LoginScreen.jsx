@@ -143,7 +143,14 @@ export default function LoginScreen() {
       <div className="login2-panel">
         <div className="login2-card">
           {showEmailForm && (
-            <button type="button" className="round-back-btn round-back-btn--standalone" onClick={() => setShowEmailForm(false)} aria-label="Back">←</button>
+            <button
+              type="button"
+              className="round-back-btn round-back-btn--standalone"
+              onClick={() => { setShowEmailForm(false); setError(""); setNotice(""); setCredFail(false); }}
+              aria-label="Back"
+            >
+              ←
+            </button>
           )}
           <div className="login2-h">{mode === "signin" ? "Grown-up sign in" : "Create an account"}</div>
           <div className="login2-p">See progress, set daily goals and manage profiles.</div>
