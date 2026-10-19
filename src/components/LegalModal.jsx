@@ -8,7 +8,7 @@ const ENTITY = "Urban Crunch Media Limited";
 const COMPANY_NUMBER = "15899109";
 const REGISTERED_IN = "England and Wales";
 const REGISTERED_OFFICE = "16 Hoylake Road, Sale, England, M33 2XH";
-const UPDATED = "September 2026";
+const UPDATED = "October 2026";
 
 const PRIVACY = [
   ["Who we are", `${APP} is an educational word-game app to help children practise for the 11+, operated by ${ENTITY}. This policy explains what we collect and why. Questions: ${CONTACT}.`],
@@ -16,7 +16,8 @@ const PRIVACY = [
   ["Who uses the app", "Accounts are created and managed by a parent or guardian. The app is designed to be used by a child under adult supervision. We ask parents not to enter more personal information about a child than the first name/nickname shown in the app."],
   ["What we collect", "• The account email address you sign in with (via Google or email/password).\n• The learner's display name you choose (shown on the leaderboard and results).\n• Gameplay data (scores, progress, streaks and which questions were answered) to save progress and show your stats.\n• If you subscribe, payment is handled by Stripe. We never see or store your card details."],
   ["How we use it", "To run the app, save and sync progress across your devices, show a friends leaderboard (only with people whose code you add), and manage subscriptions. We do not sell your data or use it for advertising."],
-  ["Who processes data for us", "• Google Firebase: sign-in and data storage.\n• Stripe: subscription payments.\n• Vercel: website hosting.\nEach only processes what's needed to provide their part of the service."],
+  ["Emails we send", "We email the account address about the account itself: a welcome email when you sign up, and a reminder before a free trial ends. We may also send occasional updates about the app and a reminder if your child hasn't practised for a while. Every update or reminder has an unsubscribe link, and you can also reply to ask us to stop."],
+  ["Who processes data for us", "• Google Firebase: sign-in and data storage.\n• Stripe: subscription payments.\n• Vercel: website hosting.\n• Resend: sending our emails.\nEach only processes what's needed to provide their part of the service."],
   ["Storage & security", "Progress is kept in your browser and in Firebase. Data is sent over encrypted connections (HTTPS). No system is perfectly secure, but we take reasonable steps to protect your information."],
   ["Your choices", `You can edit or clear the learner's name in Settings, remove friends at any time, and log out. To delete your account and associated data, email ${CONTACT} and we'll remove it.`],
   ["Children's privacy", "We aim to collect the minimum needed to run the app. If you believe a child has provided us more information than intended, contact us and we'll delete it."],

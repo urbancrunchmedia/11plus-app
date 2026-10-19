@@ -17,6 +17,21 @@ import { mergeFromCloud, syncProfile, prepareLocalForUser } from "../utils/cloud
 
 const AuthContext = createContext(null);
 
+// Ask the server to send the welcome email. Only for accounts created in the
+// last few minutes; the server also checks it hasn't been sent already, so
+// calling this more than once (other tab, reload) is harmless.
+function maybeSendWelcome(u, name) {
+  const created = Date.parse(u?.metadata?.creationTime || "");
+  if (!created || Date.now() - created > 10 * 60 * 1000 || typeof u.getIdToken !== "function") return;
+  u.getIdToken()
+    .then((token) => fetch("/api/email/welcome", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+      body: JSON.stringify(name ? { name } : {}),
+    }))
+    .catch(() => { /* a missed welcome email must never break sign-in */ });
+}
+
 // Errors that mean "this environment can't do a popup" — fall back to redirect.
 const POPUP_FALLBACK_CODES = new Set([
   "auth/popup-blocked",
@@ -73,6 +88,7 @@ export function AuthProvider({ children }) {
       }
       setUser(u);
       latestUidRef.current = u.uid;
+      maybeSendWelcome(u);
       // Clear any previous account's local progress on this device, THEN merge
       // this account's cloud scores and publish a profile (friend code + points).
       prepareLocalForUser(u.uid);
@@ -126,6 +142,7 @@ export function AuthProvider({ children }) {
       const u = cred.user;
       prepareLocalForUser(u.uid);
       setUser({ uid: u.uid, displayName: check.value, photoURL: u.photoURL, email: u.email });
+      maybeSendWelcome(u, check.value);
       await mergeFromCloud(u.uid).then(() => syncProfile(u)).catch(console.error);
     } finally {
       signingUpRef.current = false;
