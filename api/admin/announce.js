@@ -7,6 +7,7 @@
 //   { id, subject, heading?, text, ctaLabel?, ctaUrl? }  first send (content is saved)
 //   { id }                                               continue a saved announcement
 //   { ...any of the above, testTo: "you@example.com" }   send one test copy only
+//   { id, dryRun: true }                                 just count who would get it
 import { adminDb } from "../../server/firebaseAdmin.js";
 import { listAccounts } from "../../server/recipients.js";
 import { announcementEmail, sendBatch, sendEmail, unsubscribedUids, DAILY_CAP } from "../../server/email.js";
@@ -24,6 +25,13 @@ export default async function handler(req, res) {
     if (!id) return res.status(400).json({ error: "Missing id" });
 
     const ref = db.collection("announcements").doc(id);
+    if (body.dryRun) {
+      const [accounts, unsubscribed, alreadySent] = await Promise.all([listAccounts(), unsubscribedUids(db), ref.collection("sent").get()]);
+      const sent = new Set(alreadySent.docs.map((d) => d.id));
+      const wouldSend = accounts.filter((a) => !unsubscribed.has(a.uid) && !sent.has(a.uid)).length;
+      return res.status(200).json({ dryRun: true, wouldSend, unsubscribed: unsubscribed.size, total: accounts.length });
+    }
+
     let content;
     if (body.subject && body.text) {
       content = {
