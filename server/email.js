@@ -42,42 +42,107 @@ function escapeHtml(s) {
   return String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 }
 
-// One shared layout so every email looks like the app (EduCore blue/lime/ink).
-function layout({ heading, paragraphs, cta, footerUid }) {
-  const body = paragraphs.map((p) => `<p style="margin:0 0 16px;font-size:16px;line-height:1.55;color:#0E1116">${p}</p>`).join("");
-  const button = cta
-    ? `<p style="margin:24px 0"><a href="${cta.url}" style="display:inline-block;background:#D4F520;color:#0E1116;font-weight:800;text-decoration:none;padding:14px 26px;border-radius:14px;border-bottom:4px solid #A8C400">${escapeHtml(cta.label)}</a></p>`
-    : "";
+// ---- Shared layout, built from the app's EduCore brand ----
+// Tables + inline styles because that's what Gmail/Outlook render reliably.
+// Plus Jakarta Sans loads in Apple Mail and iOS; elsewhere it falls back to Helvetica/Arial.
+const C = {
+  brand: "#12A5FF", brandDark: "#0B7FC7", lime: "#D4F520", limeDark: "#A8C400",
+  ink: "#0E1116", surface: "#F4F9FF", muted: "#6B7A8C", line: "#DDE7F0",
+};
+const FONT = "'Plus Jakarta Sans',Helvetica,Arial,sans-serif";
+const LOGO = `${SITE}/pwa-192.png`;
+
+function p(html) {
+  return `<p style="margin:0 0 16px;font-family:${FONT};font-size:16px;line-height:1.6;color:${C.ink}">${html}</p>`;
+}
+
+// Chunky lime button with the app's offset bottom edge.
+function button({ label, url }) {
+  return `<table role="presentation" cellpadding="0" cellspacing="0" style="margin:8px 0 4px"><tr>
+<td style="background:${C.lime};border-radius:16px;border-bottom:5px solid ${C.limeDark}">
+<a href="${url}" style="display:inline-block;padding:16px 30px;font-family:${FONT};font-size:17px;font-weight:800;color:${C.ink};text-decoration:none">${escapeHtml(label)} &rarr;</a>
+</td></tr></table>`;
+}
+
+// Three game tiles, like the login screen's game list.
+function gameTiles() {
+  const tile = (emoji, name, hook) => `<td width="33%" valign="top" style="padding:4px">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${C.surface};border-radius:16px;border-bottom:3px solid ${C.line}"><tr><td style="padding:14px 12px">
+<div style="font-size:24px;line-height:1">${emoji}</div>
+<div style="margin-top:8px;font-family:${FONT};font-size:14px;font-weight:800;color:${C.ink}">${name}</div>
+<div style="margin-top:2px;font-family:${FONT};font-size:12px;line-height:1.4;color:${C.muted}">${hook}</div>
+</td></tr></table></td>`;
+  return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:4px 0 20px"><tr>
+${tile("🔤", "Word Match", "Synonyms &amp; antonyms")}
+${tile("✏️", "Spelling", "Tricky 11+ words")}
+${tile("❗", "Punctuation", "Commas to colons")}
+</tr></table>`;
+}
+
+// Ink card with a big lime number/date: the app's dark stat tile.
+function statCard({ big, label }) {
+  return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:4px 0 20px;background:${C.ink};border-radius:20px"><tr><td style="padding:20px 22px">
+<div style="font-family:${FONT};font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#9AA8B6">${label}</div>
+<div style="margin-top:6px;font-family:${FONT};font-size:28px;font-weight:800;line-height:1.2;color:${C.lime}">${big}</div>
+</td></tr></table>`;
+}
+
+function layout({ preheader, eyebrow, heading, blocks, footerUid }) {
   const unsub = footerUid
-    ? `<br><a href="${unsubUrl(footerUid)}" style="color:#5B6675">Unsubscribe from updates and reminders</a>`
+    ? ` · <a href="${unsubUrl(footerUid)}" style="color:${C.muted};text-decoration:underline">Unsubscribe</a>`
     : "";
-  return `<!doctype html><html><body style="margin:0;background:#F4F9FF;font-family:'Plus Jakarta Sans',Helvetica,Arial,sans-serif">
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#F4F9FF;padding:24px 12px"><tr><td align="center">
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:#ffffff;border-radius:20px;overflow:hidden">
-<tr><td style="background:#12A5FF;padding:20px 28px;color:#ffffff;font-size:20px;font-weight:800">11 Plus Lab</td></tr>
-<tr><td style="padding:28px">
-<h1 style="margin:0 0 18px;font-size:24px;line-height:1.25;color:#0E1116">${escapeHtml(heading)}</h1>
-${body}${button}
-</td></tr></table>
-<p style="max-width:560px;margin:16px auto 0;font-size:12px;line-height:1.5;color:#5B6675">
-Urban Crunch Media Limited · 16 Hoylake Road, Sale, M33 2XH · Questions? Just reply to this email.${unsub}
-</p></td></tr></table></body></html>`;
+  return `<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="light"><meta name="supported-color-schemes" content="light">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;700;800&display=swap" rel="stylesheet">
+<title>${escapeHtml(heading)}</title>
+<style>@media (max-width:600px){.px{padding-left:22px!important;padding-right:22px!important}.h1{font-size:28px!important}}</style>
+</head>
+<body style="margin:0;padding:0;background:${C.surface}">
+<div style="display:none;max-height:0;overflow:hidden;opacity:0">${escapeHtml(preheader || "")}&#8199;&#65279;&#847;&#8199;&#65279;&#847;&#8199;&#65279;&#847;</div>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${C.surface}"><tr><td align="center" style="padding:28px 12px">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:580px">
+
+<tr><td style="background:${C.brand};border-radius:28px 28px 0 0;padding:28px 36px 34px" class="px">
+  <table role="presentation" cellpadding="0" cellspacing="0"><tr>
+    <td><a href="${SITE}"><img src="${LOGO}" width="44" height="44" alt="11" style="display:block;border:0;border-radius:12px"></a></td>
+    <td style="padding-left:12px;font-family:${FONT};font-size:20px;font-weight:800;color:#ffffff;letter-spacing:-.01em">11 Plus Lab</td>
+  </tr></table>
+  <div style="margin-top:26px"><span style="display:inline-block;background:${C.lime};color:${C.ink};font-family:${FONT};font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;padding:6px 12px;border-radius:999px">${escapeHtml(eyebrow)}</span></div>
+  <h1 class="h1" style="margin:14px 0 0;font-family:${FONT};font-size:32px;line-height:1.15;font-weight:800;letter-spacing:-.02em;color:#ffffff">${escapeHtml(heading)}</h1>
+</td></tr>
+
+<tr><td style="background:#ffffff;border-radius:0 0 28px 28px;padding:32px 36px 34px;border-bottom:4px solid ${C.line}" class="px">
+${blocks.join("\n")}
+</td></tr>
+
+<tr><td style="padding:24px 20px 8px;text-align:center;font-family:${FONT};font-size:12px;line-height:1.6;color:${C.muted}">
+  <a href="${SITE}" style="color:${C.ink};font-weight:800;text-decoration:none">11pluslab.com</a> · Vocabulary, spelling &amp; punctuation games for ages 8–11<br>
+  Questions? Just reply to this email.<br>
+  Urban Crunch Media Limited · 16 Hoylake Road, Sale, M33 2XH${unsub}
+</td></tr>
+
+</table></td></tr></table></body></html>`;
 }
 
 // ---- Templates. Each returns { subject, html, marketing } ----
 
 export function welcomeEmail({ name }) {
-  const learner = name ? escapeHtml(name) : "your child";
+  const who = name ? escapeHtml(name) : "Your child";
   return {
     marketing: false,
     subject: "Welcome to 11 Plus Lab",
     html: layout({
-      heading: "Welcome to 11 Plus Lab!",
-      paragraphs: [
-        `Thanks for signing up. ${learner === "your child" ? "Your child" : learner} can start practising straight away: synonyms, antonyms, spelling, punctuation and more, all as quick games.`,
-        "A few minutes a day works better than one long session. The app picks the words they find hardest and brings them back until they stick.",
+      preheader: "Quick, fun 11+ practice, ready when you are.",
+      eyebrow: "Welcome",
+      heading: name ? `${name} is all set!` : "You're all set!",
+      blocks: [
+        p(`Thanks for signing up. ${who} can start practising straight away, with short games that build 11+ vocabulary, spelling and punctuation.`),
+        gameTiles(),
+        p("<strong>Our tip:</strong> 5 minutes a day beats one long session. The app spots the words they find hardest and brings them back until they stick."),
+        button({ label: "Start practising", url: SITE }),
       ],
-      cta: { label: "Start practising", url: SITE },
     }),
   };
 }
@@ -88,28 +153,34 @@ export function trialEndingEmail({ trialEnd }) {
     marketing: false,
     subject: `Your free trial ends on ${when}`,
     html: layout({
+      preheader: `Your free trial ends on ${when}. Nothing to do if you'd like to carry on.`,
+      eyebrow: "Free trial",
       heading: "Your free trial is ending soon",
-      paragraphs: [
-        `Your 11 Plus Lab free trial ends on <strong>${escapeHtml(when)}</strong>. After that, your subscription starts and your card will be charged automatically.`,
-        "Nothing to do if you'd like to carry on. If you don't want to continue, you can cancel any time before then from Settings → Manage subscription in the app.",
+      blocks: [
+        statCard({ label: "Trial ends", big: escapeHtml(when) }),
+        p("After that, your subscription starts and your card is charged automatically. <strong>Nothing to do</strong> if you'd like to carry on."),
+        p("Don't want to continue? Cancel any time before then in the app: <strong>Settings → Manage subscription</strong>."),
+        button({ label: "Open 11 Plus Lab", url: SITE }),
       ],
-      cta: { label: "Open 11 Plus Lab", url: SITE },
     }),
   };
 }
 
 export function inactivityEmail({ uid, name, days }) {
-  const learner = name ? escapeHtml(name) : "Your child";
+  const who = name ? escapeHtml(name) : "Your child";
   return {
     marketing: true,
     subject: `${name || "Your child"}'s words are waiting`,
     html: layout({
-      heading: "Time for a quick practice?",
-      paragraphs: [
-        `${learner} hasn't practised on 11 Plus Lab for ${days} days. A short 5-minute round today helps keep the words they've learned fresh.`,
-        "The app will start with the words they found trickiest last time.",
+      preheader: "A 5-minute round keeps the words they've learned fresh.",
+      eyebrow: "Practice reminder",
+      heading: "Time for a quick round?",
+      blocks: [
+        statCard({ label: "Since the last practice", big: `${days} days` }),
+        p(`${who} hasn't practised for a few days. A short 5-minute round today keeps the words they've learned fresh.`),
+        p("The app starts with the words they found trickiest last time."),
+        button({ label: "Play a quick round", url: SITE }),
       ],
-      cta: { label: "Play a quick round", url: SITE },
       footerUid: uid,
     }),
   };
@@ -117,14 +188,15 @@ export function inactivityEmail({ uid, name, days }) {
 
 // Announcements are written by the app owner as simple text: blank lines split paragraphs.
 export function announcementEmail({ uid, subject, heading, text, ctaLabel, ctaUrl }) {
-  const paragraphs = String(text).trim().split(/\n\s*\n/).map((p) => escapeHtml(p).replace(/\n/g, "<br>"));
+  const paras = String(text).trim().split(/\n\s*\n/).map((t) => p(escapeHtml(t).replace(/\n/g, "<br>")));
   return {
     marketing: true,
     subject,
     html: layout({
+      preheader: String(text).trim().split(/\n/)[0].slice(0, 120),
+      eyebrow: "News",
       heading: heading || subject,
-      paragraphs,
-      cta: ctaLabel ? { label: ctaLabel, url: ctaUrl || SITE } : null,
+      blocks: [...paras, ...(ctaLabel ? [button({ label: ctaLabel, url: ctaUrl || SITE })] : [])],
       footerUid: uid,
     }),
   };
