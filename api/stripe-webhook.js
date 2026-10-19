@@ -31,8 +31,11 @@ export default async function handler(req, res) {
   try {
     if (event.type === "customer.subscription.trial_will_end") {
       const sub = event.data.object;
-      // Skip a trial that's already set to cancel: they've decided, no need to warn them.
-      if (!sub.cancel_at_period_end && sub.trial_end) {
+      // Skip a trial that's already set to cancel (they've decided), and one
+      // ended early (Stripe fires this event then too, often as payment is
+      // taken), where "your trial ends soon" would be wrong.
+      const stillTrialing = sub.status === "trialing" && sub.trial_end && sub.trial_end * 1000 - Date.now() > 24 * 60 * 60 * 1000;
+      if (!sub.cancel_at_period_end && stillTrialing) {
         const customer = await stripe.customers.retrieve(sub.customer);
         if (customer.email && !customer.deleted) {
           await sendEmail({
