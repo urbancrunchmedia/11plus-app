@@ -49,3 +49,39 @@ const svg = fs.readFileSync(lockupSvg, "utf8");
 const [, vw, vh] = svg.match(/viewBox="0 0 ([\d.]+) ([\d.]+)"/);
 png("logo-lockup-dark", svg, Math.round((vw / vh) * 88));
 console.log("lockup display width", Math.round((vw / vh) * 44));
+
+// ---- Dark-mode-proof pieces ----
+// Gmail's apps recolour HTML in dark mode but never touch images, so the
+// branded parts that must not change colour are images.
+import opentype from "opentype.js";
+const fontsDir = process.argv[4];
+const jk8 = opentype.parse(fs.readFileSync(`${fontsDir}/Jakarta-800.woff`).buffer.slice(0));
+
+// Header banner: blobs + logo (56 px tall), rounded top corners, 600 x 112 (exported 2x).
+{
+  const lock = fs.readFileSync(lockupSvg, "utf8");
+  const inner = lock.replace(/^<svg[^>]*>/, "").replace(/<\/svg>$/, "");
+  const [, lw, lh] = lock.match(/viewBox="0 0 ([\d.]+) ([\d.]+)"/);
+  const k = 56 / lh;
+  png("header-banner", `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 112">
+  <defs><clipPath id="c"><path d="M0 28 Q0 0 28 0 H572 Q600 0 600 28 V112 H0 Z"/></clipPath></defs>
+  <g clip-path="url(#c)"><rect width="600" height="112" fill="#EEF6FF"/>
+  <path d="M430 -40 C520 -30 640 10 620 120 C600 210 520 190 470 140 C420 90 360 30 430 -40Z" fill="#DCEEFF"/>
+  <circle cx="560" cy="18" r="70" fill="#F3FBD4"/>
+  <path d="M-60 90 C-10 60 40 80 50 112 L-60 112Z" fill="#E2F1FF"/>
+  <g transform="translate(36 30) scale(${k})">${inner}</g></g></svg>`, 1200);
+}
+
+// CTA buttons as images: lime pill, ink label, ink arrow circle (exported 2x).
+const BUTTONS = { start: "Start practising", open: "Open 11 Plus Lab", play: "Play a quick round" };
+for (const [id, label] of Object.entries(BUTTONS)) {
+  const size = 18, tw = jk8.getAdvanceWidth(label, size);
+  const w = Math.ceil(28 + tw + 16 + 40 + 8), h = 56;
+  png(`btn-${id}`, `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${w} ${h}">
+  <rect width="${w}" height="${h}" rx="28" fill="#D4F520"/>
+  <path d="${jk8.getPath(label, 28, 34.5, size).toPathData(2)}" fill="#0E1116"/>
+  <circle cx="${w - 8 - 20}" cy="28" r="20" fill="#0E1116"/>
+  <path d="M${w - 36} 28h15M${w - 27} 21.5l6.5 6.5-6.5 6.5" fill="none" stroke="#D4F520" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>
+  </svg>`, w * 2);
+  console.log("btn", id, w, h);
+}

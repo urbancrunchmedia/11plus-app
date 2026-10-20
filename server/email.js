@@ -54,15 +54,25 @@ const C = {
 };
 const FONT = "'Plus Jakarta Sans',Helvetica,Arial,sans-serif";
 const IMG = `${SITE}/email`;
-// 11 Plus Lab lockup (square + "PlusLab"), dark text for the light header, 2x. Source: design/logo/.
-const LOGO = `${IMG}/logo-lockup-dark.png`;
 
 function p(html) {
   return `<p style="margin:0 0 16px;font-family:${FONT};font-size:16px;line-height:1.65;color:${C.ink}">${html}</p>`;
 }
 
 // Lime pill with an ink arrow circle, like the poster's "11pluslab.com →".
+// The standard buttons are images (public/email/btn-*.png): Gmail's dark mode
+// recolours HTML (lime turns dark green) but never images. Any other label
+// falls back to an HTML pill, which still works, just recoloured in dark mode.
+const BUTTON_IMAGES = {
+  "Start practising": ["btn-start", 230], "Open 11 Plus Lab": ["btn-open", 236], "Play a quick round": ["btn-play", 252],
+};
 function button({ label, url }) {
+  const img = BUTTON_IMAGES[label];
+  if (img) {
+    return `<table role="presentation" cellpadding="0" cellspacing="0" style="margin:8px 0 4px"><tr><td>
+<a href="${url}" style="text-decoration:none"><img src="${IMG}/${img[0]}.png" width="${img[1]}" height="56" alt="${escapeHtml(label)} →" style="display:block;border:0;font-family:${FONT};font-size:18px;font-weight:800;color:${C.ink}"></a>
+</td></tr></table>`;
+  }
   return `<table role="presentation" cellpadding="0" cellspacing="0" style="margin:8px 0 4px"><tr>
 <td style="background:${C.lime};border-radius:999px;padding:8px 8px 8px 28px">
 <a href="${url}" style="text-decoration:none;display:block"><table role="presentation" cellpadding="0" cellspacing="0"><tr>
@@ -152,9 +162,11 @@ function layout({ preheader, eyebrow, heading, lead, blocks, footerUid }) {
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${C.sky}"><tr><td align="center" style="padding:20px 12px 28px">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:600px">
 
-<tr><td background="${IMG}/header-bg.png" bgcolor="${C.sky}" class="px" style="background:${C.sky} url('${IMG}/header-bg.png') center top / cover no-repeat;border-radius:28px 28px 0 0;padding:30px 36px 30px">
-  <a href="${SITE}"><img src="${LOGO}" width="133" height="44" alt="11 Plus Lab" style="display:block;border:0;height:44px;width:133px;font-family:${FONT};font-size:20px;font-weight:800;color:${C.ink}"></a>
-  <div style="margin-top:28px"><span style="display:inline-block;background:${C.ink};color:${C.lime};font-family:${FONT};font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;padding:7px 13px;border-radius:999px">${escapeHtml(eyebrow)}</span></div>
+<tr><td style="line-height:0;font-size:0"><a href="${SITE}"><img src="${IMG}/header-banner.png" width="600" height="112" alt="11 Plus Lab" style="display:block;border:0;width:100%;max-width:600px;height:auto;font-family:${FONT};font-size:20px;font-weight:800;color:${C.ink}"></a></td></tr>
+<tr><td bgcolor="${C.sky}" class="px" style="background:${C.sky};padding:6px 36px 30px">
+  <!-- Plain colour, no background image: Gmail's dark mode recolours text, so the
+       background behind it has to be recolourable too or the text disappears. -->
+  <span style="display:inline-block;background:${C.ink};color:${C.lime};font-family:${FONT};font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;padding:7px 13px;border-radius:999px">${escapeHtml(eyebrow)}</span>
   <h1 class="h1" style="margin:16px 0 0;font-family:${FONT};font-size:36px;line-height:1.15;font-weight:800;letter-spacing:-.025em;color:${C.ink}">${headline(heading)}</h1>
   ${lead ? `<p style="margin:14px 0 0;font-family:${FONT};font-size:17px;line-height:1.55;color:#3E4A58">${lead}</p>` : ""}
 </td></tr>
