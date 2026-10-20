@@ -3216,7 +3216,6 @@ body {
 .hero-secondary > * { flex: 1; min-width: 150px; }
 /* Practice pill now lives in the secondary row (not its own full-width line). */
 .landing-practice { flex-basis: auto; margin-top: 0; }
-/* In the side-by-side row hero, give the actions a steady column width. */
 
 /* ============================================================
    Subscription success (after Stripe Checkout) + cancelled plan state
