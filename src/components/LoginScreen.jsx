@@ -116,7 +116,7 @@ export default function LoginScreen() {
       <div className="login2-hero">
         <div className="login2-hero-bg1" />
         <div className="login2-hero-bg2" />
-        <div className="login2-logo">11</div>
+        <img className="login2-logo" src="/logo-lockup-white.svg" alt="11 Plus Lab" height="56" />
         <div className="login2-hero-mid">
           <div className="login2-tagline">Master the words. Ace the 11+.</div>
         </div>
