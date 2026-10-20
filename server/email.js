@@ -71,27 +71,38 @@ function button({ label, url }) {
 </tr></table></a></td></tr></table>`;
 }
 
-function tile({ icon, name, desc }) {
+// The app's "Choose a game" card (HomeDashboard .jumpcard): white, rounded,
+// pastel icon chip, bold title, small grey line, and a link in the game's colour.
+// Cards sit on the app's light-blue background, as they do in the app.
+function tile({ icon, name, desc, color, link = "Play" }) {
   return `<td width="50%" valign="top" style="padding:6px">
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${C.tile};border:1px solid ${C.line};border-radius:18px"><tr><td style="padding:16px">
-<img src="${IMG}/icon-${icon}.png" width="44" height="44" alt="" style="display:block;border:0">
-<div style="margin-top:10px;font-family:${FONT};font-size:16px;font-weight:800;color:${C.ink}">${name}</div>
-<div style="margin-top:3px;font-family:${FONT};font-size:13px;line-height:1.45;color:${C.muted}">${desc}</div>
-</td></tr></table></td>`;
+<a href="${SITE}" style="text-decoration:none;display:block">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#ffffff;border:1px solid ${C.line};border-bottom:3px solid #D5E2EF;border-radius:22px"><tr><td style="padding:18px 18px 16px">
+<img src="${IMG}/icon-${icon}.png" width="48" height="48" alt="" style="display:block;border:0">
+<div style="margin-top:14px;font-family:${FONT};font-size:17px;font-weight:800;line-height:1.25;color:${C.ink}">${name}</div>
+<div style="margin-top:4px;font-family:${FONT};font-size:13px;font-weight:600;line-height:1.45;color:#6B7A8C">${desc}</div>
+<div style="margin-top:12px;font-family:${FONT};font-size:13px;font-weight:800;color:${color};white-space:nowrap">${link} &rarr;</div>
+</td></tr></table></a></td>`;
 }
 
+// Same games, names, icons and colours as the app (gamify.js SKILLS + Icon.jsx SKILL_ICON).
 const GAMES = [
-  { icon: "synonyms", name: "Synonyms", desc: "Build vocabulary with similar words." },
-  { icon: "antonyms", name: "Antonyms", desc: "Learn words with opposite meanings." },
-  { icon: "compound", name: "Compound Words", desc: "Join two words into one." },
-  { icon: "detective", name: "Word Detective", desc: "Find the right word from a clue." },
-  { icon: "punctuation", name: "Punctuation", desc: "Spot the punctuation mistake." },
-  { icon: "spelling", name: "Spelling", desc: "Practise tricky 11+ spellings." },
+  { icon: "synonyms", name: "Synonyms", desc: "Match words with the same meaning", color: "#0B7FC7" },
+  { icon: "antonyms", name: "Antonyms", desc: "Match words with opposite meanings", color: "#C93A64" },
+  { icon: "compound", name: "Compound Words", desc: "Join two words into one", color: "#E0502F" },
+  { icon: "detective", name: "Word Detective", desc: "Work out the word from its clue", color: "#5F7A06" },
+  { icon: "punctuation", name: "Punctuation", desc: "Spot the punctuation mistake", color: C.ink },
+  { icon: "spelling", name: "Spelling", desc: "Spot the misspelled word", color: "#7444E0" },
+  { icon: "wordclass", name: "Parts of Speech", desc: "Spot the noun, verb or adjective", color: "#0B7C72" },
+  { icon: "wordlist", name: "Word List", desc: "Look up every word", color: "#0B7FC7", link: "Browse words" },
 ];
-function gameGrid(games = GAMES) {
+function gameGrid(games = GAMES, title = "Choose a game") {
   const rows = [];
-  for (let i = 0; i < games.length; i += 2) rows.push(`<tr>${tile(games[i])}${games[i + 1] ? tile(games[i + 1]) : "<td></td>"}</tr>`);
-  return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:4px 0 18px">${rows.join("")}</table>`;
+  for (let i = 0; i < games.length; i += 2) rows.push(`<tr>${tile(games[i])}${games[i + 1] ? tile(games[i + 1]) : '<td width="50%"></td>'}</tr>`);
+  return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:4px 0 22px;background:#F4F9FF;border-radius:24px"><tr><td style="padding:18px 12px 12px">
+<div style="padding:0 6px 8px;font-family:${FONT};font-size:18px;font-weight:800;color:${C.ink}">${title}</div>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0">${rows.join("")}</table>
+</td></tr></table>`;
 }
 
 // The poster's closing row: three promises with pastel icons.
@@ -216,7 +227,7 @@ export function inactivityEmail({ uid, name, days }) {
       blocks: [
         statCard({ icon: "flame", label: "Since the last practice", big: `${days} days` }),
         p("The app starts with the words they found trickiest last time, so every minute counts."),
-        gameGrid(GAMES.slice(0, 4)),
+        gameGrid(GAMES.slice(0, 4), "Pick up where they left off"),
         button({ label: "Play a quick round", url: SITE }),
       ],
       footerUid: uid,

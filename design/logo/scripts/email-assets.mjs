@@ -16,6 +16,8 @@ const ICONS = {
   trophy: '<path d="M7 5h10v4a5 5 0 0 1-10 0z"/><path d="M7 6H4v1.4A3.6 3.6 0 0 0 7.6 11"/><path d="M17 6h3v1.4A3.6 3.6 0 0 1 16.4 11"/><path d="M12 14v3"/><path d="M8.5 20h7"/><path d="M9.5 20l.5-3h4l.5 3"/>',
   chart: '<path d="M4 4v16h16"/><rect x="7.5" y="11" width="3" height="6" rx="1"/><rect x="12.5" y="7" width="3" height="10" rx="1"/><rect x="17.5" y="13" width="3" height="4" rx="1"/>',
   people: '<circle cx="9" cy="8.5" r="3"/><path d="M3.5 19a5.5 5.5 0 0 1 11 0"/><circle cx="16.5" cy="9.5" r="2.5"/><path d="M15 14.2a4.5 4.5 0 0 1 6 4.3"/>',
+  tag: '<path d="M9 6.5v11"/><path d="M9 6.5h3"/><path d="M9 17.5h3"/><path d="M15 6.5v11"/><path d="M15 6.5h-3"/><path d="M15 17.5h-3"/><circle cx="12" cy="12" r="1.3"/>',
+  book: '<path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3z"/><path d="M5 17h14"/><path d="M9 8h6"/><path d="M9 11.5h4"/>',
   clock: '<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/>',
   flame: '<path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.07-2.14-.22-4.05 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.15.43-2.29 1-3a2.5 2.5 0 0 0 2.5 2.5z"/>',
 };
@@ -23,12 +25,13 @@ const CHIPS = {
   synonyms: ["match", "#12a5ff", "#e4f6ff"], antonyms: ["oppose", "#e0507a", "#fdeef3"],
   compound: ["compound", "#ff6b4a", "#ffe9e3"], detective: ["detect", "#7fa30c", "#f3fbd4"],
   punctuation: ["punct", "#0e1116", "#f0f2f5"], spelling: ["spelling", "#8b5cf6", "#f1ecfe"],
+  wordclass: ["tag", "#0d9488", "#e0f5f3"], wordlist: ["book", "#12a5ff", "#eaf4fc"],
   confidence: ["trophy", "#12a5ff", "#e4f6ff"], progress: ["chart", "#22a35b", "#e3f7ea"],
   motivated: ["people", "#e0507a", "#fdeef3"], clock: ["clock", "#12a5ff", "#e4f6ff"], flame: ["flame", "#ff6b4a", "#ffe9e3"],
 };
 for (const [name, [icon, stroke, bg]] of Object.entries(CHIPS)) {
-  png(`icon-${name}`, `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48"><rect width="48" height="48" rx="14" fill="${bg}"/>
-  <g transform="translate(10 10) scale(1.1667)" fill="none" stroke="${stroke}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ICONS[icon]}</g></svg>`, 96);
+  png(`icon-${name}`, `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48"><rect width="48" height="48" rx="16" fill="${bg}"/>
+  <g transform="translate(12 12)" fill="none" stroke="${stroke}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ICONS[icon]}</g></svg>`, 96);
 }
 // CTA arrow: ink circle with a lime arrow, as on the poster.
 png("cta-arrow", `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40"><circle cx="20" cy="20" r="20" fill="#0E1116"/>
