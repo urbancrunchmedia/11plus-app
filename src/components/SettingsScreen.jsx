@@ -386,14 +386,14 @@ export default function SettingsScreen({ onOpenReport, onOpenBadges }) {
               <>
                 <div className="set-sheet-title">Message sent</div>
                 <div className="set-sheet-sub">
-                  Thanks — we'll reply to {user?.email || "your account email"} as soon as we can.
+                  Thanks. We'll reply by email as soon as we can.
                 </div>
                 <button className="set-sheet-confirm" onClick={closeSupportSheet}>Done</button>
               </>
             ) : (
               <>
                 <div className="set-sheet-title">Contact support</div>
-                <div className="set-sheet-sub">We'll reply to {user?.email || "your account email"}.</div>
+                <div className="set-sheet-sub">We'll reply by email to the address on your account.</div>
                 <div className="board-fieldlbl">What's this about?</div>
                 <Dropdown
                   ariaLabel="What's this about?"

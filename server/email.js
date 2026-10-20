@@ -10,6 +10,8 @@ import { createHmac, timingSafeEqual } from "crypto";
 
 const FROM = "11 Plus Lab <hello@11pluslab.com>";
 const REPLY_TO = "hello@11pluslab.com";
+// Where the in-app support form is delivered.
+export const SUPPORT_INBOX = "hello@11pluslab.com";
 export const SITE = "https://11pluslab.com";
 
 // Resend's free plan allows 100 emails a day; every bulk sender stays under this.
@@ -263,6 +265,31 @@ export function announcementEmail({ uid, subject, heading, text, ctaLabel, ctaUr
   };
 }
 
+// Internal: a support request from the in-app form, delivered to SUPPORT_INBOX.
+// Plain on purpose: it's for us, not a parent.
+export function supportRequestEmail({ uid, email, displayName, categoryLabel, message, createdAt, id }) {
+  const when = new Date(createdAt).toLocaleString("en-GB", { timeZone: "Europe/London", dateStyle: "medium", timeStyle: "short" });
+  const row = (k, v) => `<tr><td style="padding:4px 14px 4px 0;color:#5E6C7C;white-space:nowrap;vertical-align:top">${k}</td><td style="padding:4px 0;color:#0E1116">${v}</td></tr>`;
+  return {
+    marketing: false,
+    subject: `Support: ${categoryLabel}${displayName ? ` (${displayName})` : ""}`,
+    html: `<!doctype html><html><body style="margin:0;padding:24px;background:#F4F9FF;font-family:Helvetica,Arial,sans-serif;font-size:15px;line-height:1.55">
+<div style="max-width:560px;margin:0 auto;background:#fff;border-radius:16px;padding:24px">
+<div style="font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#12A5FF">In-app support request</div>
+<h1 style="margin:6px 0 16px;font-size:20px;color:#0E1116">${escapeHtml(categoryLabel)}</h1>
+<div style="white-space:pre-wrap;padding:14px 16px;background:#F4F9FF;border-radius:12px;color:#0E1116">${escapeHtml(message)}</div>
+<table role="presentation" style="margin-top:18px;font-size:13px">
+${row("From", escapeHtml(email || "(no email on account)"))}
+${row("Learner name", escapeHtml(displayName || "(not set)"))}
+${row("Sent", escapeHtml(when))}
+${row("Account", escapeHtml(uid))}
+${row("Request", escapeHtml(id))}
+</table>
+<p style="margin:18px 0 0;font-size:13px;color:#5E6C7C">Reply to this email to answer the parent directly.</p>
+</div></body></html>`,
+  };
+}
+
 function headersFor(email, uid) {
   if (!email.marketing || !uid) return undefined;
   // Lets Gmail/Apple Mail show their own one-click "Unsubscribe" button.
@@ -273,9 +300,9 @@ function headersFor(email, uid) {
 }
 
 // Send one email. idempotencyKey stops Resend sending the same email twice on a retry.
-export async function sendEmail({ to, uid, email, idempotencyKey }) {
+export async function sendEmail({ to, uid, email, idempotencyKey, replyTo = REPLY_TO }) {
   const { data, error } = await resend().emails.send(
-    { from: FROM, replyTo: REPLY_TO, to, subject: email.subject, html: email.html, headers: headersFor(email, uid) },
+    { from: FROM, replyTo, to, subject: email.subject, html: email.html, headers: headersFor(email, uid) },
     idempotencyKey ? { idempotencyKey } : undefined
   );
   if (error) throw new Error(`Resend: ${error.message}`);
