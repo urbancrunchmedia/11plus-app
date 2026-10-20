@@ -2462,9 +2462,6 @@ body {
 .hero-chip.active { background: var(--ink); color: #fff; }
 
 /* ── Landing hero as a row (Detective/Punctuation start banner) ── */
-.landing-hero--row { display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap; }
-.landing-hero--row .landing-hero-body { flex: 1; min-width: 220px; }
-.landing-hero--row .landing-hero-title { margin-top: 0; }
 
 /* ── Punctuation "choose a set" cards ── */
 .punct-sets { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; }
@@ -3220,7 +3217,6 @@ body {
 /* Practice pill now lives in the secondary row (not its own full-width line). */
 .landing-practice { flex-basis: auto; margin-top: 0; }
 /* In the side-by-side row hero, give the actions a steady column width. */
-.landing-hero--row .landing-hero-actions { flex: 0 0 clamp(240px, 34%, 300px); }
 
 /* ============================================================
    Subscription success (after Stripe Checkout) + cancelled plan state

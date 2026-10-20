@@ -29,7 +29,7 @@ export default function DetectiveScreen({ onPlay, onLearn, onExit }) {
         </div>
       </div>
 
-      <div className="landing-hero landing-hero--row">
+      <div className="landing-hero">
         <div className="landing-hero-body">
           <div className="landing-hero-title">{totalQuestions} words · ~{estMin} min</div>
           <div className="landing-hero-blurb">Work out each word from its clue. Words you miss come back another day.</div>

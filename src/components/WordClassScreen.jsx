@@ -53,7 +53,7 @@ export default function WordClassScreen({ onPlay, onExit }) {
         </div>
       </div>
 
-      <div className="landing-hero landing-hero--row">
+      <div className="landing-hero">
         <div className="landing-hero-body">
           <div className="landing-hero-title">{setLabel} · {totalQuestions} questions</div>
           <div className="landing-hero-blurb">{(SETS.find((s) => s.id === level) || SETS[3]).topics}</div>

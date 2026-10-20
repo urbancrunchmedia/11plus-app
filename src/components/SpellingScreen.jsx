@@ -53,7 +53,7 @@ export default function SpellingScreen({ onPlay, onExit }) {
         </div>
       </div>
 
-      <div className="landing-hero landing-hero--row">
+      <div className="landing-hero">
         <div className="landing-hero-body">
           <div className="landing-hero-title">{setLabel} · {totalQuestions} questions</div>
           <div className="landing-hero-blurb">Find the section with the misspelled word, or spot when there's none.</div>
