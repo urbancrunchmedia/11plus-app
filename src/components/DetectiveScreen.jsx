@@ -35,19 +35,19 @@ export default function DetectiveScreen({ onPlay, onLearn, onExit }) {
           <div className="landing-hero-blurb">Work out each word from its clue. Words you miss come back another day.</div>
         </div>
         <div className="landing-hero-actions">
-          <div className="hero-selects">
+          <div className="hero-selects hero-selects--pair">
             <Dropdown
               ariaLabel="Length"
               value={totalQuestions}
               onChange={(v) => setTotal(Number(v))}
               options={Q_OPTIONS.map((q) => ({ value: q, label: `${q} words` }))}
             />
+            {onLearn && <button className="landing-learn hero-selects-btn" onClick={onLearn}>Learn first</button>}
           </div>
           <button className="landing-start" onClick={() => onPlay({ level: "all", totalQuestions })}>
             <span>Start round</span><span className="dash-hero-arrow">→</span>
           </button>
           <div className="hero-secondary">
-            {onLearn && <button className="landing-learn" onClick={onLearn}>Learn first</button>}
             <PracticeButton skill="fillInBlanks" onPractice={() => onPlay({ practice: true, level: "all", totalQuestions })} />
           </div>
         </div>

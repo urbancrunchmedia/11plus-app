@@ -3211,6 +3211,11 @@ body {
 .hero-selects { display: flex; gap: 10px; flex-wrap: wrap; }
 .hero-selects .hero-select-wrap { flex: 1; min-width: 130px; }
 .hero-selects .hero-select { width: 100%; }
+/* A button sharing the choices row (Word Detective's Learn first) sizes like a dropdown. */
+.hero-selects .hero-selects-btn { flex: 1; min-width: 130px; }
+/* Dropdown + button stay on one row even on a narrow phone. */
+.hero-selects--pair { flex-wrap: nowrap; }
+.hero-selects--pair > * { flex: none !important; width: calc(50% - 5px); min-width: 0 !important; white-space: nowrap; }
 .landing-start { width: 100%; justify-content: center; }
 .hero-secondary { display: flex; gap: 10px; flex-wrap: wrap; }
 .hero-secondary > * { flex: 1; min-width: 150px; }
