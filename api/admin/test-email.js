@@ -6,9 +6,9 @@ import {
 } from "../../server/email.js";
 
 const SAMPLES = {
-  welcome: () => welcomeEmail({ name: "Ada" }),
+  welcome: () => welcomeEmail({ name: "" }),
   trial: () => trialEndingEmail({ trialEnd: Date.now() + 3 * 24 * 60 * 60 * 1000 }),
-  inactivity: () => inactivityEmail({ uid: "test", name: "Ada", days: 6 }),
+  inactivity: () => inactivityEmail({ uid: "test", name: "", days: 6 }),
   announcement: () => announcementEmail({
     uid: "test",
     subject: "New on 11 Plus Lab",
