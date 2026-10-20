@@ -50,6 +50,7 @@ export default function FlashcardScreen({ onHome, onPlay }) {
 
   return (
     <div className="home-screen">
+      <button className="round-back-btn round-back-btn--standalone" onClick={onHome} aria-label="Back to Word Detective">←</button>
       <div className="home-card">
 
         <div className="home-title">
@@ -114,7 +115,7 @@ export default function FlashcardScreen({ onHome, onPlay }) {
         </div>
 
         <button className="secondary-btn" onClick={onHome} style={{ marginTop: 4 }}>
-          Home
+          Back to Word Detective
         </button>
 
       </div>
