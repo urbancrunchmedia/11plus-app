@@ -106,7 +106,7 @@ function layout({ preheader, eyebrow, heading, blocks, footerUid }) {
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:580px">
 
 <tr><td style="background:${C.brand};border-radius:28px 28px 0 0;padding:28px 36px 34px" class="px">
-  <a href="${SITE}"><img src="${LOGO}" width="162" height="44" alt="11 Plus Lab" style="display:block;border:0;height:44px;width:162px;color:#ffffff;font-family:${FONT};font-size:20px;font-weight:800"></a>
+  <a href="${SITE}"><img src="${LOGO}" width="133" height="44" alt="11 Plus Lab" style="display:block;border:0;height:44px;width:133px;color:#ffffff;font-family:${FONT};font-size:20px;font-weight:800"></a>
   <div style="margin-top:26px"><span style="display:inline-block;background:${C.lime};color:${C.ink};font-family:${FONT};font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;padding:6px 12px;border-radius:999px">${escapeHtml(eyebrow)}</span></div>
   <h1 class="h1" style="margin:14px 0 0;font-family:${FONT};font-size:32px;line-height:1.15;font-weight:800;letter-spacing:-.02em;color:#ffffff">${escapeHtml(heading)}</h1>
 </td></tr>
