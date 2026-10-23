@@ -30,8 +30,9 @@ function speak(word) {
   }
 }
 
-export default function FlashcardScreen({ onHome, onPlay }) {
-  const [deck]                = useState(() => shuffle(ALL_CARDS));
+// poolLimit: free starter set, so Learn shows the same words the free round uses.
+export default function FlashcardScreen({ onHome, onPlay, poolLimit = null }) {
+  const [deck]                = useState(() => shuffle(poolLimit ? (fillInBlanksData.A || []).slice(0, poolLimit) : ALL_CARDS));
   const [index, setIndex]     = useState(0);
   const [flipped, setFlipped] = useState(false);
 

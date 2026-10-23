@@ -111,7 +111,9 @@ function pairsForLevel(data, level, gameType) {
   return data[level]?.[gameType] ?? [];
 }
 
-export default function GameScreen({ level, gameType, totalQuestions = 20, onHome, pairs, instruction, practice = false }) {
+// poolLimit: free starter set, only the first N pairs of the level. onReplay: asked
+// before "Play again" so the free round limits apply to replays too.
+export default function GameScreen({ level, gameType, totalQuestions = 20, onHome, pairs, instruction, practice = false, poolLimit = null, onReplay }) {
   // Progress/weak-words tracking keys off whatever specific game is being
   // played (synonyms/antonyms, now split into their own dashboard cards),
   // not a single combined "wordMatch" bucket.
@@ -121,7 +123,7 @@ export default function GameScreen({ level, gameType, totalQuestions = 20, onHom
   const basePairs = practice ? getMisses(SKILL) : (pairs ?? [
     ...pairsForLevel(wordData, level, gameType),
     ...pairsForLevel(bookletWordData, level, gameType),
-  ]);
+  ].slice(0, poolLimit ?? undefined));
   // In practice, the round is exactly the missed pairs (min 1 so the board works).
   const baseLength = practice ? Math.max(1, basePairs.length) : totalQuestions;
   // Set by "Practice these" on the results screen to replay just this round's
@@ -279,6 +281,7 @@ export default function GameScreen({ level, gameType, totalQuestions = 20, onHom
   }
 
   function handlePlayAgain() {
+    if (onReplay && !onReplay()) return;
     const avoidWords = new Set(results.map((r) => r.word));
     // Only ever reached from the "Play again" click in GameComplete, so reading
     // the clock here is an event, not a render.

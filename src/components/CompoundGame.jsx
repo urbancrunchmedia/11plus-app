@@ -13,10 +13,11 @@ const stars = (wrong) => (wrong === 0 ? 3 : wrong === 1 ? 2 : 1);
 
 // Compound Words round (prototype style): show a stem word + four options,
 // pick the word that joins on to make a real compound word.
-export default function CompoundGame({ level, totalQuestions = 20, onHome, practice = false }) {
+// poolLimit / onReplay: free starter set and replay check, as in GameScreen.
+export default function CompoundGame({ level, totalQuestions = 20, onHome, practice = false, poolLimit = null, onReplay }) {
   const build = (avoidKeys) => (practice
     ? makeCompoundQuestionsFromTargets(getMisses(SKILL))
-    : makeCompoundBuildQuestions(level, totalQuestions, avoidKeys));
+    : makeCompoundBuildQuestions(level, totalQuestions, avoidKeys, poolLimit));
   const [questions, setQuestions] = useState(() => build());
   const [idx, setIdx]         = useState(0);
   const [wrongCount, setWrong] = useState(0);   // wrong picks on the current question
@@ -76,6 +77,7 @@ export default function CompoundGame({ level, totalQuestions = 20, onHome, pract
   }
 
   function playAgain() {
+    if (onReplay && !onReplay()) return;
     const avoidKeys = new Set(questions.map((q) => (q.first + q.second).toLowerCase()));
     setStartTime(Date.now());
     setQuestions(build(avoidKeys));

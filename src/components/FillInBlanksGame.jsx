@@ -21,9 +21,13 @@ function shuffle(arr) {
   return a;
 }
 
-function buildQuestions(level, totalQuestions, practice, avoidKeys) {
+// poolLimit: the free starter set, the first N words of Level A (Word
+// Detective otherwise mixes every level).
+function buildQuestions(level, totalQuestions, practice, avoidKeys, poolLimit = null) {
   const full = [...(fillInBlanksData.A || []), ...(fillInBlanksData.B || []), ...(fillInBlanksData.C || [])];
-  const levelPool = level === "all" ? full : (fillInBlanksData[level] || []);
+  const levelPool = poolLimit
+    ? (fillInBlanksData.A || []).slice(0, poolLimit)
+    : level === "all" ? full : (fillInBlanksData[level] || []);
   // Practice = only the words you've missed; otherwise select by level (with
   // previously-missed words mixed in when the setting is on).
   const base = practice
@@ -38,8 +42,8 @@ function buildQuestions(level, totalQuestions, practice, avoidKeys) {
   });
 }
 
-export default function FillInBlanksGame({ level, totalQuestions = 20, onHome, muted: mutedProp, practice = false }) {
-  const [questions, setQuestions] = useState(() => buildQuestions(level, totalQuestions, practice));
+export default function FillInBlanksGame({ level, totalQuestions = 20, onHome, muted: mutedProp, practice = false, poolLimit = null, onReplay }) {
+  const [questions, setQuestions] = useState(() => buildQuestions(level, totalQuestions, practice, undefined, poolLimit));
   const total = questions.length;
   const [current, setCurrent]       = useState(0);
   const [wrongCount, setWrongCount] = useState(0);
@@ -93,8 +97,9 @@ export default function FillInBlanksGame({ level, totalQuestions = 20, onHome, m
   }
 
   function handlePlayAgain() {
+    if (onReplay && !onReplay()) return;
     const avoidKeys = new Set(questions.map((q) => q.word.toLowerCase()));
-    const next = buildQuestions(level, totalQuestions, practice, avoidKeys);
+    const next = buildQuestions(level, totalQuestions, practice, avoidKeys, poolLimit);
     // In practice mode the queue can be empty once everything's fixed.
     if (!next.length) { onHome(); return; }
     setQuestions(next);

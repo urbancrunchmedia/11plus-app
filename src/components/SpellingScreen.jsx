@@ -2,10 +2,11 @@ import React, { useState, useEffect } from "react";
 import { getPrefs, savePrefs, getSetting } from "../utils/leaderboard";
 import { getSkillMastery } from "../utils/gamify";
 import { usePremium } from "../contexts/PremiumContext";
-import { isLevelFree } from "../utils/entitlement";
+import { canPickLevel } from "../utils/entitlement";
 import Icon, { SKILL_ICON } from "./Icon";
 import PracticeButton from "./PracticeButton";
 import Dropdown from "./Dropdown";
+import FreePlanNote from "./FreePlanNote";
 
 const Q_OPTIONS = [5, 10, 20, 30];
 
@@ -30,11 +31,11 @@ export default function SpellingScreen({ onPlay, onExit }) {
   const { isPremium, openPaywall } = usePremium();
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- level is the source of truth fed to buildQuestions()/savePrefs(); this corrects real state, not a display value.
-    if (!isPremium && !isLevelFree(level)) setLevel("A");
+    if (!canPickLevel(level, isPremium)) setLevel("A");
   }, [isPremium, level]);
 
   function handleLevelChange(v) {
-    if (!isPremium && !isLevelFree(v)) { openPaywall("level"); return; }
+    if (!canPickLevel(v, isPremium)) { openPaywall("taster"); return; }
     setLevel(v);
   }
 
@@ -86,6 +87,7 @@ export default function SpellingScreen({ onPlay, onExit }) {
           </div>
         </div>
       </div>
+      <FreePlanNote game="spelling" />
     </div>
   );
 }

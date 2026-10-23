@@ -22,12 +22,13 @@ function shuffle(arr) {
 // `avoidKeys` (segments.join("|") from the round just finished) are pushed
 // to the back of the shuffle, so "Play again" only repeats one of them when
 // the pool is too small to fill a fresh round without doing so.
-function prepareQuestions(level, count, practice, avoidKeys) {
+// poolLimit: free starter set, only the first N questions of the level.
+function prepareQuestions(level, count, practice, avoidKeys, poolLimit = null) {
   if (practice) return getMisses(SKILL).map((b) => ({ segments: b.segments, answer: b.answer, why: b.why }));
   const pick = (obj) => (level === "all"
     ? [...(obj.A || []), ...(obj.B || []), ...(obj.C || [])]
     : [...(obj[level] || [])]);
-  const spot = pick(punctuationSpot).map((b) => ({ segments: b.segments, answer: b.answer, why: b.why }));
+  const spot = pick(punctuationSpot).slice(0, poolLimit ?? undefined).map((b) => ({ segments: b.segments, answer: b.answer, why: b.why }));
   let pool = shuffle(spot);
   if (avoidKeys && avoidKeys.size) {
     const fresh = pool.filter((q) => !avoidKeys.has(q.segments.join("|")));
@@ -37,8 +38,8 @@ function prepareQuestions(level, count, practice, avoidKeys) {
   return Array.from({ length: count }, (_, i) => pool[i % pool.length]);
 }
 
-export default function PunctuationGame({ level, totalQuestions = 20, onHome, muted: mutedProp, practice = false }) {
-  const [questions, setQuestions] = useState(() => prepareQuestions(level, totalQuestions, practice));
+export default function PunctuationGame({ level, totalQuestions = 20, onHome, muted: mutedProp, practice = false, poolLimit = null, onReplay }) {
+  const [questions, setQuestions] = useState(() => prepareQuestions(level, totalQuestions, practice, undefined, poolLimit));
   const total = questions.length;
   const [current, setCurrent]       = useState(0);
   const [answered, setAnswered]     = useState(null); // chosen index, or null
@@ -85,8 +86,9 @@ export default function PunctuationGame({ level, totalQuestions = 20, onHome, mu
   }
 
   function handlePlayAgain() {
+    if (onReplay && !onReplay()) return;
     const avoidKeys = new Set(questions.map((q) => q.segments.join("|")));
-    const next = prepareQuestions(level, totalQuestions, practice, avoidKeys);
+    const next = prepareQuestions(level, totalQuestions, practice, avoidKeys, poolLimit);
     // In practice mode the queue can be empty once everything's fixed.
     if (!next.length) { onHome(); return; }
     setQuestions(next);

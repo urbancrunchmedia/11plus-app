@@ -4,6 +4,7 @@ import { getSkillMastery } from "../utils/gamify";
 import PracticeButton from "./PracticeButton";
 import Icon, { SKILL_ICON } from "./Icon";
 import Dropdown from "./Dropdown";
+import FreePlanNote from "./FreePlanNote";
 
 const Q_OPTIONS = [5, 10, 20, 30];
 
@@ -52,6 +53,7 @@ export default function DetectiveScreen({ onPlay, onLearn, onExit }) {
           </div>
         </div>
       </div>
+      <FreePlanNote game="fillInBlanks" />
     </div>
   );
 }

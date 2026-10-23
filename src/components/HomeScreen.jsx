@@ -2,10 +2,11 @@ import React, { useState, useEffect } from "react";
 import { getPrefs, savePrefs, getSetting } from "../utils/leaderboard";
 import { getSkillMastery } from "../utils/gamify";
 import { usePremium } from "../contexts/PremiumContext";
-import { isLevelFree } from "../utils/entitlement";
+import { canPickLevel } from "../utils/entitlement";
 import PracticeButton from "./PracticeButton";
 import Icon, { SKILL_ICON } from "./Icon";
 import Dropdown from "./Dropdown";
+import FreePlanNote from "./FreePlanNote";
 
 const LEVELS = [
   { id: "A",   label: "Easy",   desc: "Easiest",      emoji: "🌱" },
@@ -59,14 +60,14 @@ export default function HomeScreen({ gameType, onPlay, onLearn, initialConfig, o
 
 
   const { isPremium, openPaywall } = usePremium();
-  // Free users can't sit on a premium level — snap back to A once we know.
+  // Free users can't sit on a harder level once today's taster round is used — snap back to A.
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- level is the source of truth fed to buildQuestions()/savePrefs(), so this corrects real state, not a display value.
-    if (!isPremium && !noLevel && !isLevelFree(level)) setLevel("A");
+    if (!noLevel && !canPickLevel(level, isPremium)) setLevel("A");
   }, [isPremium, noLevel, level]);
 
   function handleLevelChange(v) {
-    if (!isPremium && !isLevelFree(v)) { openPaywall("level"); return; }
+    if (!canPickLevel(v, isPremium)) { openPaywall("taster"); return; }
     setLevel(v);
   }
 
@@ -138,6 +139,7 @@ export default function HomeScreen({ gameType, onPlay, onLearn, initialConfig, o
           </div>
         </div>
       </div>
+      <FreePlanNote game={gameType} />
     </div>
   );
 }

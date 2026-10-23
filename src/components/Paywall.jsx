@@ -5,7 +5,9 @@ import { usePremium } from "../contexts/PremiumContext";
 
 // Headline changes with what the child bumped into, so the ask feels relevant.
 const REASONS = {
-  level:   { title: "Unlock Levels B & C",            sub: "Level A is free forever. Full Access opens the harder levels and the full 11+ challenge." },
+  level:   { title: "Unlock Levels B & C",            sub: "Full Access opens the harder levels and the full 11+ challenge." },
+  taster:  { title: "That was today's free taster round", sub: "Free players get one round of Level B or C a day. Full Access unlocks every level, every day." },
+  starter: { title: "Unlock the full word bank",      sub: "The free starter set is a small sample of each game. Full Access opens 1,000+ words across every level." },
   limit:   { title: "That's today's free rounds done", sub: "Free play resets tomorrow, or go unlimited with Full Access." },
   report:  { title: "See what to revise",             sub: "The parent progress report and 'words to review' come with Full Access." },
   feature: { title: "Unlock Full Access",             sub: "Every level, unlimited rounds, and the parent progress report." },
@@ -15,7 +17,7 @@ const BENEFITS = [
   "All difficulty levels: A, B & C",
   "Unlimited rounds, every day",
   "Parent progress report: spot weak words",
-  "Every game, every word",
+  "Every game, all 1,000+ words",
   "Cancel anytime",
 ];
 

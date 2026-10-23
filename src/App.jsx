@@ -27,7 +27,7 @@ import OnboardingScreen from "./components/OnboardingScreen";
 import { getSetting, setSetting } from "./utils/leaderboard";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { PremiumProvider, usePremium } from "./contexts/PremiumContext";
-import { roundsToday, bumpRoundsToday, FREE_DAILY_ROUNDS } from "./utils/entitlement";
+import { roundsToday, bumpRoundsToday, dailyRoundLimit, isLevelFree, tasterLeftToday, spendTasterRound, starterLimit } from "./utils/entitlement";
 import "./App.css";
 
 function AppInner() {
@@ -193,15 +193,26 @@ function AppInner() {
     setScreen("home");
   }
 
-  function handlePlay(cfg) {
-    // Paywall choke point — skipped for practice (replaying your own misses).
-    if (!cfg.practice && !isPremium) {
-      const leveled = selectedGame !== "fillInBlanks";
-      if (leveled && cfg.level && cfg.level !== "A") { openPaywall("level"); return; }
-      if (roundsToday() >= FREE_DAILY_ROUNDS) { openPaywall("limit"); return; }
-      bumpRoundsToday();
-    }
-    if (selectedGame === "punctuation") setLastPunctConfig(cfg);
+  // Paywall choke point for every free round, from "Start round" and from a
+  // game's own "Play again" alike. Practice (replaying your own misses) is
+  // always free. Returns the config to play with, or null if the paywall was
+  // shown instead. Level A rounds are limited to the starter set; a harder
+  // level is allowed once a day as a taster round.
+  function admitRound(cfg) {
+    if (cfg.practice || isPremium) return cfg;
+    const harder = selectedGame !== "fillInBlanks" && cfg.level && !isLevelFree(cfg.level);
+    if (harder && tasterLeftToday() <= 0) { openPaywall("taster"); return null; }
+    if (roundsToday() >= dailyRoundLimit()) { openPaywall("limit"); return null; }
+    bumpRoundsToday();
+    if (harder) { spendTasterRound(); return cfg; }
+    return { ...cfg, poolLimit: starterLimit(selectedGame) };
+  }
+  const admitReplay = () => !!admitRound(config);
+
+  function handlePlay(start) {
+    const cfg = admitRound(start);
+    if (!cfg) return;
+    if (selectedGame === "punctuation") setLastPunctConfig(start);
     setConfig(cfg);
     setPlayKey((k) => k + 1);
     setScreen("game");
@@ -290,6 +301,8 @@ function AppInner() {
               totalQuestions={config.totalQuestions}
               onHome={handleHome}
               practice={config.practice}
+              poolLimit={config.poolLimit}
+              onReplay={admitReplay}
             />
           )}
 
@@ -305,6 +318,8 @@ function AppInner() {
               totalQuestions={config.totalQuestions}
               onHome={handleHome}
               practice={config.practice}
+              poolLimit={config.poolLimit}
+              onReplay={admitReplay}
             />
           )}
 
@@ -319,6 +334,8 @@ function AppInner() {
               totalQuestions={config.totalQuestions}
               onHome={handleHome}
               practice={config.practice}
+              poolLimit={config.poolLimit}
+              onReplay={admitReplay}
             />
           )}
 
@@ -333,6 +350,8 @@ function AppInner() {
               totalQuestions={config.totalQuestions}
               onHome={handleHome}
               practice={config.practice}
+              poolLimit={config.poolLimit}
+              onReplay={admitReplay}
             />
           )}
 
@@ -347,6 +366,8 @@ function AppInner() {
               totalQuestions={config.totalQuestions}
               onHome={handleHome}
               practice={config.practice}
+              poolLimit={config.poolLimit}
+              onReplay={admitReplay}
             />
           )}
 
@@ -361,6 +382,8 @@ function AppInner() {
               totalQuestions={config.totalQuestions}
               onHome={handleHome}
               practice={config.practice}
+              poolLimit={config.poolLimit}
+              onReplay={admitReplay}
             />
           )}
 
@@ -371,6 +394,7 @@ function AppInner() {
           {isFillInBlanks && screen === "learn" && (
             <FlashcardScreen
               onHome={handleHome}
+              poolLimit={isPremium ? null : starterLimit("fillInBlanks")}
               onPlay={() => handlePlay({ level: "all", totalQuestions: 20 })}
             />
           )}
@@ -381,6 +405,8 @@ function AppInner() {
               totalQuestions={config.totalQuestions}
               onHome={handleHome}
               practice={config.practice}
+              poolLimit={config.poolLimit}
+              onReplay={admitReplay}
             />
           )}
 
