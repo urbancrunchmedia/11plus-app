@@ -179,8 +179,13 @@ ${blocks.join("\n")}
 
 <tr><td style="padding:26px 20px 6px;text-align:center;font-family:${FONT};font-size:12px;line-height:1.7;color:${C.muted}">
   <a href="${SITE}" style="color:${C.ink};font-weight:800;text-decoration:none">11pluslab.com</a> · Fun practice for 11+ success<br>
-  Questions? Just reply to this email.<br>
-  Urban Crunch Media Limited · 16 Hoylake Road, Sale, M33 2XH${unsub}
+  Questions? Just reply to this email.${unsub}
+</td></tr>
+<!-- Company details UK business emails must show (Companies Act trading disclosures):
+     name, number, where registered and registered office. Kept small and quiet, but readable. -->
+<tr><td style="padding:10px 24px 4px;text-align:center;font-family:${FONT};font-size:10px;line-height:1.6;color:#9AA8B6">
+  Urban Crunch Media Limited · Company no. 15899109 · Registered in England and Wales<br>
+  Registered office: 16 Hoylake Road, Sale, M33 2XH
 </td></tr>
 
 </table></td></tr></table></body></html>`;
