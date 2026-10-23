@@ -9,7 +9,7 @@
 import { auth } from "../firebase";
 
 // Accounts created before this keep the old free tier (see above).
-export const STARTER_CUTOFF = Date.parse("2026-10-23T09:30:00Z");
+export const STARTER_CUTOFF = Date.parse("2026-10-23T09:21:00Z"); // when the starter set went live
 // Starter set size per game: word games draw from long word lists, the
 // sentence games (Punctuation, Spelling, Parts of Speech) from 25-55 per level.
 export const STARTER_WORDS = 30;
