@@ -190,7 +190,7 @@ export default function SettingsScreen({ onOpenReport, onOpenBadges }) {
           </div>
           <div className="set-plan-sub">
             {!isPremium
-              ? "Free is Level A with a daily limit. Full Access opens Levels B & C, unlimited rounds and the parent report."
+              ? "Free is a Level A starter set, one Level B or C taster round a day and a daily round limit. Full Access opens every word and level, unlimited rounds and the parent report."
               : endingSoon
                 ? `You still have Full Access${daysLeft != null ? ` for ${daysLeft} more ${daysLeft === 1 ? "day" : "days"}` : ""}${endsOn ? `, until ${endsOn}` : ""}. Resubscribe any time to keep it.`
                 : onTrial
