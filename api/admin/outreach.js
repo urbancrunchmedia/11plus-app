@@ -223,6 +223,16 @@ export default async function handler(req, res) {
         await stripe.customers.del(customer.id);
         return res.status(200).json({ code: promo?.code, results });
       }
+      case "debugSessions": {
+        // Temporary: hosted checkout pages to try a code in the browser.
+        const price = clean(process.env.VITE_STRIPE_PRICE_MONTHLY);
+        const withAddr = await stripe.customers.create({ email: "debug+addr@11pluslab.com", address: { line1: "16 Hoylake Road", city: "Sale", postal_code: "M33 2XH", country: "GB" }, metadata: { purpose: "promo-debug" } });
+        const noAddr = await stripe.customers.create({ email: "debug+noaddr@11pluslab.com", metadata: { purpose: "promo-debug" } });
+        const base = { mode: "subscription", line_items: [{ price, quantity: 1 }], subscription_data: { trial_period_days: 7 }, allow_promotion_codes: true, success_url: "https://11pluslab.com/", cancel_url: "https://11pluslab.com/" };
+        const a = await stripe.checkout.sessions.create({ ...base, customer: withAddr.id, automatic_tax: { enabled: true }, billing_address_collection: "required", customer_update: { address: "auto" } });
+        const b = await stripe.checkout.sessions.create({ ...base, customer: noAddr.id });
+        return res.status(200).json({ taxWithAddress: a.url, noTax: b.url, customers: [withAddr.id, noAddr.id], sessions: [a.id, b.id] });
+      }
       case "status": {
         const all = await db.collection("outreach").get();
         const counts = {};
