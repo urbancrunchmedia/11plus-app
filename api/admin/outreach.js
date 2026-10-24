@@ -176,6 +176,20 @@ export default async function handler(req, res) {
         const coupon = await stripe.coupons.retrieve(COUPON_ID);
         return res.status(200).json({ checked: queued.size, ok: queued.size - problems.length, problems, coupon: { valid: coupon.valid, amount_off: coupon.amount_off, currency: coupon.currency, duration: coupon.duration, months: coupon.duration_in_months } });
       }
+      case "debug": {
+        // Temporary: inspect a code and make two throwaway test codes on the same coupon.
+        const found = (await stripe.promotionCodes.list({ code: body.code || "PRESTIGE20", limit: 1, expand: ["data.coupon"] })).data[0];
+        const mk = async (code, first) => {
+          const ex = (await stripe.promotionCodes.list({ code, limit: 1 })).data[0];
+          return ex || stripe.promotionCodes.create({ coupon: COUPON_ID, code, ...(first ? { restrictions: { first_time_transaction: true } } : {}) });
+        };
+        const a = await mk("PLTESTOPEN20", false);
+        const b = await mk("PLTESTFIRST20", true);
+        return res.status(200).json({
+          found: found && { code: found.code, active: found.active, livemode: found.livemode, restrictions: found.restrictions, coupon: found.coupon && { id: found.coupon.id, valid: found.coupon.valid, amount_off: found.coupon.amount_off, currency: found.coupon.currency, applies_to: found.coupon.applies_to, redeem_by: found.coupon.redeem_by, max_redemptions: found.coupon.max_redemptions } },
+          tests: [a.code, b.code],
+        });
+      }
       case "status": {
         const all = await db.collection("outreach").get();
         const counts = {};
