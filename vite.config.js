@@ -41,8 +41,11 @@ export default defineConfig({
         clientsClaim: true,
         // Precache the built app so it opens and plays offline.
         globPatterns: ['**/*.{js,css,html,svg,png,woff2}'],
+        // Email images and the printable poster are only ever fetched by mail
+        // apps or opened from a link: keep them out of every family's offline copy.
+        globIgnores: ['email/**', 'poster/**', 'og.png', 'email-lockup.png', 'logo-lockup*.png', 'logo-mark-1024.png'],
         navigateFallback: '/index.html',
-        navigateFallbackDenylist: [/^\/api\//, /^\/__\//],
+        navigateFallbackDenylist: [/^\/api\//, /^\/__\//, /^\/poster\//],
         runtimeCaching: [
           {
             // Google Fonts stylesheets + files — cache so text renders offline.
