@@ -15,6 +15,7 @@ import WordClassGame from "./components/WordClassGame";
 import DetectiveScreen from "./components/DetectiveScreen";
 import FillInBlanksGame from "./components/FillInBlanksGame";
 import FlashcardScreen from "./components/FlashcardScreen";
+import OwnerDashboard from "./components/OwnerDashboard";
 import ComingSoon from "./components/ComingSoon";
 import WordListScreen from "./components/WordListScreen";
 import LeaderboardScreen from "./components/LeaderboardScreen";
@@ -161,13 +162,16 @@ function AppInner() {
   if (user === undefined) {
     return (
       <div className="app-loading">
-        <div className="app-loading-mark">11</div>
+        <img className="app-loading-mark" src="/logo-mark-simple.svg" alt="" width="72" height="72" />
         <p>Loading…</p>
       </div>
     );
   }
 
   if (user === null) return <LoginScreen />;
+
+  // Private owner dashboard (access is checked server-side).
+  if (window.location.pathname.startsWith("/owner")) return <OwnerDashboard />;
 
   const childPin = getSetting("childPin", "");
   // A whole-app "who's learning today?" PIN gate used to sit here on every

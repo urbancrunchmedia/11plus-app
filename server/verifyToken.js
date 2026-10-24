@@ -1,5 +1,5 @@
 // Verify a Firebase ID token in a serverless function WITHOUT the Firebase Admin
-// SDK — validate the RS256 JWT against Google's public keys. Returns { uid, email }.
+// SDK — validate the RS256 JWT against Google's public keys. Returns { uid, email, emailVerified }.
 import { createRemoteJWKSet, jwtVerify } from "jose";
 
 // Trim — Vercel stored these env vars with trailing newlines, which would
@@ -19,5 +19,5 @@ export async function verifyToken(req) {
     issuer: `https://securetoken.google.com/${projectId}`,
     audience: projectId,
   });
-  return { uid: payload.sub, email: payload.email };
+  return { uid: payload.sub, email: payload.email, emailVerified: payload.email_verified === true };
 }
