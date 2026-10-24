@@ -66,7 +66,7 @@ function p(html) {
 // recolours HTML (lime turns dark green) but never images. Any other label
 // falls back to an HTML pill, which still works, just recoloured in dark mode.
 const BUTTON_IMAGES = {
-  "Start practising": ["btn-start", 230], "Open 11 PlusLab": ["btn-open", 236], "Play a quick round": ["btn-play", 252],
+  "Start practising": ["btn-start", 230], "Open 11 PlusLab": ["btn-open", 232], "Play a quick round": ["btn-play", 252], "Try 11 PlusLab free": ["btn-try", 249],
 };
 function button({ label, url }) {
   const img = BUTTON_IMAGES[label];
@@ -331,7 +331,7 @@ ${P("It's short, game-style practice for synonyms, antonyms, compound words, spe
 ${P("Children can also add their friends and compete on a weekly leaderboard, which is a big part of what keeps them coming back to practise.")}
 ${P(`Parents can sign up free at <a href="${SITE}" style="color:#0B7FC7;font-weight:700">11pluslab.com</a> and their child can start playing straight away. If you'd like to share it with your students, their parents can use the code <strong style="background:#F3FBD4;padding:2px 6px;border-radius:6px;letter-spacing:.03em">${escapeHtml(code)}</strong> for 20% off their first month of Full Access (£3.99 instead of £4.99).`)}
 <p style="margin:0 0 18px"><a href="${SITE}"><img src="${SITE}/email/outreach-games.png" width="520" height="352" alt="The seven 11 PlusLab games: Synonyms, Antonyms, Compound Words, Word Detective, Punctuation, Spelling and Parts of Speech, plus a Word List" style="display:block;border:0;width:100%;max-width:520px;height:auto;border-radius:16px;font-family:Helvetica,Arial,sans-serif;font-size:13px;color:#5E6C7C"></a></p>
-<p style="margin:4px 0 22px"><a href="${SITE}" style="display:inline-block;background:#D4F520;color:#0E1116;font-family:Helvetica,Arial,sans-serif;font-size:15px;font-weight:700;text-decoration:none;padding:12px 20px;border-radius:999px">See 11 PlusLab &rarr;</a></p>
+<p style="margin:4px 0 22px"><a href="${SITE}" style="text-decoration:none"><img src="${SITE}/email/btn-try.png" width="249" height="56" alt="Try 11 PlusLab free →" style="display:block;border:0;font-family:Helvetica,Arial,sans-serif;font-size:16px;font-weight:700;color:#0E1116"></a></p>
 ${P("I'd really value your thoughts, even if it's not a fit for you. Just reply to this email.")}
 <table role="presentation" cellpadding="0" cellspacing="0" style="margin:8px 0 26px"><tr>
 <td style="padding-right:12px"><img src="${SITE}/pwa-192.png" width="40" height="40" alt="" style="display:block;border:0;border-radius:10px"></td>
