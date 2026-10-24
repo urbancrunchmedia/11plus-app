@@ -10,6 +10,7 @@ const ago = (ms) => {
   const days = Math.round((Date.now() - ms) / 86400000);
   return days <= 0 ? "Today" : days === 1 ? "Yesterday" : `${days} days ago`;
 };
+const plural = (n, word) => `${n} ${word}${n === 1 ? "" : "s"}`;
 const pct = (a, b) => (b ? `${Math.round((a / b) * 100)}%` : "–");
 
 const PLAN_ORDER = ["Paying", "Paying (cancelling)", "Free trial", "Payment failed", "Complimentary", "Free (starter set)", "Free (original plan)", "Cancelled"];
@@ -128,8 +129,8 @@ export default function OwnerDashboard() {
       <section>
         <h2>Today and this week</h2>
         <div className="own-tiles">
-          <Tile label="Played today" value={activity.active.today} sub={`${activity.rounds.today} rounds`} />
-          <Tile label="Played this week" value={activity.active.week} sub={`${activity.rounds.week} rounds`} />
+          <Tile label="Played today" value={activity.active.today} sub={plural(activity.rounds.today, "round")} />
+          <Tile label="Played this week" value={activity.active.week} sub={plural(activity.rounds.week, "round")} />
           <Tile label="New sign-ups" value={accounts.newWeek} sub={`this week · ${accounts.newToday} today`} />
           <Tile label="Paying" value={paying} sub={`${plans["Free trial"] || 0} in free trial`} />
         </div>
@@ -185,7 +186,7 @@ export default function OwnerDashboard() {
             <li key={i}>
               <div>
                 <div className="own-player-name">{p.name}</div>
-                <div className="own-muted">{ago(p.lastPlayed)} · {p.roundsWeek} rounds this week</div>
+                <div className="own-muted">{ago(p.lastPlayed)} · {plural(p.roundsWeek, "round")} this week</div>
               </div>
               <span className={`own-pill own-pill-${PLAN_TONE[p.plan]}`}>{p.plan}</span>
             </li>
