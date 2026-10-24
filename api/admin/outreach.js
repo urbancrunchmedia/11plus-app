@@ -234,6 +234,28 @@ export default async function handler(req, res) {
         const c = await stripe.checkout.sessions.create({ ...base, subscription_data: undefined, customer: noAddr.id });
         return res.status(200).json({ taxWithAddress: a.url, noTax: b.url, noTrial: c.url, customers: [withAddr.id, noAddr.id], sessions: [a.id, b.id, c.id] });
       }
+      case "cleanupDebug": {
+        // One-off: remove everything the promo-code investigation created, and
+        // rename the product to the brand name parents see at checkout.
+        const done = [];
+        for (const code of ["PLTESTOPEN20", "PLTESTFIRST20", "PLTESTPCT10"]) {
+          const pc = (await stripe.promotionCodes.list({ code, limit: 1 })).data[0];
+          if (pc?.active) { await stripe.promotionCodes.update(pc.id, { active: false }); done.push(`archived ${code}`); }
+        }
+        try { await stripe.coupons.del("pl-debug-pct-10"); done.push("deleted debug coupon"); } catch { /* gone */ }
+        for (const email of ["debug+addr@11pluslab.com", "debug+noaddr@11pluslab.com", "debug+checkout@11pluslab.com", "reuben.dongre+codetest@gmail.com"]) {
+          for (const c of (await stripe.customers.list({ email, limit: 20 })).data) {
+            const subs = await stripe.subscriptions.list({ customer: c.id, status: "all", limit: 1 });
+            if (subs.data.length) { done.push(`kept ${c.id} (has a subscription)`); continue; }
+            await stripe.customers.del(c.id); done.push(`deleted customer ${email}`);
+          }
+        }
+        const price = await stripe.prices.retrieve(clean(process.env.VITE_STRIPE_PRICE_MONTHLY));
+        const productId = typeof price.product === "string" ? price.product : price.product.id;
+        const product = await stripe.products.update(productId, { name: "11 PlusLab — Full Access" });
+        done.push(`product renamed to "${product.name}"`);
+        return res.status(200).json({ done });
+      }
       case "status": {
         const all = await db.collection("outreach").get();
         const counts = {};
