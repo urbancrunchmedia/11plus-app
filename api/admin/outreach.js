@@ -15,33 +15,39 @@ import { getStripe } from "../../server/stripe.js";
 import { adminDb } from "../../server/firebaseAdmin.js";
 import { sendEmail, outreachEmail, outreachKey, OUTREACH_FROM } from "../../server/email.js";
 
-const COUPON_ID = "tuition-centre-20-first-month";
+const COUPON_ID = "tuition-centre-first-month";
 const DAILY_LIMIT = 30; // new domain: keep cold email slow and steady
 const clean = (v) => String(v || "").trim();
 
 // 20% off for one month from sign-up. Not "once": with the 7-day trial the
 // first invoice is the £0 trial one, which would use a "once" coupon up.
-// Restricted to the monthly plan when it's a separate product, so it can't
-// take 20% off a whole annual subscription.
+// Monthly and annual are prices on the same product, so a coupon can't be
+// limited to the monthly plan. A fixed amount equal to 20% of the monthly
+// price (£4.99 -> £3.99) keeps the promise exact for monthly, and only takes
+// the same £1 off an annual plan instead of 20% of the whole year.
 async function ensureCoupon(stripe) {
   try {
     return await stripe.coupons.retrieve(COUPON_ID);
   } catch (e) {
     if (e.code !== "resource_missing") throw e;
   }
-  const monthly = clean(process.env.VITE_STRIPE_PRICE_MONTHLY);
-  const annual = clean(process.env.VITE_STRIPE_PRICE_ANNUAL);
-  const [m, a] = await Promise.all([monthly && stripe.prices.retrieve(monthly), annual && stripe.prices.retrieve(annual)]);
-  const productOf = (p) => (p ? (typeof p.product === "string" ? p.product : p.product.id) : null);
-  const restrict = productOf(m) && productOf(m) !== productOf(a);
+  const monthly = await stripe.prices.retrieve(clean(process.env.VITE_STRIPE_PRICE_MONTHLY));
   return stripe.coupons.create({
     id: COUPON_ID,
     name: "Tuition centre: 20% off first month",
-    percent_off: 20,
+    amount_off: Math.round(monthly.unit_amount * 0.2),
+    currency: monthly.currency,
     duration: "repeating",
     duration_in_months: 1,
-    ...(restrict ? { applies_to: { products: [productOf(m)] } } : {}),
   });
+}
+
+// The first version was 20% of anything, annual included. Remove it while unused.
+async function retireOldCoupon(stripe) {
+  try {
+    const old = await stripe.coupons.retrieve("tuition-centre-20-first-month");
+    if (old.times_redeemed === 0) await stripe.coupons.del(old.id);
+  } catch { /* already gone */ }
 }
 
 async function ensurePromoCode(stripe, { code, business, email }) {
@@ -110,8 +116,9 @@ export default async function handler(req, res) {
 
     switch (body.action) {
       case "setup": {
+        await retireOldCoupon(stripe);
         const c = await ensureCoupon(stripe);
-        return res.status(200).json({ coupon: c.id, percent_off: c.percent_off, duration: c.duration, months: c.duration_in_months, appliesTo: c.applies_to?.products || "all products" });
+        return res.status(200).json({ coupon: c.id, amount_off: c.amount_off, currency: c.currency, duration: c.duration, months: c.duration_in_months });
       }
       case "import": {
         await ensureCoupon(stripe);
