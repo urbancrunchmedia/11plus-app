@@ -1,0 +1,163 @@
+// /api/admin/outreach — emailing UK 11+ tuition centres (B2B), each with its
+// own Stripe promotion code (20% off a family's first paid month).
+//
+// POST, Authorization: Bearer <ADMIN_SECRET>, body { action, ... }:
+//   { action: "setup" }                         create the shared coupon (idempotent)
+//   { action: "import", prospects: [{ business, location, email, code }] }
+//                                               create each centre's promo code and queue it
+//   { action: "test", to, business, code }      send one sample to `to` (nothing is queued)
+//   { action: "start" } / { action: "pause" }   switch the daily send on/off
+//   { action: "send", limit? }                  send the next batch now
+//   { action: "status" }                        counts, plus redemptions per code
+// GET from Vercel Cron (Authorization: Bearer <CRON_SECRET>): sends the next
+// batch, but only once "start" has been called.
+import { getStripe } from "../../server/stripe.js";
+import { adminDb } from "../../server/firebaseAdmin.js";
+import { sendEmail, outreachEmail, outreachKey, OUTREACH_FROM } from "../../server/email.js";
+
+const COUPON_ID = "tuition-centre-20-first-month";
+const DAILY_LIMIT = 30; // new domain: keep cold email slow and steady
+const clean = (v) => String(v || "").trim();
+
+// 20% off for one month from sign-up. Not "once": with the 7-day trial the
+// first invoice is the £0 trial one, which would use a "once" coupon up.
+// Restricted to the monthly plan when it's a separate product, so it can't
+// take 20% off a whole annual subscription.
+async function ensureCoupon(stripe) {
+  try {
+    return await stripe.coupons.retrieve(COUPON_ID);
+  } catch (e) {
+    if (e.code !== "resource_missing") throw e;
+  }
+  const monthly = clean(process.env.VITE_STRIPE_PRICE_MONTHLY);
+  const annual = clean(process.env.VITE_STRIPE_PRICE_ANNUAL);
+  const [m, a] = await Promise.all([monthly && stripe.prices.retrieve(monthly), annual && stripe.prices.retrieve(annual)]);
+  const productOf = (p) => (p ? (typeof p.product === "string" ? p.product : p.product.id) : null);
+  const restrict = productOf(m) && productOf(m) !== productOf(a);
+  return stripe.coupons.create({
+    id: COUPON_ID,
+    name: "Tuition centre offer: 20% off first month",
+    percent_off: 20,
+    duration: "repeating",
+    duration_in_months: 1,
+    ...(restrict ? { applies_to: { products: [productOf(m)] } } : {}),
+  });
+}
+
+async function ensurePromoCode(stripe, { code, business, email }) {
+  const existing = await stripe.promotionCodes.list({ code, limit: 1 });
+  const found = existing.data.find((p) => p.active);
+  if (found) {
+    const couponId = typeof found.coupon === "string" ? found.coupon : found.coupon?.id;
+    if (couponId !== COUPON_ID) throw new Error(`Code ${code} already exists for a different offer`);
+    return found;
+  }
+  return stripe.promotionCodes.create({
+    coupon: COUPON_ID,
+    code,
+    restrictions: { first_time_transaction: true },
+    metadata: { centre: business.slice(0, 200), email },
+  });
+}
+
+async function sendBatch(db, limit) {
+  const queued = await db.collection("outreach").where("status", "==", "queued").limit(limit).get();
+  let sent = 0, skipped = 0, failed = 0;
+  for (const doc of queued.docs) {
+    const p = doc.data();
+    // Opt-outs are stored separately so they survive a re-import of the list.
+    if ((await db.collection("outreachOptOut").doc(doc.id).get()).exists) {
+      await doc.ref.update({ status: "optedOut" });
+      skipped++;
+      continue;
+    }
+    try {
+      await sendEmail({
+        to: p.email,
+        from: OUTREACH_FROM,
+        email: outreachEmail(p),
+        idempotencyKey: `outreach-${doc.id}`,
+      });
+      await doc.ref.update({ status: "sent", sentAt: new Date().toISOString() });
+      sent++;
+    } catch (e) {
+      await doc.ref.update({ status: "failed", error: String(e.message).slice(0, 300) });
+      failed++;
+    }
+    await new Promise((r) => setTimeout(r, 600)); // stay well under Resend's rate limit
+  }
+  return { sent, skipped, failed };
+}
+
+export default async function handler(req, res) {
+  const auth = req.headers.authorization || "";
+  const admin = clean(process.env.ADMIN_SECRET) && auth === `Bearer ${clean(process.env.ADMIN_SECRET)}`;
+  const cron = clean(process.env.CRON_SECRET) && auth === `Bearer ${clean(process.env.CRON_SECRET)}`;
+  if (!admin && !cron) return res.status(401).json({ error: "Unauthorized" });
+
+  const db = adminDb();
+  const config = db.collection("outreachConfig").doc("main");
+  try {
+    if (req.method === "GET") {
+      if (!cron) return res.status(405).json({ error: "Use POST" });
+      const enabled = (await config.get()).data()?.enabled === true;
+      if (!enabled) return res.status(200).json({ skipped: "paused" });
+      return res.status(200).json(await sendBatch(db, DAILY_LIMIT));
+    }
+    if (!admin) return res.status(401).json({ error: "Unauthorized" });
+    const body = req.body || {};
+    const stripe = getStripe();
+
+    switch (body.action) {
+      case "setup": {
+        const c = await ensureCoupon(stripe);
+        return res.status(200).json({ coupon: c.id, percent_off: c.percent_off, duration: c.duration, months: c.duration_in_months, appliesTo: c.applies_to?.products || "all products" });
+      }
+      case "import": {
+        await ensureCoupon(stripe);
+        const out = [];
+        for (const p of body.prospects || []) {
+          const email = clean(p.email).toLowerCase();
+          const code = clean(p.code).toUpperCase();
+          if (!email.includes("@") || !/^[A-Z0-9]{3,20}$/.test(code)) { out.push({ email, error: "bad email or code" }); continue; }
+          const ref = db.collection("outreach").doc(outreachKey(email));
+          const snap = await ref.get();
+          if (snap.exists) { out.push({ email, code: snap.data().code, status: snap.data().status, note: "already imported" }); continue; }
+          try {
+            const promo = await ensurePromoCode(stripe, { code, business: clean(p.business), email });
+            await ref.set({ business: clean(p.business), location: clean(p.location), email, code, promoId: promo.id, status: "queued", importedAt: new Date().toISOString() });
+            out.push({ email, code, status: "queued" });
+          } catch (e) {
+            out.push({ email, code, error: e.message });
+          }
+        }
+        return res.status(200).json({ imported: out.filter((o) => o.status === "queued").length, results: out });
+      }
+      case "test": {
+        if (!body.to) return res.status(400).json({ error: "Missing to" });
+        const email = outreachEmail({ business: body.business || "Sample Tuition", email: body.to, code: body.code || "SAMPLE20" });
+        await sendEmail({ to: body.to, from: OUTREACH_FROM, email: { ...email, subject: `[TEST] ${email.subject}` } });
+        return res.status(200).json({ test: true, to: body.to });
+      }
+      case "start":
+      case "pause":
+        await config.set({ enabled: body.action === "start", updatedAt: new Date().toISOString() }, { merge: true });
+        return res.status(200).json({ enabled: body.action === "start" });
+      case "send":
+        return res.status(200).json(await sendBatch(db, Math.min(Number(body.limit) || DAILY_LIMIT, DAILY_LIMIT)));
+      case "status": {
+        const all = await db.collection("outreach").get();
+        const counts = {};
+        for (const d of all.docs) counts[d.data().status] = (counts[d.data().status] || 0) + 1;
+        const codes = await stripe.promotionCodes.list({ coupon: COUPON_ID, limit: 100 });
+        const redeemed = codes.data.filter((c) => c.times_redeemed > 0).map((c) => ({ code: c.code, centre: c.metadata?.centre, times: c.times_redeemed }));
+        return res.status(200).json({ enabled: (await config.get()).data()?.enabled === true, counts, redeemed });
+      }
+      default:
+        return res.status(400).json({ error: "Unknown action" });
+    }
+  } catch (e) {
+    console.error("outreach:", e.message);
+    res.status(500).json({ error: e.message });
+  }
+}

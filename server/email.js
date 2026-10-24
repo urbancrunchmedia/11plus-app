@@ -6,7 +6,7 @@
 //    are skipped for anyone in emailState/{uid}.unsubscribed. UK PECR requires
 //    that opt-out on every marketing email.
 import { Resend } from "resend";
-import { createHmac, timingSafeEqual } from "crypto";
+import { createHash, createHmac, timingSafeEqual } from "crypto";
 
 const FROM = "11 Plus Lab <hello@11pluslab.com>";
 const REPLY_TO = "hello@11pluslab.com";
@@ -295,7 +295,58 @@ ${row("Request", escapeHtml(id))}
   };
 }
 
+// ---- Outreach to tuition centres (B2B) ----
+// A personal note from the founder, not a newsletter: plain layout, one link,
+// a clear opt-out. Recipients are businesses, so the opt-out is keyed by email
+// (they have no account) and checked before every send.
+export const OUTREACH_FROM = "Reuben at 11 Plus Lab <hello@11pluslab.com>";
+
+export const outreachKey = (email) => createHash("sha256").update(String(email).trim().toLowerCase()).digest("hex").slice(0, 32);
+const outreachToken = (email) => createHmac("sha256", secret()).update(`outreach:${String(email).trim().toLowerCase()}`).digest("base64url");
+export function checkOutreachToken(email, token) {
+  if (!email || !token || !secret()) return false;
+  const a = Buffer.from(outreachToken(email));
+  const b = Buffer.from(String(token));
+  return a.length === b.length && timingSafeEqual(a, b);
+}
+export const outreachOptOutUrl = (email) =>
+  `${SITE}/api/email/unsubscribe?o=${encodeURIComponent(String(email).trim().toLowerCase())}&t=${outreachToken(email)}`;
+
+export function outreachEmail({ business, email, code }) {
+  const name = escapeHtml(business);
+  const optOut = outreachOptOutUrl(email);
+  const P = (html) => `<p style="margin:0 0 16px;font-family:Helvetica,Arial,sans-serif;font-size:15px;line-height:1.6;color:#0E1116">${html}</p>`;
+  return {
+    marketing: true,
+    unsubscribeUrl: optOut,
+    subject: `An 11+ word-practice app for your students`,
+    html: `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light"></head>
+<body style="margin:0;padding:0;background:#ffffff">
+<div style="display:none;max-height:0;overflow:hidden">Short game-style practice for synonyms, antonyms, spelling and punctuation, with 20% off for your families.</div>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td style="padding:28px 20px">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px"><tr><td>
+${P(`Hi ${name} team,`)}
+${P("I'm Reuben, the founder of 11 Plus Lab. I built it while helping my own daughter prepare for the 11+, and I thought it might be useful for your students between lessons.")}
+${P("It's short, game-style practice for synonyms, antonyms, compound words, spelling, punctuation and parts of speech. It notices the words each child gets wrong and brings them back until they stick, and parents can see a progress report of what to revise.")}
+${P(`Families can try it free at <a href="${SITE}" style="color:#0B7FC7;font-weight:700">11pluslab.com</a>. If you'd like to share it, your families can use the code <strong style="background:#F3FBD4;padding:2px 6px;border-radius:6px;letter-spacing:.03em">${escapeHtml(code)}</strong> for 20% off their first month of Full Access (£3.99 instead of £4.99).`)}
+<p style="margin:4px 0 22px"><a href="${SITE}" style="display:inline-block;background:#D4F520;color:#0E1116;font-family:Helvetica,Arial,sans-serif;font-size:15px;font-weight:700;text-decoration:none;padding:12px 20px;border-radius:999px">See 11 Plus Lab &rarr;</a></p>
+${P("I'd really value your thoughts, even if it's not a fit for you. Just reply to this email.")}
+<table role="presentation" cellpadding="0" cellspacing="0" style="margin:8px 0 26px"><tr>
+<td style="padding-right:12px"><img src="${SITE}/pwa-192.png" width="40" height="40" alt="" style="display:block;border:0;border-radius:10px"></td>
+<td style="font-family:Helvetica,Arial,sans-serif;font-size:14px;line-height:1.45;color:#0E1116"><strong>Reuben</strong><br><span style="color:#5E6C7C">Founder, 11 Plus Lab · <a href="${SITE}" style="color:#5E6C7C">11pluslab.com</a></span></td>
+</tr></table>
+<p style="margin:0;padding-top:14px;border-top:1px solid #E3ECF6;font-family:Helvetica,Arial,sans-serif;font-size:12px;line-height:1.6;color:#7A8796">
+If you'd rather not hear from me again, reply "no thanks" or <a href="${optOut}" style="color:#7A8796">click here</a> and I won't email you again.<br>
+Urban Crunch Media Limited · Company no. 15899109 · Registered in England and Wales · Registered office: 16 Hoylake Road, Sale, M33 2XH
+</p>
+</td></tr></table></td></tr></table></body></html>`,
+  };
+}
+
 function headersFor(email, uid) {
+  if (email.unsubscribeUrl) {
+    return { "List-Unsubscribe": `<${email.unsubscribeUrl}>`, "List-Unsubscribe-Post": "List-Unsubscribe=One-Click" };
+  }
   if (!email.marketing || !uid) return undefined;
   // Lets Gmail/Apple Mail show their own one-click "Unsubscribe" button.
   return {
@@ -305,9 +356,9 @@ function headersFor(email, uid) {
 }
 
 // Send one email. idempotencyKey stops Resend sending the same email twice on a retry.
-export async function sendEmail({ to, uid, email, idempotencyKey, replyTo = REPLY_TO }) {
+export async function sendEmail({ to, uid, email, idempotencyKey, replyTo = REPLY_TO, from = FROM }) {
   const { data, error } = await resend().emails.send(
-    { from: FROM, replyTo, to, subject: email.subject, html: email.html, headers: headersFor(email, uid) },
+    { from, replyTo, to, subject: email.subject, html: email.html, headers: headersFor(email, uid) },
     idempotencyKey ? { idempotencyKey } : undefined
   );
   if (error) throw new Error(`Resend: ${error.message}`);
