@@ -9,6 +9,7 @@
 //   { action: "start" } / { action: "pause" }   switch the daily send on/off
 //   { action: "send", limit? }                  send the next batch now
 //   { action: "status" }                        counts, plus redemptions per code
+//   { action: "verify" }                        check every queued centre's code in Stripe
 // GET from Vercel Cron (Authorization: Bearer <CRON_SECRET>): sends the next
 // batch, but only once "start" has been called.
 import { getStripe } from "../../server/stripe.js";
@@ -152,6 +153,29 @@ export default async function handler(req, res) {
         return res.status(200).json({ enabled: body.action === "start" });
       case "send":
         return res.status(200).json(await sendBatch(db, Math.min(Number(body.limit) || DAILY_LIMIT, DAILY_LIMIT)));
+      case "verify": {
+        // Every queued centre's code must exist in Stripe, be active, match the
+        // email exactly, be first-time-only and point at the outreach coupon.
+        const queued = await db.collection("outreach").where("status", "==", "queued").get();
+        const problems = [];
+        for (const d of queued.docs) {
+          const p = d.data();
+          try {
+            const promo = await stripe.promotionCodes.retrieve(p.promoId);
+            const couponId = typeof promo.coupon === "string" ? promo.coupon : promo.coupon?.id;
+            const issue =
+              !promo.active ? "inactive" :
+              promo.code.toUpperCase() !== p.code ? `code mismatch (${promo.code})` :
+              couponId !== COUPON_ID ? `wrong coupon (${couponId})` :
+              !promo.restrictions?.first_time_transaction ? "not first-time-only" : null;
+            if (issue) problems.push({ business: p.business, code: p.code, issue });
+          } catch (e) {
+            problems.push({ business: p.business, code: p.code, issue: e.message });
+          }
+        }
+        const coupon = await stripe.coupons.retrieve(COUPON_ID);
+        return res.status(200).json({ checked: queued.size, ok: queued.size - problems.length, problems, coupon: { valid: coupon.valid, amount_off: coupon.amount_off, currency: coupon.currency, duration: coupon.duration, months: coupon.duration_in_months } });
+      }
       case "status": {
         const all = await db.collection("outreach").get();
         const counts = {};
