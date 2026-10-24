@@ -322,14 +322,14 @@ export function outreachEmail({ business, email, code }) {
     subject: `An 11+ word-practice app for your students`,
     html: `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light"></head>
 <body style="margin:0;padding:0;background:#ffffff">
-<div style="display:none;max-height:0;overflow:hidden">Short game-style 11+ practice with a friends leaderboard, and 20% off for your families.</div>
+<div style="display:none;max-height:0;overflow:hidden">Short game-style 11+ practice with a friends leaderboard, and 20% off for your students.</div>
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td style="padding:28px 20px">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px"><tr><td>
 ${P(`Hi ${name} team,`)}
 ${P("I'm Reuben, the founder of 11 PlusLab. I built it while helping my own daughter prepare for the 11+, and I thought it might be useful for your students between lessons.")}
 ${P("It's short, game-style practice for synonyms, antonyms, compound words, spelling, punctuation and parts of speech. It notices the words each child gets wrong and brings them back until they stick, and parents can see a progress report of what to revise.")}
 ${P("Children can also add their friends and compete on a weekly leaderboard, which is a big part of what keeps them coming back to practise.")}
-${P(`Parents can sign up free at <a href="${SITE}" style="color:#0B7FC7;font-weight:700">11pluslab.com</a> and their child can start playing straight away. If you'd like to share it with your families, they can use the code <strong style="background:#F3FBD4;padding:2px 6px;border-radius:6px;letter-spacing:.03em">${escapeHtml(code)}</strong> for 20% off their first month of Full Access (£3.99 instead of £4.99).`)}
+${P(`Parents can sign up free at <a href="${SITE}" style="color:#0B7FC7;font-weight:700">11pluslab.com</a> and their child can start playing straight away. If you'd like to share it with your students, their parents can use the code <strong style="background:#F3FBD4;padding:2px 6px;border-radius:6px;letter-spacing:.03em">${escapeHtml(code)}</strong> for 20% off their first month of Full Access (£3.99 instead of £4.99).`)}
 <p style="margin:4px 0 22px"><a href="${SITE}" style="display:inline-block;background:#D4F520;color:#0E1116;font-family:Helvetica,Arial,sans-serif;font-size:15px;font-weight:700;text-decoration:none;padding:12px 20px;border-radius:999px">See 11 PlusLab &rarr;</a></p>
 ${P("I'd really value your thoughts, even if it's not a fit for you. Just reply to this email.")}
 <table role="presentation" cellpadding="0" cellspacing="0" style="margin:8px 0 26px"><tr>
