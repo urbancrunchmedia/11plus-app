@@ -36,7 +36,7 @@ async function ensureCoupon(stripe) {
   const restrict = productOf(m) && productOf(m) !== productOf(a);
   return stripe.coupons.create({
     id: COUPON_ID,
-    name: "Tuition centre offer: 20% off first month",
+    name: "Tuition centre: 20% off first month",
     percent_off: 20,
     duration: "repeating",
     duration_in_months: 1,
