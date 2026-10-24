@@ -15,6 +15,19 @@ const SKILL_BAR = {
   wordClass:     "#0d9488",
 };
 
+// The streak counts any day with at least one round (gamify.getStreak), so
+// once today has a round the streak is safe and the nudge is the challenge.
+function dailyNote(daily, streak) {
+  if (daily.complete) return "Challenge complete! Nice work!";
+  if (daily.done === 0) {
+    return streak > 0
+      ? `Play a round today to keep your ${streak}-day streak going.`
+      : "Play a round to start your streak.";
+  }
+  const left = daily.target - daily.done;
+  return `${left} more ${left === 1 ? "round" : "rounds"} to finish today's challenge.`;
+}
+
 function initial(name) {
   return name ? name.trim().charAt(0).toUpperCase() : "?";
 }
@@ -73,9 +86,7 @@ export default function HomeDashboard({ onPlaySkill, onOpenBoard, onOpenBadges }
             <span className="dash-chip">TODAY'S CHALLENGE</span>
             <div className="dash-hero-title">{daily.done} of {daily.target} rounds done</div>
             <div className="dash-hero-note">
-              {daily.complete
-                ? "Challenge complete! Nice work!"
-                : `One more keeps your ${stats.streak}-day streak alive.`}
+              {dailyNote(daily, stats.streak)}
             </div>
           </div>
           <div className="dash-ring" style={{ "--pct": `${ringPct}%` }}>
