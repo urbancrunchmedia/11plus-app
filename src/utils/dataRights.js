@@ -108,7 +108,7 @@ export function formatAsText(data, depth = 0) {
 export function downloadMyData(data) {
   const { exportedAt, ...rest } = data;
   const text = [
-    "11 Plus Lab — your account data",
+    "11 PlusLab — your account data",
     `Exported: ${new Date(exportedAt).toLocaleString("en-GB")}`,
     "",
     formatAsText(rest),

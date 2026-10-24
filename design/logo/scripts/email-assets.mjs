@@ -73,7 +73,7 @@ const jk8 = opentype.parse(fs.readFileSync(`${fontsDir}/Jakarta-800.woff`).buffe
 }
 
 // CTA buttons as images: lime pill, ink label, ink arrow circle (exported 2x).
-const BUTTONS = { start: "Start practising", open: "Open 11 Plus Lab", play: "Play a quick round" };
+const BUTTONS = { start: "Start practising", open: "Open 11 PlusLab", play: "Play a quick round" };
 for (const [id, label] of Object.entries(BUTTONS)) {
   const size = 18, tw = jk8.getAdvanceWidth(label, size);
   const w = Math.ceil(28 + tw + 16 + 40 + 8), h = 56;

@@ -1,4 +1,4 @@
-# 11 Plus Lab logo
+# 11 PlusLab logo
 
 Traced from the chosen artwork (`source/gemini-original.jpg`), so the shapes match it exactly. Colours are snapped to the brand: ink `#0E1116`, lime `#D4F520`, blue `#12A5FF`, white.
 

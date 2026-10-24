@@ -3,7 +3,7 @@ import React from "react";
 // Simple in-app Privacy Policy / Terms. Plain, honest, UK-oriented. All real
 // company details filled in; have a solicitor review before marketing to children at scale.
 export const CONTACT = "hello@11pluslab.com"; // live mailbox (Hostinger)
-const APP = "11 Plus Lab";
+const APP = "11 PlusLab";
 const ENTITY = "Urban Crunch Media Limited";
 const COMPANY_NUMBER = "15899109";
 const REGISTERED_IN = "England and Wales";

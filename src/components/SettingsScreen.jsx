@@ -341,7 +341,7 @@ export default function SettingsScreen({ onOpenReport, onOpenBadges }) {
       </div>
 
       <div className="set-foot">
-        11 Plus Lab ·{" "}
+        11 PlusLab ·{" "}
         <a href="#" onClick={(e) => { e.preventDefault(); setLegal("privacy"); }}>Privacy</a> ·{" "}
         <a href="#" onClick={(e) => { e.preventDefault(); setLegal("terms"); }}>Terms</a>
       </div>

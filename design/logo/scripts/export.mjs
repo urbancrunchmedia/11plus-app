@@ -1,4 +1,4 @@
-// Builds every 11 Plus Lab logo file from the traced artwork (traced.json).
+// Builds every 11 PlusLab logo file from the traced artwork (traced.json).
 // Usage: node export.mjs traced.json outDir fontsDir
 import fs from "fs";
 import opentype from "opentype.js";

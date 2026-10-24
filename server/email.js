@@ -8,7 +8,7 @@
 import { Resend } from "resend";
 import { createHash, createHmac, timingSafeEqual } from "crypto";
 
-const FROM = "11 Plus Lab <hello@11pluslab.com>";
+const FROM = "11 PlusLab <hello@11pluslab.com>";
 const REPLY_TO = "hello@11pluslab.com";
 // Where the in-app support form is delivered.
 export const SUPPORT_INBOX = "hello@11pluslab.com";
@@ -44,7 +44,7 @@ function escapeHtml(s) {
   return String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 }
 
-// ---- Shared layout, in the style of the 11 Plus Lab print poster ----
+// ---- Shared layout, in the style of the 11 PlusLab print poster ----
 // Soft blue header with blobs, big ink headline with a blue, lime-underlined
 // key phrase, pastel icon tiles, lime pill CTA with an ink arrow.
 // Tables + inline styles because that's what Gmail/Outlook render reliably;
@@ -66,7 +66,7 @@ function p(html) {
 // recolours HTML (lime turns dark green) but never images. Any other label
 // falls back to an HTML pill, which still works, just recoloured in dark mode.
 const BUTTON_IMAGES = {
-  "Start practising": ["btn-start", 230], "Open 11 Plus Lab": ["btn-open", 236], "Play a quick round": ["btn-play", 252],
+  "Start practising": ["btn-start", 230], "Open 11 PlusLab": ["btn-open", 236], "Play a quick round": ["btn-play", 252],
 };
 function button({ label, url }) {
   const img = BUTTON_IMAGES[label];
@@ -164,7 +164,7 @@ function layout({ preheader, eyebrow, heading, lead, blocks, footerUid }) {
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${C.sky}"><tr><td align="center" style="padding:20px 12px 28px">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:600px">
 
-<tr><td style="line-height:0;font-size:0"><a href="${SITE}"><img src="${IMG}/header-banner.png" width="600" height="112" alt="11 Plus Lab" style="display:block;border:0;width:100%;max-width:600px;height:auto;font-family:${FONT};font-size:20px;font-weight:800;color:${C.ink}"></a></td></tr>
+<tr><td style="line-height:0;font-size:0"><a href="${SITE}"><img src="${IMG}/header-banner.png" width="600" height="112" alt="11 PlusLab" style="display:block;border:0;width:100%;max-width:600px;height:auto;font-family:${FONT};font-size:20px;font-weight:800;color:${C.ink}"></a></td></tr>
 <tr><td bgcolor="${C.sky}" class="px" style="background:${C.sky};padding:6px 36px 30px">
   <!-- Plain colour, no background image: Gmail's dark mode recolours text, so the
        background behind it has to be recolourable too or the text disappears. -->
@@ -197,7 +197,7 @@ export function welcomeEmail({ name }) {
   const who = name ? escapeHtml(name) : "Your child";
   return {
     marketing: false,
-    subject: "Welcome to 11 Plus Lab",
+    subject: "Welcome to 11 PlusLab",
     html: layout({
       preheader: "Fun, quick games to build 11+ English skills, ready when you are.",
       eyebrow: "Welcome",
@@ -227,7 +227,7 @@ export function trialEndingEmail({ trialEnd }) {
         statCard({ icon: "clock", label: "Trial ends", big: escapeHtml(when) }),
         p("After that, your subscription starts and your card is charged automatically. <strong>Nothing to do</strong> if you'd like to carry on."),
         p("Don't want to continue? Cancel any time before then in the app: <strong>Settings → Manage subscription</strong>."),
-        button({ label: "Open 11 Plus Lab", url: SITE }),
+        button({ label: "Open 11 PlusLab", url: SITE }),
       ],
     }),
   };
@@ -299,7 +299,7 @@ ${row("Request", escapeHtml(id))}
 // A personal note from the founder, not a newsletter: plain layout, one link,
 // a clear opt-out. Recipients are businesses, so the opt-out is keyed by email
 // (they have no account) and checked before every send.
-export const OUTREACH_FROM = "Reuben at 11 Plus Lab <hello@11pluslab.com>";
+export const OUTREACH_FROM = "Reuben at 11 PlusLab <hello@11pluslab.com>";
 
 export const outreachKey = (email) => createHash("sha256").update(String(email).trim().toLowerCase()).digest("hex").slice(0, 32);
 const outreachToken = (email) => createHmac("sha256", secret()).update(`outreach:${String(email).trim().toLowerCase()}`).digest("base64url");
@@ -322,18 +322,19 @@ export function outreachEmail({ business, email, code }) {
     subject: `An 11+ word-practice app for your students`,
     html: `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light"></head>
 <body style="margin:0;padding:0;background:#ffffff">
-<div style="display:none;max-height:0;overflow:hidden">Short game-style practice for synonyms, antonyms, spelling and punctuation, with 20% off for your families.</div>
+<div style="display:none;max-height:0;overflow:hidden">Short game-style 11+ practice with a friends leaderboard, and 20% off for your families.</div>
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td style="padding:28px 20px">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px"><tr><td>
 ${P(`Hi ${name} team,`)}
-${P("I'm Reuben, the founder of 11 Plus Lab. I built it while helping my own daughter prepare for the 11+, and I thought it might be useful for your students between lessons.")}
+${P("I'm Reuben, the founder of 11 PlusLab. I built it while helping my own daughter prepare for the 11+, and I thought it might be useful for your students between lessons.")}
 ${P("It's short, game-style practice for synonyms, antonyms, compound words, spelling, punctuation and parts of speech. It notices the words each child gets wrong and brings them back until they stick, and parents can see a progress report of what to revise.")}
-${P(`Families can try it free at <a href="${SITE}" style="color:#0B7FC7;font-weight:700">11pluslab.com</a>. If you'd like to share it, your families can use the code <strong style="background:#F3FBD4;padding:2px 6px;border-radius:6px;letter-spacing:.03em">${escapeHtml(code)}</strong> for 20% off their first month of Full Access (£3.99 instead of £4.99).`)}
-<p style="margin:4px 0 22px"><a href="${SITE}" style="display:inline-block;background:#D4F520;color:#0E1116;font-family:Helvetica,Arial,sans-serif;font-size:15px;font-weight:700;text-decoration:none;padding:12px 20px;border-radius:999px">See 11 Plus Lab &rarr;</a></p>
+${P("Children can also add their friends and compete on a weekly leaderboard, which is a big part of what keeps them coming back to practise.")}
+${P(`Parents can sign up free at <a href="${SITE}" style="color:#0B7FC7;font-weight:700">11pluslab.com</a> and their child can start playing straight away. If you'd like to share it with your families, they can use the code <strong style="background:#F3FBD4;padding:2px 6px;border-radius:6px;letter-spacing:.03em">${escapeHtml(code)}</strong> for 20% off their first month of Full Access (£3.99 instead of £4.99).`)}
+<p style="margin:4px 0 22px"><a href="${SITE}" style="display:inline-block;background:#D4F520;color:#0E1116;font-family:Helvetica,Arial,sans-serif;font-size:15px;font-weight:700;text-decoration:none;padding:12px 20px;border-radius:999px">See 11 PlusLab &rarr;</a></p>
 ${P("I'd really value your thoughts, even if it's not a fit for you. Just reply to this email.")}
 <table role="presentation" cellpadding="0" cellspacing="0" style="margin:8px 0 26px"><tr>
 <td style="padding-right:12px"><img src="${SITE}/pwa-192.png" width="40" height="40" alt="" style="display:block;border:0;border-radius:10px"></td>
-<td style="font-family:Helvetica,Arial,sans-serif;font-size:14px;line-height:1.45;color:#0E1116"><strong>Reuben</strong><br><span style="color:#5E6C7C">Founder, 11 Plus Lab · <a href="${SITE}" style="color:#5E6C7C">11pluslab.com</a></span></td>
+<td style="font-family:Helvetica,Arial,sans-serif;font-size:14px;line-height:1.45;color:#0E1116"><strong>Reuben</strong><br><span style="color:#5E6C7C">Founder, 11 PlusLab · <a href="${SITE}" style="color:#5E6C7C">11pluslab.com</a></span></td>
 </tr></table>
 <p style="margin:0;padding-top:14px;border-top:1px solid #E3ECF6;font-family:Helvetica,Arial,sans-serif;font-size:12px;line-height:1.6;color:#7A8796">
 If you'd rather not hear from me again, reply "no thanks" or <a href="${optOut}" style="color:#7A8796">click here</a> and I won't email you again.<br>

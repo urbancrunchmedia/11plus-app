@@ -16,9 +16,9 @@ const SAMPLES = {
   }),
   announcement: () => announcementEmail({
     uid: "test",
-    subject: "New on 11 Plus Lab",
+    subject: "New on 11 PlusLab",
     text: "This is a sample announcement.\n\nYour real message goes here, split into paragraphs by blank lines.",
-    ctaLabel: "Open 11 Plus Lab",
+    ctaLabel: "Open 11 PlusLab",
   }),
 };
 

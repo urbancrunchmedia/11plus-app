@@ -10,7 +10,7 @@ function page(title, message) {
 <body style="margin:0;background:#F4F9FF;font-family:Helvetica,Arial,sans-serif;color:#0E1116">
 <div style="max-width:480px;margin:60px auto;padding:28px;background:#fff;border-radius:20px">
 <h1 style="font-size:22px;margin:0 0 12px">${title}</h1><p style="line-height:1.55">${message}</p>
-<p><a href="${SITE}" style="color:#12A5FF;font-weight:700">Back to 11 Plus Lab</a></p></div></body></html>`;
+<p><a href="${SITE}" style="color:#12A5FF;font-weight:700">Back to 11 PlusLab</a></p></div></body></html>`;
 }
 
 async function outreachOptOut(req, res, email, token) {
