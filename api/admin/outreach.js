@@ -183,11 +183,18 @@ export default async function handler(req, res) {
           const ex = (await stripe.promotionCodes.list({ code, limit: 1 })).data[0];
           return ex || stripe.promotionCodes.create({ coupon: COUPON_ID, code, ...(first ? { restrictions: { first_time_transaction: true } } : {}) });
         };
+        let pct;
+        try { pct = await stripe.coupons.retrieve("pl-debug-pct-10"); } catch { pct = await stripe.coupons.create({ id: "pl-debug-pct-10", percent_off: 10, duration: "once", name: "Debug 10%" }); }
+        const pctCode = (await stripe.promotionCodes.list({ code: "PLTESTPCT10", limit: 1 })).data[0] || await stripe.promotionCodes.create({ coupon: pct.id, code: "PLTESTPCT10" });
+        const price = await stripe.prices.retrieve(clean(process.env.VITE_STRIPE_PRICE_MONTHLY));
+        const allPromos = (await stripe.promotionCodes.list({ limit: 5, active: true })).data.map((p) => p.code);
         const a = await mk("PLTESTOPEN20", false);
         const b = await mk("PLTESTFIRST20", true);
         return res.status(200).json({
           found: found && { code: found.code, active: found.active, livemode: found.livemode, restrictions: found.restrictions, coupon: found.coupon && { id: found.coupon.id, valid: found.coupon.valid, amount_off: found.coupon.amount_off, currency: found.coupon.currency, applies_to: found.coupon.applies_to, redeem_by: found.coupon.redeem_by, max_redemptions: found.coupon.max_redemptions } },
-          tests: [a.code, b.code],
+          tests: [a.code, b.code, pctCode.code],
+          price: { id: price.id, currency: price.currency, unit_amount: price.unit_amount, livemode: price.livemode, product: price.product },
+          somePromos: allPromos,
         });
       }
       case "status": {
