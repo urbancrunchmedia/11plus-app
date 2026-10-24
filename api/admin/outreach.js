@@ -197,6 +197,32 @@ export default async function handler(req, res) {
           somePromos: allPromos,
         });
       }
+      case "debugCheckout": {
+        // Temporary: same settings as /api/checkout, with a promotion code pre-applied,
+        // so Stripe's API says exactly why a code is refused.
+        const promo = (await stripe.promotionCodes.list({ code: body.code || "PLTESTOPEN20", limit: 1 })).data[0];
+        const customer = await stripe.customers.create({ email: "debug+checkout@11pluslab.com", metadata: { purpose: "promo-debug" } });
+        const attempt = async (label, extra) => {
+          try {
+            const sess = await stripe.checkout.sessions.create({
+              mode: "subscription", customer: customer.id,
+              line_items: [{ price: clean(process.env.VITE_STRIPE_PRICE_MONTHLY), quantity: 1 }],
+              subscription_data: { trial_period_days: 7 },
+              success_url: "https://11pluslab.com/", cancel_url: "https://11pluslab.com/",
+              ...extra,
+            });
+            await stripe.checkout.sessions.expire(sess.id);
+            return { label, ok: true };
+          } catch (e) { return { label, ok: false, error: e.message, code: e.code, param: e.param }; }
+        };
+        const results = [
+          await attempt("promo, plain", { discounts: [{ promotion_code: promo.id }] }),
+          await attempt("promo + tax + address", { discounts: [{ promotion_code: promo.id }], automatic_tax: { enabled: true }, billing_address_collection: "required", customer_update: { address: "auto" } }),
+          await attempt("coupon direct", { discounts: [{ coupon: COUPON_ID }] }),
+        ];
+        await stripe.customers.del(customer.id);
+        return res.status(200).json({ code: promo?.code, results });
+      }
       case "status": {
         const all = await db.collection("outreach").get();
         const counts = {};
