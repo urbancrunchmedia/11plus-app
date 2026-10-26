@@ -3,8 +3,9 @@
 //
 // POST, Authorization: Bearer <ADMIN_SECRET>, body { action, ... }:
 //   { action: "setup" }                         create the shared coupon (idempotent)
-//   { action: "import", prospects: [{ business, location, email, code }] }
-//                                               create each centre's promo code and queue it
+//   { action: "import", prospects: [{ business, location, email, code }], manual? }
+//                                               create each centre's promo code and queue it;
+//                                               manual: true = code only, the owner emails them personally
 //   { action: "test", to, business, code }      send one sample to `to` (nothing is queued)
 //   { action: "start" } / { action: "pause" }   switch the daily send on/off
 //   { action: "send", limit? }                  send the next batch now
@@ -133,13 +134,14 @@ export default async function handler(req, res) {
           if (snap.exists) { out.push({ email, code: snap.data().code, status: snap.data().status, note: "already imported" }); continue; }
           try {
             const promo = await ensurePromoCode(stripe, { code, business: clean(p.business), email });
-            await ref.set({ business: clean(p.business), location: clean(p.location), email, code, promoId: promo.id, status: "queued", importedAt: new Date().toISOString() });
-            out.push({ email, code, status: "queued" });
+            const status = body.manual ? "manual" : "queued";
+            await ref.set({ business: clean(p.business), location: clean(p.location), email, code, promoId: promo.id, status, importedAt: new Date().toISOString() });
+            out.push({ email, code, status });
           } catch (e) {
             out.push({ email, code, error: e.message });
           }
         }
-        return res.status(200).json({ imported: out.filter((o) => o.status === "queued").length, results: out });
+        return res.status(200).json({ imported: out.filter((o) => o.status === "queued" || o.status === "manual").length, results: out });
       }
       case "test": {
         if (!body.to) return res.status(400).json({ error: "Missing to" });
@@ -156,7 +158,7 @@ export default async function handler(req, res) {
       case "verify": {
         // Every queued centre's code must exist in Stripe, be active, match the
         // email exactly, be first-time-only and point at the outreach coupon.
-        const queued = await db.collection("outreach").where("status", "==", "queued").get();
+        const queued = await db.collection("outreach").where("status", "in", ["queued", "manual"]).get();
         const problems = [];
         for (const d of queued.docs) {
           const p = d.data();
