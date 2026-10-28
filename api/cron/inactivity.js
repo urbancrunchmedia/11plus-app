@@ -6,9 +6,11 @@
 //    One per quiet spell: nobody is nudged again until they've played since.
 //    Quiet for more than MAX_DAYS: left alone, so this never emails everyone
 //    who tried the app once months ago.
+//  - Win-back: children quiet for more than MAX_DAYS get one "we've missed
+//    you" email, once ever (winBackSentAt), then nothing more.
 import { adminDb } from "../../server/firebaseAdmin.js";
 import { listAccounts } from "../../server/recipients.js";
-import { inactivityEmail, firstRoundEmail, sendBatch, unsubscribedUids } from "../../server/email.js";
+import { inactivityEmail, firstRoundEmail, winBackEmail, sendBatch, unsubscribedUids } from "../../server/email.js";
 
 const DAY = 24 * 60 * 60 * 1000;
 const INACTIVE_DAYS = 5;
@@ -19,6 +21,9 @@ const FIRST_MIN_HOURS = 20;
 // A year: also reaches older accounts that never played (once each; first run 2026-10-29).
 const FIRST_MAX_DAYS = 365;
 const FIRST_CAP = 30;
+const WIN_BACK_CAP = 30;
+// Off until the owner approves the email's test copy.
+const WIN_BACK_ENABLED = false;
 
 export default async function handler(req, res) {
   const expected = `Bearer ${(process.env.CRON_SECRET || "").trim()}`;
@@ -30,10 +35,11 @@ export default async function handler(req, res) {
     const [accounts, unsubscribed, states] = await Promise.all([
       listAccounts(),
       unsubscribedUids(db),
-      db.collection("emailState").select("lastNudgeAt", "firstRoundSentAt").get(),
+      db.collection("emailState").select("lastNudgeAt", "firstRoundSentAt", "winBackSentAt").get(),
     ]);
     const lastNudge = new Map(states.docs.map((d) => [d.id, Date.parse(d.get("lastNudgeAt")) || 0]));
     const firstSent = new Set(states.docs.filter((d) => d.get("firstRoundSentAt")).map((d) => d.id));
+    const winBackSent = new Set(states.docs.filter((d) => d.get("winBackSentAt")).map((d) => d.id));
     const now = Date.now();
 
     const due = accounts
@@ -71,7 +77,20 @@ export default async function handler(req, res) {
       for (const a of firsts) batch.set(db.collection("emailState").doc(a.uid), { firstRoundSentAt: at }, { merge: true });
       await batch.commit();
     }
-    res.status(200).json({ nudged: due.length, firstRound: firsts.length });
+
+    const winBacks = WIN_BACK_ENABLED ? accounts
+      .filter((a) => !unsubscribed.has(a.uid) && a.played && !winBackSent.has(a.uid))
+      .filter((a) => now - a.lastActive > MAX_DAYS * DAY)
+      .sort((a, b) => b.lastActive - a.lastActive)
+      .slice(0, WIN_BACK_CAP) : [];
+    if (winBacks.length) {
+      await sendBatch(winBacks.map((a) => ({ to: a.email, uid: a.uid, email: winBackEmail({ uid: a.uid, name: a.childName }) })));
+      const batch = db.batch();
+      const at = new Date().toISOString();
+      for (const a of winBacks) batch.set(db.collection("emailState").doc(a.uid), { winBackSentAt: at }, { merge: true });
+      await batch.commit();
+    }
+    res.status(200).json({ nudged: due.length, firstRound: firsts.length, winBack: winBacks.length });
   } catch (e) {
     console.error("inactivity cron:", e.message);
     res.status(500).json({ error: e.message });

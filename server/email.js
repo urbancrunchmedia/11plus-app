@@ -260,6 +260,35 @@ ${step(3, "Tap <strong>Start round</strong> and match the words.")}
   };
 }
 
+// Win-back: sent once ever to a child who played but has been quiet for more
+// than 30 days. Never repeated, so it never turns into nagging.
+export function winBackEmail({ uid, name }) {
+  const who = name ? escapeHtml(name) : "your child";
+  const item = (text) => `<tr><td width="26" valign="top" style="padding:2px 0 10px"><div style="width:10px;height:10px;border-radius:50%;background:${C.lime};border:2px solid ${C.ink};margin-top:5px"></div></td><td style="padding:0 0 10px;font-family:${FONT};font-size:16px;line-height:1.5;color:${C.ink}">${text}</td></tr>`;
+  return {
+    marketing: true,
+    subject: name ? `We've missed ${name} on 11 PlusLab` : "We've missed you on 11 PlusLab",
+    html: layout({
+      preheader: "Their trickiest words are still waiting, ready for a quick 5-minute round.",
+      eyebrow: "We've missed you",
+      heading: ["Time for a ", "quick round", "?"],
+      lead: `It's been a while since ${who} last played. Their trickiest words are still saved and ready to practise.`,
+      blocks: [
+        `<div style="margin:0 0 10px;font-family:${FONT};font-size:18px;font-weight:800;color:${C.ink}">In case you missed it</div>
+<table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 0 12px">
+${item("<strong>Seven games</strong> to choose from: Synonyms, Antonyms, Compound Words, Word Detective, Punctuation, Spelling and Parts of Speech.")}
+${item("<strong>Play with friends:</strong> add a friend with their code and compete on the weekly leaderboard.")}
+${item("<strong>Picks up where they left off:</strong> the words they found hardest come back first.")}
+</table>`,
+        gameGrid(GAMES.slice(0, 4), "Jump back in"),
+        p("Just 5 minutes is enough to keep the words they've learned fresh."),
+        button({ label: "Play a quick round", url: SITE }),
+      ],
+      footerUid: uid,
+    }),
+  };
+}
+
 export function inactivityEmail({ uid, name, days }) {
   const who = name ? escapeHtml(name) : "Your child";
   return {

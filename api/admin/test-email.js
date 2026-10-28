@@ -1,12 +1,12 @@
 // POST /api/admin/test-email   Authorization: Bearer <ADMIN_SECRET>
-// Body: { to, template: "welcome" | "trial" | "inactivity" | "firstRound" | "announcement" | "support" }
+// Body: { to, template: "welcome" | "trial" | "inactivity" | "firstRound" | "winBack" | "announcement" | "support" }
 // Sends one sample of a template, subject prefixed "[TEST]", to check how it looks.
 // { to, template: "firstRound", real: true } instead sends the real first-round
 // email to that account (its own unsubscribe link, no [TEST]) and records it,
 // so the daily job won't send it again.
 import { adminAuth, adminDb } from "../../server/firebaseAdmin.js";
 import {
-  sendEmail, welcomeEmail, trialEndingEmail, inactivityEmail, announcementEmail, supportRequestEmail, firstRoundEmail,
+  sendEmail, welcomeEmail, trialEndingEmail, inactivityEmail, announcementEmail, supportRequestEmail, firstRoundEmail, winBackEmail,
 } from "../../server/email.js";
 
 const SAMPLES = {
@@ -14,6 +14,7 @@ const SAMPLES = {
   trial: () => trialEndingEmail({ trialEnd: Date.now() + 3 * 24 * 60 * 60 * 1000 }),
   inactivity: () => inactivityEmail({ uid: "test", name: "", days: 6 }),
   firstRound: () => firstRoundEmail({ uid: "test" }),
+  winBack: () => winBackEmail({ uid: "test", name: "" }),
   support: () => supportRequestEmail({
     uid: "test", email: "parent@example.com", displayName: "Sample learner", categoryLabel: "Billing or subscription",
     message: "This is a sample support request from the in-app form.\n\nReplying to this email would go to the parent.",
