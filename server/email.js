@@ -233,6 +233,33 @@ export function trialEndingEmail({ trialEnd }) {
   };
 }
 
+// Sent once, a day or more after sign-up, to accounts that haven't played a
+// round yet. No name: for Google sign-ups the account name is the parent's.
+export function firstRoundEmail({ uid }) {
+  const step = (n, text) => `<tr><td width="40" valign="top" style="padding:0 0 12px"><div style="width:28px;height:28px;border-radius:9px;background:${C.ink};color:${C.lime};font-family:${FONT};font-size:14px;font-weight:800;line-height:28px;text-align:center">${n}</div></td><td valign="top" style="padding:3px 0 12px;font-family:${FONT};font-size:16px;line-height:1.5;color:${C.ink}">${text}</td></tr>`;
+  return {
+    marketing: true,
+    subject: "Ready for your first round?",
+    html: layout({
+      preheader: "Your account is all set. The first round takes about 2 minutes.",
+      eyebrow: "Getting started",
+      heading: ["Ready for your ", "first round", "?"],
+      lead: "Your 11 PlusLab account is all set, but no rounds have been played yet. The first one takes about 2 minutes.",
+      blocks: [
+        `<table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 0 8px">
+${step(1, "Open <strong>11pluslab.com</strong> and sign in.")}
+${step(2, "Pick a game. <strong>Synonyms</strong> is the most popular place to start.")}
+${step(3, "Tap <strong>Start round</strong> and match the words.")}
+</table>`,
+        gameGrid(GAMES.slice(0, 4), "Pick a game to start with"),
+        p("<strong>Our tip:</strong> a few minutes a day works best. The app brings back the words your child finds hardest until they stick."),
+        button({ label: "Start practising", url: SITE }),
+      ],
+      footerUid: uid,
+    }),
+  };
+}
+
 export function inactivityEmail({ uid, name, days }) {
   const who = name ? escapeHtml(name) : "Your child";
   return {

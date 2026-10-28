@@ -1,14 +1,15 @@
 // POST /api/admin/test-email   Authorization: Bearer <ADMIN_SECRET>
-// Body: { to, template: "welcome" | "trial" | "inactivity" | "announcement" | "support" }
+// Body: { to, template: "welcome" | "trial" | "inactivity" | "firstRound" | "announcement" | "support" }
 // Sends one sample of a template, subject prefixed "[TEST]", to check how it looks.
 import {
-  sendEmail, welcomeEmail, trialEndingEmail, inactivityEmail, announcementEmail, supportRequestEmail,
+  sendEmail, welcomeEmail, trialEndingEmail, inactivityEmail, announcementEmail, supportRequestEmail, firstRoundEmail,
 } from "../../server/email.js";
 
 const SAMPLES = {
   welcome: () => welcomeEmail({ name: "" }),
   trial: () => trialEndingEmail({ trialEnd: Date.now() + 3 * 24 * 60 * 60 * 1000 }),
   inactivity: () => inactivityEmail({ uid: "test", name: "", days: 6 }),
+  firstRound: () => firstRoundEmail({ uid: "test" }),
   support: () => supportRequestEmail({
     uid: "test", email: "parent@example.com", displayName: "Sample learner", categoryLabel: "Billing or subscription",
     message: "This is a sample support request from the in-app form.\n\nReplying to this email would go to the parent.",
