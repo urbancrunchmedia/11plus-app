@@ -13,18 +13,6 @@ export default async function handler(req, res) {
   const admin = (process.env.ADMIN_SECRET || "").trim();
   if (admin && req.headers.authorization === `Bearer ${admin}`) {
     try {
-      if (req.query?.diag === "auth") {
-        // Temporary: account health check (no emails).
-        const { adminAuth } = await import("../../server/firebaseAdmin.js");
-        const out = [];
-        let token;
-        do {
-          const page = await adminAuth().listUsers(1000, token);
-          for (const u of page.users) out.push({ uid: u.uid.slice(0, 6), created: u.metadata.creationTime, lastSignIn: u.metadata.lastSignInTime, disabled: u.disabled, providers: u.providerData.map((p) => p.providerId), hasEmail: !!u.email });
-          token = page.pageToken;
-        } while (token);
-        return res.status(200).json({ count: out.length, disabled: out.filter((u) => u.disabled).length, users: out });
-      }
       return res.status(200).json(await ownerStats());
     } catch (e) { return res.status(500).json({ error: e.message }); }
   }

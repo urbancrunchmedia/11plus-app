@@ -16,7 +16,8 @@ const MAX_DAYS = 30;
 // Leaves most of Resend's 100/day free allowance for welcome emails and announcements.
 const NUDGE_CAP = 40;
 const FIRST_MIN_HOURS = 20;
-const FIRST_MAX_DAYS = 14;
+// A year: also reaches older accounts that never played (once each; first run 2026-10-29).
+const FIRST_MAX_DAYS = 365;
 const FIRST_CAP = 30;
 
 export default async function handler(req, res) {
