@@ -1,6 +1,10 @@
 // POST /api/admin/test-email   Authorization: Bearer <ADMIN_SECRET>
 // Body: { to, template: "welcome" | "trial" | "inactivity" | "firstRound" | "announcement" | "support" }
 // Sends one sample of a template, subject prefixed "[TEST]", to check how it looks.
+// { to, template: "firstRound", real: true } instead sends the real first-round
+// email to that account (its own unsubscribe link, no [TEST]) and records it,
+// so the daily job won't send it again.
+import { adminAuth, adminDb } from "../../server/firebaseAdmin.js";
 import {
   sendEmail, welcomeEmail, trialEndingEmail, inactivityEmail, announcementEmail, supportRequestEmail, firstRoundEmail,
 } from "../../server/email.js";
@@ -29,8 +33,19 @@ export default async function handler(req, res) {
   if (!secret || req.headers.authorization !== `Bearer ${secret}`) {
     return res.status(401).json({ error: "Unauthorized" });
   }
-  const { to, template } = req.body || {};
+  const { to, template, real } = req.body || {};
   if (!to || !SAMPLES[template]) return res.status(400).json({ error: "Need to and a known template" });
+  if (real) {
+    if (template !== "firstRound") return res.status(400).json({ error: "Only firstRound can be sent for real here" });
+    try {
+      const user = await adminAuth().getUserByEmail(to);
+      const data = await sendEmail({ to: user.email, uid: user.uid, email: firstRoundEmail({ uid: user.uid }), idempotencyKey: `first-round-${user.uid}` });
+      await adminDb().collection("emailState").doc(user.uid).set({ firstRoundSentAt: new Date().toISOString() }, { merge: true });
+      return res.status(200).json({ sent: true, real: true, id: data?.id });
+    } catch (e) {
+      return res.status(500).json({ error: e.message });
+    }
+  }
   try {
     const email = SAMPLES[template]();
     const data = await sendEmail({ to, uid: "test", email: { ...email, subject: `[TEST] ${email.subject}` } });
