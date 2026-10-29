@@ -5,6 +5,8 @@ import Icon from "./Icon";
 import { msUntilReset, formatResetIn } from "../utils/weekly";
 import { RANK_TIERS } from "../utils/rank";
 import Gem from "./Gem";
+import { getSetting } from "../utils/leaderboard";
+import { shareInvite } from "../utils/invite";
 
 function rankTierInfo(id) {
   return RANK_TIERS.find((t) => t.id === id) || RANK_TIERS[0];
@@ -137,6 +139,20 @@ export default function LeaderboardScreen({ onPlay, onExit }) {
     load();
   }
 
+  // Grown-ups can switch friends off in Settings (device-wide, like the PIN lock).
+  const friendsAllowed = getSetting("allowFriends", true);
+
+  async function inviteFriend() {
+    if (!me?.code) return;
+    try {
+      const how = await shareInvite(me.code, me.displayName);
+      if (how === "copied") showToast("Invite link copied! Paste it into a message to your friend");
+      else if (how === "shared") showToast("Invite sent! You'll be friends once they join");
+    } catch {
+      setMsg({ type: "err", text: `Couldn't share automatically. Your code is ${me.code}` });
+    }
+  }
+
   async function copyCode() {
     if (!me?.code) return;
     try {
@@ -170,7 +186,9 @@ export default function LeaderboardScreen({ onPlay, onExit }) {
               {managing ? "Done" : "Manage"}
             </button>
           )}
-          <button className="board-addbtn" onClick={() => { setMsg(null); setAddSheet(true); }}>+ Add friend</button>
+          {friendsAllowed
+            ? <button className="board-addbtn" onClick={() => { setMsg(null); setAddSheet(true); }}>+ Add friend</button>
+            : <span className="board-friends-off">Friends are off in grown-up settings</span>}
         </div>
       </div>
 
@@ -233,7 +251,12 @@ export default function LeaderboardScreen({ onPlay, onExit }) {
         <div className="set-sheet-overlay" onClick={() => setAddSheet(false)}>
           <div className="set-sheet board-sheet" onClick={(e) => e.stopPropagation()}>
             <div className="set-sheet-title">Add a friend</div>
-            <div className="set-sheet-sub">Swap codes with a friend to see each other on the leaderboard.</div>
+            <div className="set-sheet-sub">Send an invite link, or swap codes, to see each other on the leaderboard.</div>
+
+            <button className="board-invitebtn" onClick={inviteFriend} disabled={!me?.code}>
+              <Icon name="star" size={18} stroke="currentColor" strokeWidth={2.2} /> Invite a friend
+            </button>
+            <div className="board-invite-note">Only share with friends you know.</div>
 
             <div className="board-fieldlbl">Your code</div>
             <div className="board-codebox">

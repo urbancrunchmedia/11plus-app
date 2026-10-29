@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import Icon, { SKILL_ICON } from "./Icon";
+import { getPendingInvite } from "../utils/invite";
 
 // What the app actually contains, shown before anyone signs in. Same order
 // and labels as the SKILLS list in gamify.js (the dashboard's source of
@@ -142,6 +143,12 @@ export default function LoginScreen() {
       {/* Right: sign-in */}
       <div className="login2-panel">
         <div className="login2-card">
+          {getPendingInvite() && (
+            <div className="login2-invite" role="status">
+              <span aria-hidden="true">🏆</span>
+              <div><strong>A friend invited you to play.</strong> Sign up or sign in, and you can join them on the weekly leaderboard.</div>
+            </div>
+          )}
           {showEmailForm && (
             <button
               type="button"

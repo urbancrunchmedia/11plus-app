@@ -11,6 +11,7 @@ const SETTING_DEFAULTS = {
   showTimer: true,
   revisitMisses: true,
   parentPinLock: false,
+  allowFriends: true,   // grown-up switch: adding friends and invite links
 };
 export function getSettings() {
   try { return { ...SETTING_DEFAULTS, ...(JSON.parse(localStorage.getItem(SETTINGS_KEY)) || {}) }; }

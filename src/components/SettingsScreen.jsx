@@ -25,6 +25,7 @@ const LEARN_TOGGLES = [
 ];
 const PARENT_TOGGLES = [
   { key: "parentPinLock", label: "PIN-protect grown-up settings", sub: "Ask for the Child PIN before opening Settings", needsPin: true },
+  { key: "allowFriends", label: "Allow friends", sub: "Add friends and share invite links for the weekly leaderboard" },
 ];
 
 function initial(name) { return name ? name.trim().charAt(0).toUpperCase() : "A"; }

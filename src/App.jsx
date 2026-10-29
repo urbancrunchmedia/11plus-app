@@ -16,6 +16,7 @@ import DetectiveScreen from "./components/DetectiveScreen";
 import FillInBlanksGame from "./components/FillInBlanksGame";
 import FlashcardScreen from "./components/FlashcardScreen";
 import OwnerDashboard from "./components/OwnerDashboard";
+import InvitePrompt from "./components/InvitePrompt";
 import ComingSoon from "./components/ComingSoon";
 import WordListScreen from "./components/WordListScreen";
 import LeaderboardScreen from "./components/LeaderboardScreen";
@@ -252,6 +253,7 @@ function AppInner() {
   return (
     <div className="app-layout">
       <AppNav active={selectedGame} onNavigate={handleSelectGame} />
+      <InvitePrompt onOpenBoard={() => handleSelectGame("leaderboard")} />
 
       <div className="main-area">
         <div className="main-content">

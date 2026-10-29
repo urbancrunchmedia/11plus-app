@@ -3359,3 +3359,13 @@ a.set-ghost { display: inline-flex; align-items: center; justify-content: center
 .own-list li { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 10px 0; border-top: 1px solid var(--line, #dde7f0); min-width: 0; }
 .own-list li:first-child { border-top: none; }
 .own-player-name { font-weight: 800; font-size: 0.95rem; }
+
+/* Invite banner on the login page (opened from a ?friend= link) */
+.login2-invite { display: flex; gap: 10px; align-items: flex-start; background: #f3fbd4; border: 1px solid #dfef9a; color: var(--ink); border-radius: 16px; padding: 12px 14px; margin-bottom: 18px; font-size: 0.9rem; line-height: 1.45; }
+.login2-invite span { font-size: 1.2rem; line-height: 1.2; }
+
+/* Leaderboard: invite link button + friends-off note */
+.board-invitebtn { width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; border: none; background: var(--accent); color: var(--ink); font-weight: 800; font-size: 1rem; padding: 14px 18px; border-radius: var(--r-full); margin-top: 6px; }
+.board-invitebtn:disabled { opacity: .6; }
+.board-invite-note { text-align: center; font-size: 0.78rem; font-weight: 600; color: var(--muted, #6b7a8c); margin: 8px 0 4px; }
+.board-friends-off { font-size: 0.78rem; font-weight: 700; color: var(--muted, #6b7a8c); }
