@@ -77,6 +77,7 @@ export default function LoginScreen() {
   const [error, setError]       = useState("");
   const [loading, setLoading]   = useState(false);
   const [notice, setNotice]     = useState("");
+  const [emailHelp, setEmailHelp] = useState(false);
   const [showPw, setShowPw]     = useState(false);
   const [credFail, setCredFail] = useState(false);
 
@@ -99,7 +100,9 @@ export default function LoginScreen() {
     if (!email.trim()) { setError("Enter your email above, then tap 'Forgot password?'."); return; }
     try {
       await resetPassword(email);
-      setNotice(`Password reset link sent to ${email.trim()}. Check your inbox (and spam).`);
+      // Same message whether or not an account exists, so this can't be used
+      // to find out who's registered.
+      setNotice(`If there's an 11 PlusLab account for ${email.trim()}, we've emailed it what to do next. Check your inbox (and spam) in a minute or two.`);
     } catch (err) {
       setError(friendlyError(err.code, err.message) || "Couldn't send the reset email.");
     }
@@ -240,6 +243,23 @@ export default function LoginScreen() {
               {mode === "signin" ? "Create an account" : "Log in"}
             </button>
           </div>
+
+          {/* Help for a parent who can't remember which email they used. It
+              never looks anything up, so it can't reveal who's registered. */}
+          {mode === "signin" && (
+            <div className="login2-help">
+              <button type="button" className="login2-help-link" onClick={() => setEmailHelp((v) => !v)} aria-expanded={emailHelp}>
+                Can't remember which email you used?
+              </button>
+              {emailHelp && (
+                <ol className="login2-help-list">
+                  <li><strong>Try Continue with Google.</strong> Most families sign in this way. Pick the Google account you're likely to have used.</li>
+                  <li><strong>Search your inbox for “Welcome to 11 PlusLab”.</strong> The address that email arrived at is the one you signed up with.</li>
+                  <li><strong>Still stuck?</strong> Email <strong>hello@11pluslab.com</strong> with your child's name and roughly when you signed up. We'll help once we've checked it's you.</li>
+                </ol>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </div>

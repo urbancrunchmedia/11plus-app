@@ -120,10 +120,25 @@ export function AuthProvider({ children }) {
     await signInWithEmailAndPassword(auth, email, password);
   }
 
-  // Email a reset link so a forgotten password never locks anyone out.
+  // Email a reset link so a forgotten password never locks anyone out. Our own
+  // branded email (from hello@11pluslab.com, via /api/email/welcome) first;
+  // Firebase's default email only if our server can't be reached.
   async function resetPassword(email) {
     const clean = (email || "").trim();
     if (!clean) throw new Error("Please enter your email address first.");
+    let res = null;
+    try {
+      res = await fetch("/api/email/welcome", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ type: "reset", email: clean }),
+      });
+    } catch { /* offline or server down: fall back below */ }
+    if (res?.ok) return;
+    if (res && res.status < 500) {
+      const data = await res.json().catch(() => ({}));
+      throw new Error(data.error || "Couldn't send the reset email.");
+    }
     await sendPasswordResetEmail(auth, clean);
   }
 

@@ -260,6 +260,46 @@ ${step(3, "Tap <strong>Start round</strong> and match the words.")}
   };
 }
 
+// Password reset, sent instead of Firebase's unbranded default. `link` is the
+// Firebase reset link, pointed at our own domain.
+export function passwordResetEmail({ link }) {
+  return {
+    marketing: false,
+    subject: "Reset your 11 PlusLab password",
+    html: layout({
+      preheader: "Tap the button to choose a new password. The link works for 1 hour.",
+      eyebrow: "Password reset",
+      heading: ["Reset your ", "password", ""],
+      lead: "Someone (hopefully you) asked to reset the password for this 11 PlusLab account.",
+      blocks: [
+        p("Tap the button to choose a new password. The link works for <strong>1 hour</strong>."),
+        button({ label: "Reset my password", url: link }),
+        p(`<span style="font-size:14px;color:${C.muted}">If you didn't ask for this, you can ignore this email: your password won't change.</span>`),
+      ],
+    }),
+  };
+}
+
+// Sent when someone asks to reset a password for an account that signs in
+// with Google, so has no password to reset.
+export function googleSignInEmail() {
+  return {
+    marketing: false,
+    subject: "How to sign in to 11 PlusLab",
+    html: layout({
+      preheader: "This account signs in with Google, so there's no password to reset.",
+      eyebrow: "Signing in",
+      heading: ["You sign in with ", "Google", ""],
+      lead: "Someone asked to reset the password for this email address, but this 11 PlusLab account signs in with Google, so there's no separate password.",
+      blocks: [
+        p("To sign in, open 11pluslab.com and tap <strong>Continue with Google</strong>, then choose this email address."),
+        button({ label: "Open 11 PlusLab", url: SITE }),
+        p(`<span style="font-size:14px;color:${C.muted}">If you didn't ask for this, you can ignore this email.</span>`),
+      ],
+    }),
+  };
+}
+
 // Win-back: sent once ever to a child who played but has been quiet for more
 // than 30 days. Never repeated, so it never turns into nagging.
 export function winBackEmail({ uid, name }) {
