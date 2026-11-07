@@ -6,10 +6,9 @@
 // so the daily job won't send it again.
 // { to, note: { subject, text, attachments?: [{ filename, content(base64) }], scheduledAt? } }
 // sends a private reminder to one of the owners' own addresses (nothing else).
-// { cancel: "<email id>" } cancels a scheduled reminder.
 import { adminAuth, adminDb } from "../../server/firebaseAdmin.js";
 import {
-  sendEmail, ownerNoteEmail, cancelScheduledEmail, welcomeEmail, trialEndingEmail, inactivityEmail, announcementEmail, supportRequestEmail, firstRoundEmail, winBackEmail,
+  sendEmail, ownerNoteEmail, welcomeEmail, trialEndingEmail, inactivityEmail, announcementEmail, supportRequestEmail, firstRoundEmail, winBackEmail,
 } from "../../server/email.js";
 
 const OWNER_EMAILS = new Set(["urbancrunchmedia@gmail.com", "reuben.dongre@gmail.com"]);
@@ -39,11 +38,7 @@ export default async function handler(req, res) {
   if (!secret || req.headers.authorization !== `Bearer ${secret}`) {
     return res.status(401).json({ error: "Unauthorized" });
   }
-  const { to, template, real, note, cancel } = req.body || {};
-  if (cancel) {
-    try { return res.status(200).json({ cancelled: true, ...(await cancelScheduledEmail(String(cancel))) }); }
-    catch (e) { return res.status(500).json({ error: e.message }); }
-  }
+  const { to, template, real, note } = req.body || {};
   if (note) {
     if (!OWNER_EMAILS.has(String(to || "").toLowerCase())) return res.status(400).json({ error: "Notes only go to the owners" });
     if (!note.subject || !note.text) return res.status(400).json({ error: "Need note.subject and note.text" });

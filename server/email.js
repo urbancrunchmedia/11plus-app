@@ -475,13 +475,6 @@ export function ownerNoteEmail({ subject, text }) {
   };
 }
 
-// Cancel an email that was scheduled with sendEmail({ scheduledAt }).
-export async function cancelScheduledEmail(id) {
-  const { data, error } = await resend().emails.cancel(id);
-  if (error) throw new Error(`Resend: ${error.message}`);
-  return data;
-}
-
 // Send up to 100 emails in one request. items: [{ to, uid, email }]
 export async function sendBatch(items) {
   if (!items.length) return [];
