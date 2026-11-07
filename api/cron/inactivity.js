@@ -22,8 +22,8 @@ const FIRST_MIN_HOURS = 20;
 const FIRST_MAX_DAYS = 365;
 const FIRST_CAP = 30;
 const WIN_BACK_CAP = 30;
-// Off until the owner approves the email's test copy.
-const WIN_BACK_ENABLED = false;
+// Approved by the owner 2026-11-07.
+const WIN_BACK_ENABLED = true;
 
 export default async function handler(req, res) {
   const expected = `Bearer ${(process.env.CRON_SECRET || "").trim()}`;

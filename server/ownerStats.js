@@ -10,8 +10,7 @@ const DAY = 24 * 60 * 60 * 1000;
 // Same as STARTER_CUTOFF in src/utils/entitlement.js (that file imports the
 // client Firebase SDK, so it can't be loaded here).
 const STARTER_CUTOFF = Date.parse("2026-10-23T09:21:00Z");
-// Same as COMP_EMAILS in src/contexts/PremiumContext.jsx.
-const COMP_EMAILS = new Set(["reuben.dongre@gmail.com", "charlotte_dcunha@hotmail.com"]);
+import { hasCompAccess } from "../src/utils/compAccess.js";
 
 const GAME_NAMES = {
   synonyms: "Synonyms", antonyms: "Antonyms", compoundWords: "Compound Words", fillInBlanks: "Word Detective",
@@ -47,7 +46,7 @@ async function subscriptionsByUid(stripe) {
 }
 
 function planOf(user, subs) {
-  if (COMP_EMAILS.has((user.email || "").toLowerCase())) return "Complimentary";
+  if (hasCompAccess(user.email)) return "Complimentary";
   const live = subs.find((s) => ["active", "trialing", "past_due"].includes(s.status));
   if (live) {
     if (live.status === "trialing") return "Free trial";

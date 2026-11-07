@@ -1,0 +1,16 @@
+import { describe, it, expect } from "vitest";
+import { hasCompAccess } from "./compAccess";
+
+describe("complimentary access", () => {
+  it("lasts forever for owner accounts, any capitalisation", () => {
+    expect(hasCompAccess("Reuben.Dongre@gmail.com", Date.parse("2030-01-01"))).toBe(true);
+  });
+  it("ends after the tutor trial's last day", () => {
+    expect(hasCompAccess("lorenzo@lorenzostutoring.co.uk", Date.parse("2026-11-30T20:00:00Z"))).toBe(true);
+    expect(hasCompAccess("lorenzo@lorenzostutoring.co.uk", Date.parse("2026-12-01T09:00:00Z"))).toBe(false);
+  });
+  it("is false for anyone else", () => {
+    expect(hasCompAccess("someone@example.com")).toBe(false);
+    expect(hasCompAccess("")).toBe(false);
+  });
+});

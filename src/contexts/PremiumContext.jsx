@@ -2,6 +2,7 @@ import React, { createContext, useContext, useEffect, useState, useCallback, use
 import { useAuth } from "./AuthContext";
 import { fetchSubscription } from "../utils/subscription";
 import Paywall from "../components/Paywall";
+import { hasCompAccess } from "../utils/compAccess";
 
 const PremiumContext = createContext(null);
 
@@ -9,12 +10,7 @@ const PremiumContext = createContext(null);
 // premium experience without a live Stripe subscription (dev/testing only).
 const DEV_KEY = "11plus_dev_premium";
 
-// Comp accounts: these emails always get Full Access, no subscription needed
-// (owner/testing). Client-side grant — real paid access comes from Stripe.
-const COMP_EMAILS = new Set([
-  "reuben.dongre@gmail.com",
-  "charlotte_dcunha@hotmail.com",
-]);
+// Comp accounts (owner, testers, tutor trials): see src/utils/compAccess.js.
 
 const FREE = { isPremium: false, status: "none" };
 const COMP = { isPremium: true, status: "comp" };
@@ -45,7 +41,7 @@ export function PremiumProvider({ children }) {
     } catch { /* ignore */ }
 
     if (!user) { setSub(FREE); setLoading(false); return; }
-    if (user.email && COMP_EMAILS.has(user.email.toLowerCase())) {
+    if (hasCompAccess(user.email)) {
       granted.current = true; setSub(COMP); setLoading(false); return;
     }
     setLoading(true);
