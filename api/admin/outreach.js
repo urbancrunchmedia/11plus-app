@@ -97,22 +97,6 @@ async function sendBatch(db, limit) {
   return { sent, skipped, failed };
 }
 
-// One-off: switch off the YEARLY5 code (dropped: the trial makes Stripe's
-// minimum-amount check fail on both plans). Remove after it has run.
-async function retireYearlyPromo(stripe) {
-  const out = {};
-  for (const p of (await stripe.promotionCodes.list({ code: "YEARLY5", limit: 10 })).data) {
-    if (p.active) await stripe.promotionCodes.update(p.id, { active: false });
-    out[p.id] = "inactive";
-  }
-  try {
-    const c = await stripe.coupons.retrieve("yearly-500-first-year");
-    if (c.times_redeemed === 0) { await stripe.coupons.del(c.id); out.coupon = "deleted"; }
-    else out.coupon = `kept (redeemed ${c.times_redeemed}x)`;
-  } catch { out.coupon = "already gone"; }
-  return out;
-}
-
 export default async function handler(req, res) {
   const auth = req.headers.authorization || "";
   const admin = clean(process.env.ADMIN_SECRET) && auth === `Bearer ${clean(process.env.ADMIN_SECRET)}`;
@@ -138,7 +122,6 @@ export default async function handler(req, res) {
         const c = await ensureCoupon(stripe);
         return res.status(200).json({ coupon: c.id, amount_off: c.amount_off, currency: c.currency, duration: c.duration, months: c.duration_in_months });
       }
-      case "retire-yearly-promo": return res.status(200).json(await retireYearlyPromo(stripe));
       case "import": {
         await ensureCoupon(stripe);
         const out = [];
