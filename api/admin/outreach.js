@@ -11,6 +11,7 @@
 //   { action: "send", limit? }                  send the next batch now
 //   { action: "status" }                        counts, plus redemptions per code
 //   { action: "verify" }                        check every queued centre's code in Stripe
+//   { action: "yearly-promo", code?, amountOff?, expires?, check? }  money off the first year (annual only)
 // GET from Vercel Cron (Authorization: Bearer <CRON_SECRET>): sends the next
 // batch, but only once "start" has been called.
 import { getStripe } from "../../server/stripe.js";
@@ -97,6 +98,46 @@ async function sendBatch(db, limit) {
   return { sent, skipped, failed };
 }
 
+// Time-limited money off the first year of the annual plan (lives here because
+// the project is at Vercel's function limit). Same "repeating, 1 month" trick
+// as above so the £0 trial invoice doesn't use it up; the minimum amount keeps
+// it off the monthly plan. `check: true` also opens a throwaway Checkout
+// Session on each plan with the code applied, to prove which one accepts it.
+async function yearlyPromo(stripe, { code = "YEARLY5", amountOff = 500, expires = "2026-11-21T23:59:59Z", check = false }) {
+  const couponId = `yearly-${amountOff}-first-year`;
+  const expiresAt = Math.floor(Date.parse(expires) / 1000);
+  let coupon;
+  try { coupon = await stripe.coupons.retrieve(couponId); }
+  catch (e) {
+    if (e.code !== "resource_missing") throw e;
+    coupon = await stripe.coupons.create({
+      id: couponId, name: `£${(amountOff / 100).toFixed(2)} off your first year`,
+      amount_off: amountOff, currency: "gbp", duration: "repeating", duration_in_months: 1, redeem_by: expiresAt,
+    });
+  }
+  let promo = (await stripe.promotionCodes.list({ code, limit: 1 })).data.find((p) => p.active);
+  if (!promo) {
+    promo = await stripe.promotionCodes.create({
+      coupon: coupon.id, code, expires_at: expiresAt,
+      restrictions: { minimum_amount: 3000, minimum_amount_currency: "gbp" },
+    });
+  }
+  const out = { coupon: coupon.id, code: promo.code, expiresAt: new Date(promo.expires_at * 1000).toISOString() };
+  if (!check) return out;
+  for (const [plan, price] of [["monthly", process.env.VITE_STRIPE_PRICE_MONTHLY], ["annual", process.env.VITE_STRIPE_PRICE_ANNUAL]]) {
+    try {
+      const s = await stripe.checkout.sessions.create({
+        mode: "subscription", line_items: [{ price: clean(price), quantity: 1 }],
+        subscription_data: { trial_period_days: 7 }, discounts: [{ promotion_code: promo.id }],
+        success_url: "https://11pluslab.com/", cancel_url: "https://11pluslab.com/",
+      });
+      out[plan] = "accepted";
+      await stripe.checkout.sessions.expire(s.id);
+    } catch (e) { out[plan] = `rejected: ${e.message}`; }
+  }
+  return out;
+}
+
 export default async function handler(req, res) {
   const auth = req.headers.authorization || "";
   const admin = clean(process.env.ADMIN_SECRET) && auth === `Bearer ${clean(process.env.ADMIN_SECRET)}`;
@@ -122,6 +163,7 @@ export default async function handler(req, res) {
         const c = await ensureCoupon(stripe);
         return res.status(200).json({ coupon: c.id, amount_off: c.amount_off, currency: c.currency, duration: c.duration, months: c.duration_in_months });
       }
+      case "yearly-promo": return res.status(200).json(await yearlyPromo(stripe, body));
       case "import": {
         await ensureCoupon(stripe);
         const out = [];
