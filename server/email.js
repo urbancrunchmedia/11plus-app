@@ -454,13 +454,25 @@ function headersFor(email, uid) {
 }
 
 // Send one email. idempotencyKey stops Resend sending the same email twice on a retry.
-export async function sendEmail({ to, uid, email, idempotencyKey, replyTo = REPLY_TO, from = FROM }) {
+export async function sendEmail({ to, uid, email, idempotencyKey, replyTo = REPLY_TO, from = FROM, attachments, scheduledAt }) {
   const { data, error } = await resend().emails.send(
-    { from, replyTo, to, subject: email.subject, html: email.html, headers: headersFor(email, uid) },
+    {
+      from, replyTo, to, subject: email.subject, html: email.html, headers: headersFor(email, uid),
+      ...(attachments ? { attachments } : {}), ...(scheduledAt ? { scheduledAt } : {}),
+    },
     idempotencyKey ? { idempotencyKey } : undefined
   );
   if (error) throw new Error(`Resend: ${error.message}`);
   return data;
+}
+
+// A private note to the owner (e.g. "time to post this on Instagram"), with
+// the text kept as typed so a caption can be copied straight from it.
+export function ownerNoteEmail({ subject, text }) {
+  return {
+    subject,
+    html: `<div style="font-family:Helvetica,Arial,sans-serif;font-size:16px;line-height:1.5;color:#0E1116;white-space:pre-wrap">${escapeHtml(text)}</div>`,
+  };
 }
 
 // Send up to 100 emails in one request. items: [{ to, uid, email }]

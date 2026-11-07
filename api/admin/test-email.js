@@ -4,10 +4,14 @@
 // { to, template: "firstRound", real: true } instead sends the real first-round
 // email to that account (its own unsubscribe link, no [TEST]) and records it,
 // so the daily job won't send it again.
+// { to, note: { subject, text, attachments?: [{ filename, content(base64) }], scheduledAt? } }
+// sends a private reminder to one of the owners' own addresses (nothing else).
 import { adminAuth, adminDb } from "../../server/firebaseAdmin.js";
 import {
-  sendEmail, welcomeEmail, trialEndingEmail, inactivityEmail, announcementEmail, supportRequestEmail, firstRoundEmail, winBackEmail,
+  sendEmail, ownerNoteEmail, welcomeEmail, trialEndingEmail, inactivityEmail, announcementEmail, supportRequestEmail, firstRoundEmail, winBackEmail,
 } from "../../server/email.js";
+
+const OWNER_EMAILS = new Set(["urbancrunchmedia@gmail.com", "reuben.dongre@gmail.com"]);
 
 const SAMPLES = {
   welcome: () => welcomeEmail({ name: "" }),
@@ -34,7 +38,19 @@ export default async function handler(req, res) {
   if (!secret || req.headers.authorization !== `Bearer ${secret}`) {
     return res.status(401).json({ error: "Unauthorized" });
   }
-  const { to, template, real } = req.body || {};
+  const { to, template, real, note } = req.body || {};
+  if (note) {
+    if (!OWNER_EMAILS.has(String(to || "").toLowerCase())) return res.status(400).json({ error: "Notes only go to the owners" });
+    if (!note.subject || !note.text) return res.status(400).json({ error: "Need note.subject and note.text" });
+    try {
+      const data = await sendEmail({
+        to, uid: "owner", email: ownerNoteEmail(note), attachments: note.attachments, scheduledAt: note.scheduledAt,
+      });
+      return res.status(200).json({ sent: true, id: data?.id, scheduledAt: note.scheduledAt || null });
+    } catch (e) {
+      return res.status(500).json({ error: e.message });
+    }
+  }
   if (!to || !SAMPLES[template]) return res.status(400).json({ error: "Need to and a known template" });
   if (real) {
     if (template !== "firstRound") return res.status(400).json({ error: "Only firstRound can be sent for real here" });
