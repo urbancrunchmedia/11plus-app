@@ -1,11 +1,19 @@
 {
   "rewrites": [
     {
+      "source": "/api/portal",
+      "destination": "/api/status"
+    },
+    {
       "source": "/__/auth/:path*",
       "destination": "https://plus-app-ada37.firebaseapp.com/__/auth/:path*"
     },
     {
       "source": "/owner",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/tutor",
       "destination": "/index.html"
     }
   ],

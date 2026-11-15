@@ -5,7 +5,7 @@ import reactRefresh from 'eslint-plugin-react-refresh'
 import { defineConfig, globalIgnores } from 'eslint/config'
 
 export default defineConfig([
-  globalIgnores(['dist']),
+  globalIgnores(['dist', '.demo']),
   {
     files: ['**/*.{js,jsx}'],
     extends: [
@@ -35,5 +35,10 @@ export default defineConfig([
     // Vitest globals (describe/it/expect/vi) are injected by the test runner.
     files: ['**/*.test.{js,jsx}'],
     languageOptions: { globals: { ...globals.browser, ...globals.vitest } },
+  },
+  {
+    // API tests and the end-to-end harness run in Node (against the emulators).
+    files: ['api-tests/**/*.js', 'e2e/**/*.{js,mjs}'],
+    languageOptions: { globals: { ...globals.node, ...globals.vitest } },
   },
 ])

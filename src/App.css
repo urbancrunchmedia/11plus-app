@@ -3374,3 +3374,121 @@ a.set-ghost { display: inline-flex; align-items: center; justify-content: center
 .login2-help { margin-top: 14px; text-align: center; }
 .login2-help-link { border: none; background: none; color: var(--muted, #6b7a8c); font-weight: 700; font-size: 0.85rem; text-decoration: underline; padding: 4px; }
 .login2-help-list { text-align: left; margin: 10px 0 0; padding: 14px 16px 14px 34px; background: var(--bg, #f4f9ff); border-radius: 16px; display: grid; gap: 8px; font-size: 0.86rem; line-height: 1.5; color: var(--ink); }
+
+/* ══════════════ Tutors: Settings card (parent side) ══════════════ */
+.tutor-code-input { text-align: center; letter-spacing: 0.12em; font-weight: 800; text-transform: uppercase; }
+.tutor-share { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; text-align: left; margin: 14px 0 6px; }
+.tutor-share-col { background: var(--surface-2, #f4f9ff); border-radius: 16px; padding: 12px 14px; }
+.tutor-share-col--no { background: var(--wrong-bg); }
+.tutor-share-head { font-weight: 800; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink); margin-bottom: 6px; }
+.tutor-share ul { margin: 0; padding-left: 16px; font-size: 0.8rem; line-height: 1.45; color: var(--muted); font-weight: 600; }
+@media (max-width: 420px) { .tutor-share { grid-template-columns: 1fr; } }
+
+/* ══════════════ Tutor dashboard (/tutor) ══════════════ */
+.tut-page { max-width: 1100px; margin: 0 auto; padding: 24px 20px 60px; display: flex; flex-direction: column; gap: 18px; min-height: 100dvh; background: var(--bg, #f4f9ff); }
+.tut-head { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+.tut-brand img { display: block; border-radius: 12px; }
+.tut-head-txt { flex: 1; min-width: 200px; }
+.tut-eyebrow { font-weight: 800; font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--brand-ink); }
+.tut-title { margin: 2px 0 0; font-weight: 800; font-size: 1.7rem; letter-spacing: -0.02em; color: var(--ink); }
+.tut-head-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.tut-btn { border: none; border-radius: var(--r-full); padding: 11px 18px; font-weight: 800; font-size: 0.88rem; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; }
+.tut-btn.primary { background: var(--accent, #d4f520); color: var(--ink); }
+.tut-btn.ghost { background: #fff; color: var(--ink); border: 1px solid var(--line, #dde7f0); }
+.tut-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.tut-link { border: none; background: none; padding: 0; color: var(--brand-ink); font-weight: 800; font-size: 0.85rem; cursor: pointer; text-decoration: underline; }
+.tut-link.danger { color: var(--wrong); }
+.tut-card { background: #fff; border: 1px solid var(--line, #dde7f0); border-radius: 22px; padding: 20px; min-width: 0; }
+.tut-h2 { margin: 0 0 10px; font-weight: 800; font-size: 1.15rem; color: var(--ink); }
+.tut-h3 { margin: 0 0 12px; font-weight: 800; font-size: 1rem; color: var(--ink); display: flex; align-items: center; gap: 8px; }
+.tut-small { font-size: 0.8rem; color: var(--muted); font-weight: 600; line-height: 1.45; margin-top: 8px; }
+.tut-grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+.tut-form { display: flex; flex-direction: column; gap: 14px; }
+.tut-field { display: flex; flex-direction: column; gap: 6px; font-weight: 700; font-size: 0.88rem; color: var(--ink); }
+.tut-field span { font-weight: 500; color: var(--muted); }
+.tut-field input { border: 1.5px solid var(--line, #dde7f0); border-radius: 14px; padding: 12px 14px; font: inherit; font-weight: 600; }
+.tut-field input:focus { outline: none; border-color: var(--brand); }
+.tut-check { display: flex; gap: 10px; align-items: flex-start; font-size: 0.86rem; font-weight: 600; color: var(--ink); line-height: 1.45; }
+.tut-check input { margin-top: 3px; width: 18px; height: 18px; flex: none; }
+.tut-how ol { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 10px; font-size: 0.92rem; line-height: 1.5; color: var(--ink); }
+.tut-status p { font-size: 1rem; line-height: 1.6; color: var(--ink); margin: 0 0 10px; }
+.tut-code { display: flex; align-items: center; justify-content: space-between; gap: 18px; flex-wrap: wrap; background: var(--ink); color: #fff; border: none; position: relative; }
+.tut-code .tut-tile-label, .tut-code .tut-small { color: rgba(255,255,255,0.75); }
+.tut-code-value { font-weight: 800; font-size: 2rem; letter-spacing: 0.08em; color: var(--accent, #d4f520); margin-top: 4px; }
+.tut-code-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.tut-code .tut-link { color: #fff; }
+.tut-confirm { font-size: 0.82rem; font-weight: 600; }
+.tut-note { width: 100%; font-size: 0.85rem; font-weight: 700; color: var(--accent, #d4f520); }
+.tut-tiles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+.tut-tile { background: #fff; border: 1px solid var(--line, #dde7f0); border-radius: 18px; padding: 16px; }
+.tut-tile-label { font-weight: 800; font-size: 0.72rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+.tut-tile-value { font-weight: 800; font-size: 1.6rem; color: var(--ink); margin-top: 4px; display: flex; align-items: baseline; gap: 8px; }
+.tut-tile-sub { font-size: 0.78rem; font-weight: 600; color: var(--muted); margin-top: 2px; }
+.tut-trend { font-size: 0.75rem; font-weight: 800; padding: 2px 7px; border-radius: 999px; }
+.tut-trend.up { background: var(--correct-bg); color: var(--correct); }
+.tut-trend.down { background: var(--wrong-bg); color: var(--wrong); }
+.tut-empty { text-align: center; padding: 34px 20px; color: var(--muted); font-weight: 600; }
+.tut-empty p { max-width: 460px; margin: 0 auto; line-height: 1.55; }
+.tut-empty-small { color: var(--muted); font-weight: 600; font-size: 0.88rem; }
+.tut-list { padding: 8px; }
+.tut-list-head { display: flex; justify-content: space-between; align-items: center; padding: 10px 12px 4px; }
+.tut-row { display: grid; grid-template-columns: 44px minmax(180px, 2fr) repeat(5, minmax(70px, 1fr)); gap: 12px; align-items: center; width: 100%; text-align: left; border: none; background: none; padding: 12px; border-radius: 16px; cursor: pointer; font: inherit; color: var(--ink); }
+.tut-row:hover { background: var(--surface-2, #f4f9ff); }
+.tut-row + .tut-row { border-top: 1px solid var(--line, #dde7f0); }
+.tut-avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--brand); color: #fff; display: grid; place-items: center; font-weight: 800; }
+.tut-row-main { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.tut-row-name { font-weight: 800; font-size: 1rem; }
+.tut-row-sub { font-size: 0.8rem; color: var(--muted); font-weight: 600; }
+.tut-row-stat { display: flex; flex-direction: column; }
+.tut-row-stat b { font-weight: 800; font-size: 0.95rem; display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+.tut-row-stat small { font-size: 0.7rem; color: var(--muted); font-weight: 600; }
+.tut-flags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 2px; }
+.tut-flags--big { margin: 10px 0 0; }
+.tut-flag { background: #fff4e5; color: #9a4a00; border: 1px solid #ffd9a8; border-radius: 999px; padding: 2px 9px; font-size: 0.72rem; font-weight: 800; }
+.tut-bars { display: flex; flex-direction: column; gap: 10px; }
+.tut-bar-row { display: grid; grid-template-columns: 130px 1fr 74px; gap: 10px; align-items: center; font-size: 0.86rem; font-weight: 700; color: var(--ink); }
+.tut-bar-track { height: 10px; background: var(--track, #e7eef6); border-radius: 999px; overflow: hidden; }
+.tut-bar-fill { height: 100%; background: var(--brand); border-radius: 999px; }
+.tut-bar-fill.low { background: #f59e0b; }
+.tut-bar-value small { color: var(--muted); font-weight: 600; }
+.tut-detail { display: flex; flex-direction: column; gap: 16px; }
+.tut-detail-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+.tut-detail-actions { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; }
+.tut-pupil-name { margin: 0; font-weight: 800; font-size: 2rem; letter-spacing: -0.02em; color: var(--ink); }
+.tut-cal { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; margin-bottom: 18px; max-width: 320px; }
+.tut-cal-day { aspect-ratio: 1; border-radius: 6px; background: var(--track, #e7eef6); }
+.tut-cal-day.on { background: var(--brand); }
+.tut-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.tut-chip { background: var(--surface-2, #f4f9ff); border-radius: 999px; padding: 6px 12px; font-size: 0.8rem; font-weight: 700; color: var(--ink); }
+.tut-chip.zero { color: var(--muted); }
+.tut-count { background: var(--surface-2, #f4f9ff); border-radius: 999px; padding: 2px 10px; font-size: 0.8rem; }
+.tut-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.86rem; }
+.tut-table th { text-align: left; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); padding: 8px 6px; border-bottom: 1px solid var(--line, #dde7f0); }
+.tut-table td { padding: 9px 6px; border-bottom: 1px solid var(--line, #dde7f0); color: var(--ink); vertical-align: top; }
+.tut-table small { color: var(--muted); font-weight: 600; }
+
+@media (max-width: 860px) {
+  .tut-grid2 { grid-template-columns: 1fr; }
+  .tut-tiles { grid-template-columns: 1fr 1fr; }
+  .tut-row { grid-template-columns: 40px 1fr 1fr; }
+  .tut-row-main { grid-column: 2 / 4; }
+  /* Stats in two columns under the name, never in the avatar column. */
+  .tut-row > .tut-row-stat:nth-child(odd) { grid-column: 2; }
+  .tut-row > .tut-row-stat:nth-child(even) { grid-column: 3; }
+}
+@media (max-width: 480px) {
+  .tut-page { padding: 18px 16px 50px; }
+  .tut-title { font-size: 1.4rem; }
+  .tut-code-value { font-size: 1.6rem; }
+  .tut-bar-row { grid-template-columns: 96px 1fr 62px; font-size: 0.8rem; }
+  .tut-table { font-size: 0.8rem; }
+}
+@media print {
+  .tut-head-actions, .tut-detail-actions, .tut-detail-head .tut-btn, .set-toast { display: none !important; }
+  .tut-page { background: #fff; padding: 0; }
+  .tut-card, .tut-tile { break-inside: avoid; border-color: #ccc; }
+}
+.own-tutors { display: flex; flex-direction: column; }
+.own-tutor { display: flex; justify-content: space-between; gap: 12px; align-items: center; padding: 12px 0; border-top: 1px solid var(--line, #dde7f0); flex-wrap: wrap; }
+.own-tutor-main { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.own-tutor-actions { display: flex; gap: 8px; }

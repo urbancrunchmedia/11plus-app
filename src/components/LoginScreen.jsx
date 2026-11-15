@@ -146,7 +146,12 @@ export default function LoginScreen() {
       {/* Right: sign-in */}
       <div className="login2-panel">
         <div className="login2-card">
-          {getPendingInvite() && (
+          {window.location.pathname.startsWith("/tutor") ? (
+            <div className="login2-invite" role="status" data-testid="tutor-signin-banner">
+              <span aria-hidden="true">🎓</span>
+              <div><strong>Tutors: create your free account.</strong> Sign up or sign in with your own email (not a child's account), then apply for your tutor dashboard.</div>
+            </div>
+          ) : getPendingInvite() && (
             <div className="login2-invite" role="status">
               <span aria-hidden="true">🏆</span>
               <div><strong>A friend invited you to play.</strong> Sign up or sign in, and you can join them on the weekly leaderboard.</div>

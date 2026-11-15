@@ -194,3 +194,124 @@ describe("Account deletion — a user can remove everything of their own", () =>
     await assertFails(ctx(FRIEND).doc(`profiles/${ME}`).get());
   });
 });
+
+describe("Tutors — only connected, active tutors can read a pupil's progress", () => {
+  const TUTOR = "u_tutor", PUPIL = "u_pupil", OTHER_PUPIL = "u_other", OTHER_TUTOR = "u_tutor2";
+  const linkId = (t, c) => `${t}__${c}`;
+
+  async function seed(fn) {
+    await testEnv.withSecurityRulesDisabled(async (env) => fn(env.firestore()));
+  }
+  async function seedTutor(uid, status = "active") {
+    await seed((db) => db.doc(`tutors/${uid}`).set({ status, name: "Ms Tutor", business: "Tutoring Ltd", code: "TUT-ABCDEFGH" }));
+  }
+  async function seedLink(tutorUid, childUid) {
+    await seed((db) => db.doc(`tutorLinks/${linkId(tutorUid, childUid)}`).set({
+      tutorUid, childUid, tutorName: "Ms Tutor", business: "Tutoring Ltd", childName: "Amu", createdAt: "x",
+    }));
+  }
+  async function seedProgress(uid) {
+    await seed((db) => db.doc(`users/${uid}`).set({ history: {}, progress: { words: {}, skills: {} } }));
+  }
+
+  it("an active tutor can read a connected pupil's progress", async () => {
+    await seedTutor(TUTOR); await seedLink(TUTOR, PUPIL); await seedProgress(PUPIL);
+    await assertSucceeds(ctx(TUTOR).doc(`users/${PUPIL}`).get());
+  });
+
+  it("a tutor can't read a pupil's profile (it holds the friend code)", async () => {
+    await seedTutor(TUTOR); await seedLink(TUTOR, PUPIL); await seedProfile(PUPIL);
+    await assertFails(ctx(TUTOR).doc(`profiles/${PUPIL}`).get());
+  });
+
+  it("a tutor cannot read a child who isn't connected to them", async () => {
+    await seedTutor(TUTOR); await seedLink(TUTOR, PUPIL); await seedProgress(OTHER_PUPIL); await seedProfile(OTHER_PUPIL);
+    await assertFails(ctx(TUTOR).doc(`users/${OTHER_PUPIL}`).get());
+    await assertFails(ctx(TUTOR).doc(`profiles/${OTHER_PUPIL}`).get());
+  });
+
+  it("a tutor can never write to a pupil's progress", async () => {
+    await seedTutor(TUTOR); await seedLink(TUTOR, PUPIL); await seedProgress(PUPIL);
+    await assertFails(ctx(TUTOR).doc(`users/${PUPIL}`).set({ history: {} }, { merge: true }));
+  });
+
+  it("a tutor cannot list the users collection", async () => {
+    await seedTutor(TUTOR); await seedLink(TUTOR, PUPIL); await seedProgress(PUPIL);
+    await assertFails(ctx(TUTOR).collection("users").get());
+  });
+
+  it("a pending or suspended tutor can't read pupils, even with a link", async () => {
+    for (const status of ["pending", "suspended"]) {
+      await testEnv.clearFirestore();
+      await seedTutor(TUTOR, status); await seedLink(TUTOR, PUPIL); await seedProgress(PUPIL);
+      await assertFails(ctx(TUTOR).doc(`users/${PUPIL}`).get());
+      await assertFails(ctx(TUTOR).collection("tutorLinks").where("tutorUid", "==", TUTOR).get());
+    }
+  });
+
+  it("access stops as soon as the link is deleted", async () => {
+    await seedTutor(TUTOR); await seedLink(TUTOR, PUPIL); await seedProgress(PUPIL);
+    await assertSucceeds(ctx(PUPIL).doc(`tutorLinks/${linkId(TUTOR, PUPIL)}`).delete());
+    await assertFails(ctx(TUTOR).doc(`users/${PUPIL}`).get());
+  });
+
+  it("nobody can make themselves a tutor or approve themselves", async () => {
+    await assertFails(ctx(STRANGER).doc(`tutors/${STRANGER}`).set({ status: "active" }));
+    await seedTutor(TUTOR, "pending");
+    await assertFails(ctx(TUTOR).doc(`tutors/${TUTOR}`).update({ status: "active" }));
+    await assertFails(ctx(STRANGER).doc(`tutors/${TUTOR}`).delete());
+  });
+
+  it("deleting your account can remove your own tutor record", async () => {
+    await seedTutor(TUTOR);
+    await assertSucceeds(ctx(TUTOR).doc(`tutors/${TUTOR}`).delete());
+  });
+
+  it("a tutor can read their own tutor record, but not another tutor's", async () => {
+    await seedTutor(TUTOR); await seedTutor(OTHER_TUTOR);
+    await assertSucceeds(ctx(TUTOR).doc(`tutors/${TUTOR}`).get());
+    await assertFails(ctx(TUTOR).doc(`tutors/${OTHER_TUTOR}`).get());
+    await assertFails(ctx(STRANGER).collection("tutors").get());
+  });
+
+  it("nobody can create or edit a connection from the client", async () => {
+    await seedTutor(TUTOR);
+    const link = { tutorUid: TUTOR, childUid: PUPIL, createdAt: "x" };
+    await assertFails(ctx(TUTOR).doc(`tutorLinks/${linkId(TUTOR, PUPIL)}`).set(link));
+    await assertFails(ctx(PUPIL).doc(`tutorLinks/${linkId(TUTOR, PUPIL)}`).set(link));
+    await seedLink(TUTOR, PUPIL);
+    await assertFails(ctx(PUPIL).doc(`tutorLinks/${linkId(TUTOR, PUPIL)}`).update({ childName: "X" }));
+  });
+
+  it("join codes and rate-limit counters are server-only", async () => {
+    await seed((db) => db.doc("tutorCodes/TUT-ABCDEFGH").set({ tutorUid: TUTOR }));
+    await assertFails(ctx(STRANGER).doc("tutorCodes/TUT-ABCDEFGH").get());
+    await assertFails(ctx(STRANGER).collection("tutorCodes").get());
+    await assertFails(ctx(STRANGER).doc("tutorLimits/x").set({ count: 0 }));
+  });
+
+  it("the child sees their own tutors; a tutor sees only their own pupils", async () => {
+    await seedTutor(TUTOR); await seedTutor(OTHER_TUTOR);
+    await seedLink(TUTOR, PUPIL); await seedLink(OTHER_TUTOR, OTHER_PUPIL);
+    await assertSucceeds(ctx(PUPIL).collection("tutorLinks").where("childUid", "==", PUPIL).get());
+    await assertSucceeds(ctx(TUTOR).collection("tutorLinks").where("tutorUid", "==", TUTOR).get());
+    await assertFails(ctx(TUTOR).collection("tutorLinks").get());
+    await assertFails(ctx(TUTOR).doc(`tutorLinks/${linkId(OTHER_TUTOR, OTHER_PUPIL)}`).get());
+    await assertFails(ctx(STRANGER).doc(`tutorLinks/${linkId(TUTOR, PUPIL)}`).get());
+  });
+
+  it("either side can end a connection, a stranger can't", async () => {
+    await seedTutor(TUTOR); await seedLink(TUTOR, PUPIL);
+    await assertFails(ctx(STRANGER).doc(`tutorLinks/${linkId(TUTOR, PUPIL)}`).delete());
+    await assertSucceeds(ctx(TUTOR).doc(`tutorLinks/${linkId(TUTOR, PUPIL)}`).delete());
+  });
+
+  it("a tutor account can never become anyone's friend", async () => {
+    await seedTutor(TUTOR, "pending");
+    const uids = [TUTOR, PUPIL].sort();
+    await assertFails(ctx(TUTOR).doc(`friendships/${uids.join("__")}`).set({ uids, createdAt: "x" }));
+    await assertFails(ctx(PUPIL).doc(`friendships/${uids.join("__")}`).set({ uids, createdAt: "x" }));
+    const kids = [PUPIL, OTHER_PUPIL].sort();
+    await assertSucceeds(ctx(PUPIL).doc(`friendships/${kids.join("__")}`).set({ uids: kids, createdAt: "x" }));
+  });
+});

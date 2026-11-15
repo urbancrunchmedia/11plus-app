@@ -3,6 +3,7 @@ import { useAuth } from "./AuthContext";
 import { fetchSubscription } from "../utils/subscription";
 import Paywall from "../components/Paywall";
 import { hasCompAccess } from "../utils/compAccess";
+import { useTutor } from "./TutorContext";
 
 const PremiumContext = createContext(null);
 
@@ -17,6 +18,8 @@ const COMP = { isPremium: true, status: "comp" };
 
 export function PremiumProvider({ children }) {
   const { user } = useAuth();
+  // Approved tutors get Full Access free, to try every game and level.
+  const { isActiveTutor, loading: tutorLoading } = useTutor();
   const [sub, setSub]         = useState(FREE);
   const [loading, setLoading] = useState(true);
   const [paywall, setPaywall] = useState(null); // null | reason string
@@ -41,14 +44,15 @@ export function PremiumProvider({ children }) {
     } catch { /* ignore */ }
 
     if (!user) { setSub(FREE); setLoading(false); return; }
-    if (hasCompAccess(user.email)) {
+    if (tutorLoading) return;
+    if (hasCompAccess(user.email) || isActiveTutor) {
       granted.current = true; setSub(COMP); setLoading(false); return;
     }
     setLoading(true);
     let cancelled = false;
     fetchSubscription().then((next) => { if (!cancelled) { setSub(next); setLoading(false); } });
     return () => { cancelled = true; };
-  }, [user]);
+  }, [user, isActiveTutor, tutorLoading]);
 
   // Re-check whenever the tab regains focus — covers coming back from Stripe
   // Checkout or the billing portal, where the plan may have just changed.

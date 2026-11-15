@@ -54,6 +54,7 @@ describe("exportMyData", () => {
     expect(out.cloudProfile.points).toBe(40);
     expect(out.cloudProgress.bests.x).toBe(1);
     expect(out.friendships).toHaveLength(1);
+    expect(out.tutorConnections).toEqual(expect.any(Array));
     expect(out.onThisDeviceOnly.personalBests["A-synonyms-20"].stars).toBe(45);
   });
 
@@ -82,6 +83,22 @@ describe("deleteMyAccount", () => {
     const authTime = deleteUser.mock.invocationCallOrder[0];
     expect(deletedPaths.length).toBeGreaterThan(0);
     expect(Math.max(...deleteDoc.mock.invocationCallOrder)).toBeLessThan(authTime);
+  });
+
+  it("also removes tutor connections on both sides and the account's own tutor record", async () => {
+    getDoc.mockResolvedValue({ exists: () => true, data: () => ({ code: "WM-ABCDE" }) });
+    getDocs.mockImplementation(async (q) => {
+      const field = q?.[1]?.[0];
+      if (field === "childUid") return { docs: [{ ref: docRef("tutorLinks", "t1__u1") }] };
+      if (field === "tutorUid") return { docs: [{ ref: docRef("tutorLinks", "u1__c9") }] };
+      return { docs: [] };
+    });
+    deleteUser.mockResolvedValue();
+
+    await deleteMyAccount(USER);
+
+    const deletedPaths = deleteDoc.mock.calls.map((c) => c[0].path);
+    expect(deletedPaths).toEqual(expect.arrayContaining(["tutorLinks/t1__u1", "tutorLinks/u1__c9", "tutors/u1"]));
   });
 
   it("silently re-proves identity for a Google account on a stale session, then retries", async () => {

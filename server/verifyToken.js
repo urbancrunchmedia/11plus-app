@@ -1,6 +1,6 @@
 // Verify a Firebase ID token in a serverless function WITHOUT the Firebase Admin
 // SDK — validate the RS256 JWT against Google's public keys. Returns { uid, email, emailVerified }.
-import { createRemoteJWKSet, jwtVerify } from "jose";
+import { createRemoteJWKSet, jwtVerify, decodeJwt } from "jose";
 
 // Trim — Vercel stored these env vars with trailing newlines, which would
 // corrupt the issuer/audience match ("unexpected iss claim value").
@@ -15,6 +15,13 @@ export async function verifyToken(req) {
   const header = req.headers.authorization || "";
   const token = header.startsWith("Bearer ") ? header.slice(7) : null;
   if (!token) throw new Error("Not signed in");
+  // The Auth emulator issues unsigned tokens. Accepted only in local
+  // end-to-end tests (emulator host set, not running on Vercel).
+  if (process.env.FIREBASE_AUTH_EMULATOR_HOST && !process.env.VERCEL) {
+    const payload = decodeJwt(token);
+    if (payload.aud !== projectId) throw new Error("Wrong project");
+    return { uid: payload.sub, email: payload.email, emailVerified: payload.email_verified === true };
+  }
   const { payload } = await jwtVerify(token, JWKS, {
     issuer: `https://securetoken.google.com/${projectId}`,
     audience: projectId,

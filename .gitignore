@@ -30,3 +30,6 @@ dist-ssr
 users.json
 *.users.json
 .playwright-cli/
+
+# End-to-end test screenshots
+e2e/screenshots/

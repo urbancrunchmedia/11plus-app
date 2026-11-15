@@ -7,16 +7,30 @@ import { doc, getDoc, deleteDoc, collection, query, where, getDocs } from "fireb
 import { db } from "../firebase";
 import { getSettings, getAllBests, getAllHistory } from "./leaderboard";
 
+// Optional reads (tutor data): a failure here mustn't block an export or a deletion.
+async function attempt(fn, fallback) {
+  try { return await fn(); } catch { return fallback; }
+}
+
+// Tutor connections on either side: as the child, or as the tutor.
+async function myTutorLinks(uid) {
+  const sides = await Promise.all(["childUid", "tutorUid"].map((field) =>
+    attempt(() => getDocs(query(collection(db, "tutorLinks"), where(field, "==", uid))), { docs: [] })));
+  return sides.flatMap((s) => s.docs);
+}
+
 // Every place this account's data actually lives, gathered into one JSON
 // object a parent can read or hand to anyone who asks what's held.
 export async function exportMyData(user) {
   if (!user) throw new Error("Not signed in.");
   const uid = user.uid;
 
-  const [profileSnap, usersSnap, friendshipDocs] = await Promise.all([
+  const [profileSnap, usersSnap, friendshipDocs, tutorSnap, tutorLinks] = await Promise.all([
     getDoc(doc(db, "profiles", uid)),
     getDoc(doc(db, "users", uid)),
     getDocs(query(collection(db, "friendships"), where("uids", "array-contains", uid))),
+    attempt(() => getDoc(doc(db, "tutors", uid)), null),
+    myTutorLinks(uid),
   ]);
 
   return {
@@ -32,6 +46,8 @@ export async function exportMyData(user) {
     cloudProfile: profileSnap.exists() ? profileSnap.data() : null,
     cloudProgress: usersSnap.exists() ? usersSnap.data() : null,
     friendships: friendshipDocs.docs.map((d) => d.data()),
+    tutorAccount: tutorSnap?.exists() ? tutorSnap.data() : null,
+    tutorConnections: tutorLinks.map((d) => d.data()),
     // Kept only on this device, never sent to us — included so the export is
     // a complete picture of what this account knows, not just the cloud half.
     onThisDeviceOnly: {
@@ -140,8 +156,13 @@ export async function deleteMyAccount(user) {
     query(collection(db, "friendships"), where("uids", "array-contains", uid))
   );
 
+  const tutorLinks = await myTutorLinks(uid);
+  const tutorSnap = await attempt(() => getDoc(doc(db, "tutors", uid)), null);
+
   await Promise.all([
     ...friendshipDocs.docs.map((d) => deleteDoc(d.ref)),
+    ...tutorLinks.map((d) => deleteDoc(d.ref)),
+    tutorSnap?.exists() ? deleteDoc(doc(db, "tutors", uid)) : Promise.resolve(),
     code ? deleteDoc(doc(db, "codes", code)) : Promise.resolve(),
     deleteDoc(doc(db, "profiles", uid)),
     deleteDoc(doc(db, "users", uid)),

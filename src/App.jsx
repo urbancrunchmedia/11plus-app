@@ -16,6 +16,7 @@ import DetectiveScreen from "./components/DetectiveScreen";
 import FillInBlanksGame from "./components/FillInBlanksGame";
 import FlashcardScreen from "./components/FlashcardScreen";
 import OwnerDashboard from "./components/OwnerDashboard";
+import TutorScreen from "./components/TutorScreen";
 import InvitePrompt from "./components/InvitePrompt";
 import ComingSoon from "./components/ComingSoon";
 import WordListScreen from "./components/WordListScreen";
@@ -28,6 +29,7 @@ import ChildGate from "./components/ChildGate";
 import OnboardingScreen from "./components/OnboardingScreen";
 import { getSetting, setSetting } from "./utils/leaderboard";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
+import { TutorProvider, useTutor } from "./contexts/TutorContext";
 import { PremiumProvider, usePremium } from "./contexts/PremiumContext";
 import { roundsToday, bumpRoundsToday, dailyRoundLimit, isLevelFree, tasterLeftToday, spendTasterRound, starterLimit } from "./utils/entitlement";
 import "./App.css";
@@ -35,6 +37,7 @@ import "./App.css";
 function AppInner() {
   const { user } = useAuth();
   const { isPremium, openPaywall, refresh, refreshUntilPremium } = usePremium();
+  const { isTutor } = useTutor();
 
   // All hooks must run on every render (before any early return) — otherwise
   // the hook count changes when auth flips logged-out → logged-in and React
@@ -173,6 +176,8 @@ function AppInner() {
 
   // Private owner dashboard (access is checked server-side).
   if (window.location.pathname.startsWith("/owner")) return <OwnerDashboard />;
+  // Tutor dashboard: its own page, no child onboarding.
+  if (window.location.pathname.startsWith("/tutor")) return <TutorScreen />;
 
   const childPin = getSetting("childPin", "");
   // A whole-app "who's learning today?" PIN gate used to sit here on every
@@ -184,7 +189,8 @@ function AppInner() {
   // ChildGate itself are untouched, just not invoked here; easy to restore.
 
   // First-run "set up a learner" step — only when no proper name is set yet.
-  const needsOnboarding = !onboarded && (!user.displayName || user.displayName === "Player");
+  // (Tutors aren't learners, so never get this step.)
+  const needsOnboarding = !onboarded && !isTutor && (!user.displayName || user.displayName === "Player");
   if (needsOnboarding) {
     return <OnboardingScreen onDone={() => { setSetting("onboarded", true); setOnboarded(true); }} />;
   }
@@ -437,9 +443,11 @@ function AppInner() {
 export default function App() {
   return (
     <AuthProvider>
-      <PremiumProvider>
-        <AppInner />
-      </PremiumProvider>
+      <TutorProvider>
+        <PremiumProvider>
+          <AppInner />
+        </PremiumProvider>
+      </TutorProvider>
     </AuthProvider>
   );
 }

@@ -5,8 +5,12 @@ import { initializeApp, cert, getApps } from "firebase-admin/app";
 import { getAuth } from "firebase-admin/auth";
 import { getFirestore } from "firebase-admin/firestore";
 
+// Local end-to-end tests run against the Firebase emulators. Never on Vercel.
+export const useEmulators = !!process.env.FIRESTORE_EMULATOR_HOST && !process.env.VERCEL;
+
 function app() {
   if (getApps().length) return getApps()[0];
+  if (useEmulators) return initializeApp({ projectId: (process.env.VITE_FIREBASE_PROJECT_ID || "demo-11plus").trim() });
   const raw = (process.env.FIREBASE_SERVICE_ACCOUNT || "").trim();
   if (!raw) throw new Error("FIREBASE_SERVICE_ACCOUNT is not set");
   const sa = JSON.parse(raw);

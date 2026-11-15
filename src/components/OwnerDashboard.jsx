@@ -47,6 +47,74 @@ function Bars({ rows, max }) {
   );
 }
 
+
+const TUTOR_TONE = { pending: "warn", active: "good", suspended: "bad" };
+
+// Tutor applications and accounts: approve, suspend, decline (api/tutor.js).
+function TutorsAdmin() {
+  const [tutors, setTutors] = useState(null);
+  const [error, setError] = useState("");
+  const [working, setWorking] = useState(null);
+
+  const call = useCallback(async (action, uid) => {
+    const token = await auth.currentUser.getIdToken();
+    const res = await fetch("/api/tutor", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ action, uid }),
+    });
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(body.error || "error");
+    return body;
+  }, []);
+
+  const load = useCallback(async () => {
+    try { setTutors((await call("adminList")).tutors); setError(""); }
+    catch (e) { setError(e.message); }
+  }, [call]);
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- loading the tutor list from the API.
+    load();
+  }, [load]);
+
+  async function act(action, t) {
+    if (action === "decline" && !window.confirm(`Decline ${t.name}'s application?`)) return;
+    if (action === "suspend" && !window.confirm(`Suspend ${t.name}? They'll lose access to their pupils straight away.`)) return;
+    setWorking(t.uid);
+    try { await call(action, t.uid); await load(); }
+    catch (e) { setError(e.message); }
+    finally { setWorking(null); }
+  }
+
+  const pending = tutors?.filter((t) => t.status === "pending").length || 0;
+  return (
+    <section className="own-card" data-testid="tutors-admin">
+      <h2>Tutors {pending > 0 && <span className="own-pill own-pill-warn">{pending} waiting</span>}</h2>
+      {error && <p className="own-muted">Couldn't load tutors ({error}). <button className="own-btn" onClick={load}>Retry</button></p>}
+      {!tutors ? <p className="own-muted">Loading…</p> : tutors.length === 0 ? <p className="own-muted">No tutor applications yet.</p> : (
+        <div className="own-tutors">
+          {tutors.map((t) => (
+            <div className="own-tutor" key={t.uid} data-testid="tutor-admin-row">
+              <div className="own-tutor-main">
+                <div><strong>{t.name}</strong>{t.business ? ` · ${t.business}` : ""} <span className={`own-pill own-pill-${TUTOR_TONE[t.status] || "muted"}`}>{t.status}</span></div>
+                <div className="own-muted">
+                  {t.email}{t.website ? <> · <a href={/^https?:\/\//.test(t.website) ? t.website : `https://${t.website}`} target="_blank" rel="noopener noreferrer">{t.website}</a></> : ""}{t.phone ? ` · ${t.phone}` : ""}
+                </div>
+                <div className="own-muted">Applied {new Date(t.appliedAt).toLocaleDateString("en-GB")} · {plural(t.pupils, "pupil")}{t.code ? ` · code ${t.code}` : ""}</div>
+              </div>
+              <div className="own-tutor-actions">
+                {t.status !== "active" && <button className="own-btn own-btn-primary" disabled={working === t.uid} onClick={() => act("approve", t)}>{t.status === "suspended" ? "Reactivate" : "Approve"}</button>}
+                {t.status === "pending" && <button className="own-btn" disabled={working === t.uid} onClick={() => act("decline", t)}>Decline</button>}
+                {t.status === "active" && <button className="own-btn" disabled={working === t.uid} onClick={() => act("suspend", t)}>Suspend</button>}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </section>
+  );
+}
+
 async function fetchStats(forceRefreshToken) {
   const user = auth.currentUser;
   if (forceRefreshToken) await user.reload(); // picks up a just-verified email
@@ -113,7 +181,7 @@ export default function OwnerDashboard() {
     );
   }
   if (error) {
-    return <div className="own">{header}<div className="own-card"><p>Couldn't load the numbers. Please tap Refresh.</p></div></div>;
+    return <div className="own">{header}<div className="own-card"><p>Couldn't load the numbers. Please tap Refresh.</p></div><TutorsAdmin /></div>;
   }
   if (!data) return <div className="own">{header}<div className="own-card"><p className="own-muted">Loading the numbers…</p></div></div>;
 
@@ -125,6 +193,8 @@ export default function OwnerDashboard() {
   return (
     <div className="own">
       {header}
+
+      <TutorsAdmin />
 
       <section>
         <h2>Today and this week</h2>

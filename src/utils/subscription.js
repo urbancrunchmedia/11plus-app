@@ -1,5 +1,5 @@
 // Client side of Stripe billing. The actual Stripe work happens in Vercel
-// serverless functions (/api/checkout, /api/status, /api/portal) which verify
+// serverless functions (/api/checkout, /api/status) which verify
 // the Firebase ID token and talk to Stripe. No secrets live in the client.
 import { auth } from "../firebase";
 
@@ -48,6 +48,6 @@ export async function startCheckout(priceId) {
 
 // Open the Stripe Customer Portal (update card / cancel).
 export async function openBillingPortal() {
-  const { url } = await authedFetch("/api/portal", {});
+  const { url } = await authedFetch("/api/status", {});
   if (url) window.location.assign(url);
 }

@@ -10,7 +10,9 @@
     "preview": "vite preview",
     "test": "vitest run",
     "test:rules": "firebase emulators:exec --only firestore \"cd rules-tests && npx vitest run --config vitest.config.js\" --project rules-test-11plus",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "test:api": "firebase emulators:exec --only firestore,auth --project demo-11plus \"VITE_FIREBASE_PROJECT_ID=demo-11plus ADMIN_SECRET=test-admin-secret EMAIL_DRY_RUN=1 npx vitest run --config api-tests/vitest.config.js\"",
+    "test:e2e": "firebase emulators:exec --only firestore,auth --project demo-11plus \"node e2e/tutor.e2e.mjs\""
   },
   "dependencies": {
     "@sentry/react": "^10.73.0",

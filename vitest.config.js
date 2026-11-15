@@ -8,6 +8,6 @@ export default defineConfig({
     globals: true,
     // rules-tests/ needs a live Firestore emulator (`npm run test:rules`),
     // not jsdom — keep it out of the ordinary app test run.
-    exclude: ['**/node_modules/**', 'rules-tests/**'],
+    exclude: ['**/node_modules/**', 'rules-tests/**', 'api-tests/**', 'e2e/**'],
   },
 })

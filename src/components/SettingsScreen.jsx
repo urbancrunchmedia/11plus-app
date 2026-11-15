@@ -11,6 +11,7 @@ import { formatDate } from "./SubscriptionSuccess";
 import { exportMyData, downloadMyData, deleteMyAccount } from "../utils/dataRights";
 import { submitSupportRequest, SUPPORT_CATEGORIES } from "../utils/support";
 import { auth } from "../firebase";
+import TutorsCard from "./TutorsCard";
 
 const GOALS = [3, 5, 10];
 const DIFFS = [
@@ -330,6 +331,8 @@ export default function SettingsScreen({ onOpenReport, onOpenBadges }) {
         </div>
 
       </div>
+
+      <TutorsCard childName={name} onToast={(t) => { setToast(t); setTimeout(() => setToast(null), 2600); }} />
 
       {/* Account */}
       <div className="set-card set-account">

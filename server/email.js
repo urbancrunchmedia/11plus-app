@@ -300,6 +300,82 @@ export function googleSignInEmail() {
   };
 }
 
+// ---- Tutors ----
+
+// To the owner: someone applied to be a tutor and is waiting for approval.
+export function tutorApplicationEmail({ name, business, email, website, phone }) {
+  const row = (k, v) => v ? `<strong>${escapeHtml(k)}:</strong> ${escapeHtml(v)}<br>` : "";
+  return {
+    marketing: false,
+    subject: `New tutor application: ${name}${business ? ` (${business})` : ""}`,
+    html: layout({
+      preheader: "A tutor is waiting for your approval.",
+      eyebrow: "Tutor application",
+      heading: ["A tutor wants to ", "join", ""],
+      lead: "Check they're a real tutor or tuition centre, then approve or decline them on your owner dashboard.",
+      blocks: [
+        p(row("Name", name) + row("Business", business) + row("Email", email) + row("Website", website) + row("Phone", phone)),
+        button({ label: "Review on the dashboard", url: `${SITE}/owner` }),
+      ],
+    }),
+  };
+}
+
+// To the tutor, once approved.
+export function tutorApprovedEmail({ name, code }) {
+  return {
+    marketing: false,
+    subject: "You're approved: your 11 PlusLab tutor dashboard is ready",
+    html: layout({
+      preheader: `Your join code is ${code}. Share it with your pupils' parents.`,
+      eyebrow: "Tutor account",
+      heading: ["You're ", "approved", ""],
+      lead: `Hi ${escapeHtml(name)}, your free tutor account is ready.`,
+      blocks: [
+        p(`Your join code is <strong style="font-size:20px;letter-spacing:2px">${escapeHtml(code)}</strong>`),
+        p("Give it to your pupils' parents. They enter it in <strong>Settings → Tutors</strong> in 11 PlusLab, and their child appears on your dashboard with their progress, practice time and the words they find tricky."),
+        button({ label: "Open my tutor dashboard", url: `${SITE}/tutor` }),
+      ],
+    }),
+  };
+}
+
+// To the parent, every time their child's account is connected to a tutor.
+export function tutorConnectedParentEmail({ childName, tutorName, business }) {
+  const who = business ? `${tutorName} (${business})` : tutorName;
+  return {
+    marketing: false,
+    subject: `${childName} is now connected to ${tutorName} on 11 PlusLab`,
+    html: layout({
+      preheader: `${who} can now see ${childName}'s progress.`,
+      eyebrow: "Tutor connected",
+      heading: [`${childName} is connected to `, tutorName, ""],
+      lead: `This account was just connected to ${escapeHtml(who)}.`,
+      blocks: [
+        p(`They can now see ${escapeHtml(childName)}'s practice: games played, scores, accuracy and the words to review. They can't see your email address, your name or anything else about your account.`),
+        p("You can disconnect at any time in <strong>Settings → Tutors</strong>."),
+        button({ label: "Open 11 PlusLab", url: SITE }),
+        p(`<span style="font-size:14px;color:${C.muted}">Didn't do this? Disconnect the tutor in Settings and reply to this email to let us know.</span>`),
+      ],
+    }),
+  };
+}
+
+// To the tutor, when a new pupil connects.
+export function tutorNewPupilEmail({ tutorName, childName }) {
+  return {
+    marketing: false,
+    subject: `${childName} has joined your 11 PlusLab dashboard`,
+    html: layout({
+      preheader: `${childName}'s progress is now on your dashboard.`,
+      eyebrow: "New pupil",
+      heading: ["", childName, " has joined"],
+      lead: `Hi ${escapeHtml(tutorName)}, a parent has connected ${escapeHtml(childName)} to your tutor dashboard.`,
+      blocks: [button({ label: "Open my tutor dashboard", url: `${SITE}/tutor` })],
+    }),
+  };
+}
+
 // Win-back: sent once ever to a child who played but has been quiet for more
 // than 30 days. Never repeated, so it never turns into nagging.
 export function winBackEmail({ uid, name }) {
@@ -455,6 +531,11 @@ function headersFor(email, uid) {
 
 // Send one email. idempotencyKey stops Resend sending the same email twice on a retry.
 export async function sendEmail({ to, uid, email, idempotencyKey, replyTo = REPLY_TO, from = FROM, attachments, scheduledAt }) {
+  // Local end-to-end tests: keep emails in memory instead of sending them.
+  if (process.env.EMAIL_DRY_RUN === "1" && !process.env.VERCEL) {
+    (globalThis.__emailOutbox ||= []).push({ to, subject: email.subject, html: email.html });
+    return { id: `dry-${globalThis.__emailOutbox.length}` };
+  }
   const { data, error } = await resend().emails.send(
     {
       from, replyTo, to, subject: email.subject, html: email.html, headers: headersFor(email, uid),

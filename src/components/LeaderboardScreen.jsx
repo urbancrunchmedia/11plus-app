@@ -7,6 +7,7 @@ import { RANK_TIERS } from "../utils/rank";
 import Gem from "./Gem";
 import { getSetting } from "../utils/leaderboard";
 import { shareInvite } from "../utils/invite";
+import { useTutor } from "../contexts/TutorContext";
 
 function rankTierInfo(id) {
   return RANK_TIERS.find((t) => t.id === id) || RANK_TIERS[0];
@@ -140,7 +141,9 @@ export default function LeaderboardScreen({ onPlay, onExit }) {
   }
 
   // Grown-ups can switch friends off in Settings (device-wide, like the PIN lock).
-  const friendsAllowed = getSetting("allowFriends", true);
+  // Tutor accounts (adults) never have friends.
+  const { isTutor } = useTutor();
+  const friendsAllowed = getSetting("allowFriends", true) && !isTutor;
 
   async function inviteFriend() {
     if (!me?.code) return;
@@ -188,7 +191,7 @@ export default function LeaderboardScreen({ onPlay, onExit }) {
           )}
           {friendsAllowed
             ? <button className="board-addbtn" onClick={() => { setMsg(null); setAddSheet(true); }}>+ Add friend</button>
-            : <span className="board-friends-off">Friends are off in grown-up settings</span>}
+            : <span className="board-friends-off">{isTutor ? "Tutor accounts don't use friends" : "Friends are off in grown-up settings"}</span>}
         </div>
       </div>
 

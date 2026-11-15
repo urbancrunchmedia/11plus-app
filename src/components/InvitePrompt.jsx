@@ -3,19 +3,23 @@ import { useAuth } from "../contexts/AuthContext";
 import { addFriendByCode } from "../utils/cloudScores";
 import { getSetting } from "../utils/leaderboard";
 import { getPendingInvite, clearPendingInvite, lookupInvite } from "../utils/invite";
+import { useTutor } from "../contexts/TutorContext";
 
 // Shown once a signed-in player has a pending invite link. Nobody becomes
 // friends without tapping "Add friend" here, and nothing happens at all if a
 // grown-up has switched friends off in Settings.
 export default function InvitePrompt({ onOpenBoard }) {
   const { user } = useAuth();
+  const { isTutor, loading: tutorLoading } = useTutor();
   const [invite, setInvite] = useState(null); // { code, displayName }
   const [state, setState] = useState("idle"); // idle | ask | blocked | adding | added | error
   const [error, setError] = useState("");
 
   useEffect(() => {
     const code = getPendingInvite();
-    if (!code || !user?.uid) return;
+    if (!code || !user?.uid || tutorLoading) return;
+    // Tutor accounts can't add friends: drop the invite quietly.
+    if (isTutor) { clearPendingInvite(); return; }
     let live = true;
     lookupInvite(code)
       .then((found) => {
@@ -27,7 +31,7 @@ export default function InvitePrompt({ onOpenBoard }) {
       })
       .catch(() => { /* offline: try again next time the app opens */ });
     return () => { live = false; };
-  }, [user?.uid]);
+  }, [user?.uid, isTutor, tutorLoading]);
 
   if (!invite || state === "idle") return null;
 

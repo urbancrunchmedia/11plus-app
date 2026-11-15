@@ -1,6 +1,6 @@
 import { initializeApp } from "firebase/app";
-import { getAuth } from "firebase/auth";
-import { initializeFirestore } from "firebase/firestore";
+import { getAuth, connectAuthEmulator } from "firebase/auth";
+import { initializeFirestore, connectFirestoreEmulator } from "firebase/firestore";
 
 // Trim each value — Vercel env vars were stored with trailing newlines, which
 // corrupt the Firebase auth iframe URL ("Illegal url for new iframe").
@@ -34,4 +34,15 @@ export const auth = getAuth(app);
 // silently in Safari under ITP/some proxies/ad blockers, rather than erroring
 // — a request just never resolves. This probes once and falls back to
 // long-polling when streaming wouldn't work.
-export const db = initializeFirestore(app, { experimentalAutoDetectLongPolling: true });
+// End-to-end tests force long-polling: WebKit's streaming connection to the
+// local emulator stalls intermittently, which the auto-detect doesn't catch.
+export const db = initializeFirestore(app, clean(import.meta.env.VITE_USE_EMULATORS) === "1"
+  ? { experimentalForceLongPolling: true }
+  : { experimentalAutoDetectLongPolling: true });
+
+// Local end-to-end tests only (e2e/.env.e2e): talk to the Firebase emulators.
+// The production build never sets this, so the branch is dead code there.
+if (clean(import.meta.env.VITE_USE_EMULATORS) === "1") {
+  connectAuthEmulator(auth, "http://127.0.0.1:9099", { disableWarnings: true });
+  connectFirestoreEmulator(db, "127.0.0.1", 8080);
+}

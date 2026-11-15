@@ -6,7 +6,7 @@ const KEY = "11plus_progress";
 
 // A word counts as "revised" (drops off the review list) once it's answered
 // correctly this many times in a row after being missed.
-const REMASTER_HITS = 2;
+export const REMASTER_HITS = 2;
 
 // Friendly labels for the skills we track.
 export const SKILL_LABEL = {
@@ -69,13 +69,16 @@ export function recordAttempt({ skill, word, correct, meaning }) {
 // it — so it would otherwise sit in "words to review" forever with no way
 // to act on it. Excluded here; still shown as a historical bar in
 // getSkillAccuracy(), which doesn't claim anything is actionable.
-const RETIRED_SKILLS = new Set(["wordMatch"]);
+export const RETIRED_SKILLS = new Set(["wordMatch"]);
 
 // Words still worth revising: missed at least once and not yet re-mastered.
 // Sorted hardest-first (most misses, then most recently missed).
 export function getWeakWords(limit = 20) {
-  const p = load();
-  return Object.values(p.words)
+  return weakWordsFrom(load(), limit);
+}
+// The same, for any progress object (a tutor reads a pupil's synced copy).
+export function weakWordsFrom(p, limit = 20) {
+  return Object.values(p?.words || {})
     .filter((w) => w.misses > 0 && w.hitsSinceMiss < REMASTER_HITS && !RETIRED_SKILLS.has(w.skill))
     .sort((a, b) => (b.misses - a.misses) || String(b.lastMissed || "").localeCompare(String(a.lastMissed || "")))
     .slice(0, limit);
@@ -86,8 +89,10 @@ export function getWeakWords(limit = 20) {
 // ("Word Match (old)") is just confusing, not actionable, for a parent
 // reading the report.
 export function getSkillAccuracy() {
-  const p = load();
-  return Object.entries(p.skills)
+  return skillAccuracyFrom(load());
+}
+export function skillAccuracyFrom(p) {
+  return Object.entries(p?.skills || {})
     .map(([skill, { hits, misses }]) => {
       const total = hits + misses;
       return { skill, label: SKILL_LABEL[skill] || skill, total, misses, pct: total ? Math.round((hits / total) * 100) : 0 };
