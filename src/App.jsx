@@ -18,6 +18,7 @@ import FlashcardScreen from "./components/FlashcardScreen";
 import OwnerDashboard from "./components/OwnerDashboard";
 import TutorScreen from "./components/TutorScreen";
 import InvitePrompt from "./components/InvitePrompt";
+import TutorJoinPrompt from "./components/TutorJoinPrompt";
 import ComingSoon from "./components/ComingSoon";
 import WordListScreen from "./components/WordListScreen";
 import LeaderboardScreen from "./components/LeaderboardScreen";
@@ -260,6 +261,7 @@ function AppInner() {
     <div className="app-layout">
       <AppNav active={selectedGame} onNavigate={handleSelectGame} />
       <InvitePrompt onOpenBoard={() => handleSelectGame("leaderboard")} />
+      <TutorJoinPrompt onOpenSettings={() => handleSelectGame("me")} />
 
       <div className="main-area">
         <div className="main-content">

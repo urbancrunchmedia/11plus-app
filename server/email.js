@@ -302,38 +302,69 @@ export function googleSignInEmail() {
 
 // ---- Tutors ----
 
-// To the owner: someone applied to be a tutor and is waiting for approval.
-export function tutorApplicationEmail({ name, business, email, website, phone }) {
+// To the owner: a new tutor. Approved already if they were on the outreach
+// list; otherwise waiting, with a one-tap approve button (a signed link).
+export function tutorApplicationEmail({ name, business, email, website, phone, autoApproved, approveUrl }) {
   const row = (k, v) => v ? `<strong>${escapeHtml(k)}:</strong> ${escapeHtml(v)}<br>` : "";
   return {
     marketing: false,
-    subject: `New tutor application: ${name}${business ? ` (${business})` : ""}`,
+    subject: autoApproved
+      ? `Tutor joined (pre-approved): ${name}${business ? ` (${business})` : ""}`
+      : `New tutor to approve: ${name}${business ? ` (${business})` : ""}`,
     html: layout({
-      preheader: "A tutor is waiting for your approval.",
-      eyebrow: "Tutor application",
-      heading: ["A tutor wants to ", "join", ""],
-      lead: "Check they're a real tutor or tuition centre, then approve or decline them on your owner dashboard.",
+      preheader: autoApproved ? "They were on your outreach list, so they're approved already." : "A tutor is waiting for your approval.",
+      eyebrow: autoApproved ? "Tutor joined" : "Tutor application",
+      heading: autoApproved ? ["A tutor you contacted has ", "joined", ""] : ["A tutor wants to ", "join", ""],
+      lead: autoApproved
+        ? "Their email matches someone on your outreach list, so they were approved automatically. Nothing to do unless something looks wrong."
+        : "Check they're a real tutor or tuition centre. Families can already connect using their link, but they won't see any child's progress until you approve them.",
       blocks: [
         p(row("Name", name) + row("Business", business) + row("Email", email) + row("Website", website) + row("Phone", phone)),
-        button({ label: "Review on the dashboard", url: `${SITE}/owner` }),
+        approveUrl ? button({ label: "Approve", url: approveUrl }) : "",
+        p(`<a href="${SITE}/owner" style="color:${C.brand}">Review on the owner dashboard</a>${approveUrl ? " to decline or check more details." : " (suspend them there if needed)."}`),
       ],
     }),
   };
 }
 
-// To the tutor, once approved.
-export function tutorApprovedEmail({ name, code }) {
+function joinBlocks(code, link) {
+  return [
+    p(`Your join link: <a href="${link}" style="color:${C.brand};font-weight:700">${escapeHtml(link.replace(/^https:\/\//, ""))}</a><br>Or your code: <strong style="letter-spacing:1px">${escapeHtml(code)}</strong>`),
+    p("Send the link to your pupils' parents. They tap it, sign up or sign in, and confirm. Their child then appears on your dashboard. Your dashboard also has a QR poster you can print."),
+  ];
+}
+
+// To a tutor who isn't approved yet: they can start sharing straight away.
+export function tutorReceivedEmail({ name, code, link }) {
+  return {
+    marketing: false,
+    subject: "Your 11 PlusLab tutor link is ready to share",
+    html: layout({
+      preheader: "Start sharing your link now. You'll see pupils' progress once we've checked your account.",
+      eyebrow: "Tutor account",
+      heading: ["Your link is ", "ready", ""],
+      lead: `Hi ${escapeHtml(name)}, thanks for joining. You can start inviting families now.`,
+      blocks: [
+        ...joinBlocks(code, link),
+        p("We check every tutor before they can see children's progress, usually the same day. We'll email you as soon as you're approved, and every family who has connected will appear on your dashboard straight away."),
+        button({ label: "Open my tutor dashboard", url: `${SITE}/tutor` }),
+      ],
+    }),
+  };
+}
+
+// To the tutor, once approved (straight away if they were on the outreach list).
+export function tutorApprovedEmail({ name, code, link }) {
   return {
     marketing: false,
     subject: "You're approved: your 11 PlusLab tutor dashboard is ready",
     html: layout({
-      preheader: `Your join code is ${code}. Share it with your pupils' parents.`,
+      preheader: "Share your join link with your pupils' parents.",
       eyebrow: "Tutor account",
       heading: ["You're ", "approved", ""],
-      lead: `Hi ${escapeHtml(name)}, your free tutor account is ready.`,
+      lead: `Hi ${escapeHtml(name)}, your free tutor account is ready, with Full Access so you can try every game and level.`,
       blocks: [
-        p(`Your join code is <strong style="font-size:20px;letter-spacing:2px">${escapeHtml(code)}</strong>`),
-        p("Give it to your pupils' parents. They enter it in <strong>Settings → Tutors</strong> in 11 PlusLab, and their child appears on your dashboard with their progress, practice time and the words they find tricky."),
+        ...joinBlocks(code, link || `${SITE}/join/${code}`),
         button({ label: "Open my tutor dashboard", url: `${SITE}/tutor` }),
       ],
     }),
@@ -341,18 +372,18 @@ export function tutorApprovedEmail({ name, code }) {
 }
 
 // To the parent, every time their child's account is connected to a tutor.
-export function tutorConnectedParentEmail({ childName, tutorName, business }) {
+export function tutorConnectedParentEmail({ childName, tutorName, business, pending }) {
   const who = business ? `${tutorName} (${business})` : tutorName;
   return {
     marketing: false,
     subject: `${childName} is now connected to ${tutorName} on 11 PlusLab`,
     html: layout({
-      preheader: `${who} can now see ${childName}'s progress.`,
+      preheader: pending ? `${who} will see ${childName}'s progress once we've checked their account.` : `${who} can now see ${childName}'s progress.`,
       eyebrow: "Tutor connected",
       heading: [`${childName} is connected to `, tutorName, ""],
       lead: `This account was just connected to ${escapeHtml(who)}.`,
       blocks: [
-        p(`They can now see ${escapeHtml(childName)}'s practice: games played, scores, accuracy and the words to review. They can't see your email address, your name or anything else about your account.`),
+        p(`${pending ? "Once we've checked their tutor account (usually the same day), they'll be able to see" : "They can now see"} ${escapeHtml(childName)}'s practice: games played, scores, accuracy and the words to review. They can't see your email address, your name or anything else about your account.`),
         p("You can disconnect at any time in <strong>Settings → Tutors</strong>."),
         button({ label: "Open 11 PlusLab", url: SITE }),
         p(`<span style="font-size:14px;color:${C.muted}">Didn't do this? Disconnect the tutor in Settings and reply to this email to let us know.</span>`),
@@ -362,15 +393,15 @@ export function tutorConnectedParentEmail({ childName, tutorName, business }) {
 }
 
 // To the tutor, when a new pupil connects.
-export function tutorNewPupilEmail({ tutorName, childName }) {
+export function tutorNewPupilEmail({ tutorName, childName, pending }) {
   return {
     marketing: false,
     subject: `${childName} has joined your 11 PlusLab dashboard`,
     html: layout({
-      preheader: `${childName}'s progress is now on your dashboard.`,
+      preheader: pending ? `${childName}'s family has connected. You'll see their progress once you're approved.` : `${childName}'s progress is now on your dashboard.`,
       eyebrow: "New pupil",
       heading: ["", childName, " has joined"],
-      lead: `Hi ${escapeHtml(tutorName)}, a parent has connected ${escapeHtml(childName)} to your tutor dashboard.`,
+      lead: `Hi ${escapeHtml(tutorName)}, a parent has connected ${escapeHtml(childName)} to your tutor dashboard.${pending ? " You'll see their progress as soon as your account is approved." : ""}`,
       blocks: [button({ label: "Open my tutor dashboard", url: `${SITE}/tutor` })],
     }),
   };

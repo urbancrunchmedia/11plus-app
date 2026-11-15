@@ -21,7 +21,12 @@ export function startApiServer(port) {
     if (!route.startsWith("/api/") || !existsSync(file)) { res.statusCode = 404; return res.end("{}"); }
     let raw = "";
     for await (const chunk of req) raw += chunk;
-    try { req.body = raw ? JSON.parse(raw) : {}; } catch { req.body = {}; }
+    // Vercel parses JSON and form posts (the one-tap approve page posts a form).
+    if (String(req.headers["content-type"] || "").includes("application/x-www-form-urlencoded")) {
+      req.body = Object.fromEntries(new URLSearchParams(raw));
+    } else {
+      try { req.body = raw ? JSON.parse(raw) : {}; } catch { req.body = {}; }
+    }
     req.query = Object.fromEntries(url.searchParams);
     res.status = (s) => { res.statusCode = s; return res; };
     res.json = (d) => { if (!res.headersSent) res.setHeader("Content-Type", "application/json"); res.end(JSON.stringify(d)); return res; };

@@ -3506,3 +3506,28 @@ a.set-ghost { display: inline-flex; align-items: center; justify-content: center
 .dash-request { display: flex; flex-direction: column; gap: 2px; width: 100%; text-align: left; border: 1px solid #dfef9a; background: #f3fbd4; border-radius: 14px; padding: 10px 12px; margin-bottom: 10px; cursor: pointer; font: inherit; color: var(--ink); }
 .dash-request b { font-size: 0.88rem; }
 .dash-request span { font-size: 0.75rem; color: var(--muted); font-weight: 600; }
+
+/* Tutor join link, checklist, poster */
+.tut-code-main { min-width: 0; }
+.tut-code-link { font-weight: 800; font-size: 1.35rem; color: var(--accent, #d4f520); margin-top: 4px; word-break: break-all; }
+.tut-code .tut-small b { color: #fff; letter-spacing: 0.05em; }
+.tut-code .tut-btn.ghost { background: transparent; color: #fff; border-color: rgba(255,255,255,0.35); }
+.tut-pending { border-color: #ffd9a8; background: #fffaf2; }
+.tut-first .tut-steps { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 10px; font-size: 0.92rem; line-height: 1.5; color: var(--ink); }
+.tut-first a { color: var(--brand-ink); font-weight: 700; }
+.tut-poster-wrap { min-height: 100dvh; background: var(--bg, #f4f9ff); padding: 20px; display: flex; flex-direction: column; align-items: center; gap: 16px; }
+.tut-poster-bar { display: flex; gap: 10px; }
+.tut-poster { background: #fff; width: 100%; max-width: 640px; aspect-ratio: 210 / 297; border-radius: 18px; padding: 48px 40px; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 14px; box-shadow: var(--shadow-lg); }
+.tut-poster-logo { width: 62%; max-width: 360px; }
+.tut-poster-title { margin: 18px 0 0; font-weight: 800; font-size: 2rem; letter-spacing: -0.02em; color: var(--ink); line-height: 1.15; }
+.tut-poster-sub { margin: 0; font-size: 1.05rem; color: var(--muted); font-weight: 600; max-width: 440px; line-height: 1.45; }
+.tut-poster-qr { width: 52%; max-width: 300px; aspect-ratio: 1; margin-top: 10px; }
+.tut-poster-scan { margin: 0; font-weight: 800; font-size: 1.15rem; color: var(--ink); }
+.tut-poster-link { margin: 0; font-weight: 800; font-size: 1rem; color: var(--brand-ink); word-break: break-all; }
+.tut-poster-small { margin: auto 0 0; font-size: 0.8rem; color: var(--muted); font-weight: 600; }
+@media print {
+  @page { size: A4; margin: 0; }
+  .tut-poster-bar { display: none !important; }
+  .tut-poster-wrap { padding: 0; background: #fff; }
+  .tut-poster { box-shadow: none; border-radius: 0; max-width: none; width: 210mm; height: 297mm; padding: 22mm 18mm; }
+}

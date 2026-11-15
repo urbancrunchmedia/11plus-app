@@ -17,7 +17,8 @@ describe("tutor client helpers", () => {
     await expect(withTimeout(Promise.resolve(42))).resolves.toBe(42);
   });
   it("writes the parent message with the code and where to enter it", () => {
-    const msg = joinMessage("TUT-ABCDEFGH", "Patel Tuition");
+    const msg = joinMessage("TUT-ABCDEFGH", "Patel Tuition", "https://11pluslab.com/join/TUT-ABCDEFGH");
+    expect(msg).toContain("https://11pluslab.com/join/TUT-ABCDEFGH");
     expect(msg).toContain("TUT-ABCDEFGH");
     expect(msg).toContain("Settings → Tutors");
     expect(msg).toContain("Patel Tuition");

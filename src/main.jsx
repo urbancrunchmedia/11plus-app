@@ -7,10 +7,13 @@ import { Analytics } from '@vercel/analytics/react'
 import { initMonitoring } from './utils/monitoring.js'
 import './pwa.js'
 import { captureInviteFromUrl } from './utils/invite.js'
+import { captureTutorJoinFromUrl } from './utils/tutorJoin.js'
 
 initMonitoring()
 // ?friend=CODE invite links: remember the invite before sign-in can redirect away.
 captureInviteFromUrl()
+// /join/<code> tutor links: remember the tutor before sign-in can redirect away.
+captureTutorJoinFromUrl()
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>

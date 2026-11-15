@@ -1,7 +1,8 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import Icon, { SKILL_ICON } from "./Icon";
 import { getPendingInvite } from "../utils/invite";
+import { getPendingTutorJoin, publicTutorLookup } from "../utils/tutorJoin";
 
 // What the app actually contains, shown before anyone signs in. Same order
 // and labels as the SKILLS list in gamify.js (the dashboard's source of
@@ -70,6 +71,15 @@ export default function LoginScreen() {
   const { signInWithEmail, signUpWithEmail, signInWithGoogle, resetPassword, redirectError } = useAuth();
 
   const [mode, setMode]         = useState("signin");  // "signin" | "signup"
+  // Arrived from a tutor's /join link: show who invited them.
+  const [joinTutor, setJoinTutor] = useState(null);
+  useEffect(() => {
+    const code = getPendingTutorJoin();
+    if (!code) return;
+    let live = true;
+    publicTutorLookup(code).then((t) => { if (live && t) { setJoinTutor(t); setMode("signup"); } }).catch(() => {});
+    return () => { live = false; };
+  }, []);
   const [showEmailForm, setShowEmailForm] = useState(false);
   const [name, setName]         = useState("");
   const [email, setEmail]       = useState("");
@@ -150,6 +160,11 @@ export default function LoginScreen() {
             <div className="login2-invite" role="status" data-testid="tutor-signin-banner">
               <span aria-hidden="true">🎓</span>
               <div><strong>Tutors: create your free account.</strong> Sign up or sign in with your own email (not a child's account), then apply for your tutor dashboard.</div>
+            </div>
+          ) : joinTutor ? (
+            <div className="login2-invite" role="status" data-testid="tutor-join-banner">
+              <span aria-hidden="true">🎓</span>
+              <div><strong>{joinTutor.tutorName}{joinTutor.business ? ` (${joinTutor.business})` : ""} uses 11 PlusLab to follow your child's 11+ practice.</strong> Create your free account or sign in, then confirm to connect.</div>
             </div>
           ) : getPendingInvite() && (
             <div className="login2-invite" role="status">

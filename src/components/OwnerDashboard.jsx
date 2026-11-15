@@ -100,7 +100,10 @@ function TutorsAdmin() {
                 <div className="own-muted">
                   {t.email}{t.website ? <> · <a href={/^https?:\/\//.test(t.website) ? t.website : `https://${t.website}`} target="_blank" rel="noopener noreferrer">{t.website}</a></> : ""}{t.phone ? ` · ${t.phone}` : ""}
                 </div>
-                <div className="own-muted">Applied {new Date(t.appliedAt).toLocaleDateString("en-GB")} · {plural(t.pupils, "pupil")}{t.code ? ` · code ${t.code}` : ""}</div>
+                <div className="own-muted">
+                  Applied {new Date(t.appliedAt).toLocaleDateString("en-GB")}{t.autoApproved ? " · pre-approved (on your outreach list)" : ""} · {plural(t.pupils, "pupil")}
+                  {t.pupils > 0 ? ` (${t.viaLink} by link, ${t.newFamilies} new ${t.newFamilies === 1 ? "family" : "families"})` : ""}{t.code ? ` · code ${t.code}` : ""}
+                </div>
               </div>
               <div className="own-tutor-actions">
                 {t.status !== "active" && <button className="own-btn own-btn-primary" disabled={working === t.uid} onClick={() => act("approve", t)}>{t.status === "suspended" ? "Reactivate" : "Approve"}</button>}

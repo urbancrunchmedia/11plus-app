@@ -68,8 +68,9 @@ export function removePupil(tutorUid, childUid) {
   return deleteDoc(doc(db, "tutorLinks", linkId(tutorUid, childUid)));
 }
 
-// The message a tutor sends to parents with their join code.
-export function joinMessage(code, tutorName) {
+// The message a tutor sends to parents with their join link (and code).
+export function joinMessage(code, tutorName, link) {
   return `${tutorName} uses 11 PlusLab to follow your child's 11+ practice. ` +
-    `To connect, open 11 PlusLab (11pluslab.com), go to Settings → Tutors → Connect a tutor and enter this code: ${code}`;
+    `Tap this link to connect your child (it's free to start): ${link}\n\n` +
+    `Already using 11 PlusLab? You can also enter this code in Settings → Tutors: ${code}`;
 }

@@ -1,7 +1,9 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import { useTutor } from "../contexts/TutorContext";
+import QRCode from "qrcode";
 import { tutorApi, getPupils, removePupil, joinMessage } from "../utils/tutor";
+import { tutorJoinLink } from "../utils/tutorJoin";
 import { pupilSummary, classSummary, GAME_ORDER } from "../utils/tutorMetrics";
 import { SKILL_LABEL } from "../utils/progress";
 
@@ -98,26 +100,51 @@ function Apply({ onDone }) {
   );
 }
 
-function Status({ tutor }) {
-  const pending = tutor.status === "pending";
+function Paused() {
   return (
     <div className="tut-page">
-      <Header title={pending ? "Thanks for applying" : "Your tutor account is paused"} />
+      <Header title="Your tutor account is paused" />
       <div className="tut-card tut-status">
-        {pending ? (
-          <>
-            <p>We've got your application, {tutor.name}. We check every tutor before they can see pupils' progress, usually within one working day.</p>
-            <p>We'll email <strong>{tutor.email}</strong> as soon as you're approved. In the meantime you can <a href="/">try the games</a>.</p>
-          </>
-        ) : (
-          <p>Your tutor dashboard is switched off at the moment. If you think this is a mistake, email <a href="mailto:hello@11pluslab.com">hello@11pluslab.com</a>.</p>
-        )}
+        <p>Your tutor dashboard is switched off at the moment. If you think this is a mistake, email <a href="mailto:hello@11pluslab.com">hello@11pluslab.com</a>.</p>
       </div>
     </div>
   );
 }
 
-function CodeCard({ tutor, onNewCode }) {
+// Not approved yet: share the link straight away; progress unlocks on approval.
+function Pending({ tutor, refreshTutor }) {
+  const [pupils, setPupils] = useState(null);
+  const [poster, setPoster] = useState(false);
+  useEffect(() => {
+    let live = true;
+    tutorApi("summary").then((r) => { if (live) setPupils(r.pupils); }).catch(() => {});
+    return () => { live = false; };
+  }, []);
+  async function newCode() { await tutorApi("newCode"); await refreshTutor(); }
+  if (poster) return <Poster tutor={tutor} onClose={() => setPoster(false)} />;
+  return (
+    <div className="tut-page">
+      <Header title="Your link is ready" />
+      <div className="tut-card tut-status tut-pending" data-testid="tutor-pending">
+        <p><b>Start inviting families now.</b> We check every tutor before they can see children's progress, usually the same day. We'll email {tutor.email} as soon as you're approved.</p>
+        {pupils != null && (
+          <p data-testid="pending-count">{pupils === 0 ? "No families have connected yet." : `${pupils} ${pupils === 1 ? "family has" : "families have"} connected. You'll see their progress once you're approved.`}</p>
+        )}
+      </div>
+      <CodeCard tutor={tutor} onNewCode={newCode} onPoster={() => setPoster(true)} />
+      {pupils === 0 && <FirstPupils tutor={tutor} onPoster={() => setPoster(true)} />}
+    </div>
+  );
+}
+
+// Share text for WhatsApp/email, and the poster's QR code.
+function useJoin(tutor) {
+  const link = tutorJoinLink(tutor.code);
+  return { link, message: joinMessage(tutor.code, tutor.business || tutor.name, link) };
+}
+
+function CodeCard({ tutor, onNewCode, onPoster }) {
+  const { link, message } = useJoin(tutor);
   const [note, setNote] = useState("");
   const [confirm, setConfirm] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -125,42 +152,90 @@ function CodeCard({ tutor, onNewCode }) {
 
   async function copy(text, done) {
     try { await navigator.clipboard.writeText(text); flash(done); }
-    catch { flash(`Your code is ${tutor.code}`); }
+    catch { flash(`Your link is ${link}`); }
   }
   async function share() {
-    const text = joinMessage(tutor.code, tutor.business || tutor.name);
     if (navigator.share) {
-      try { await navigator.share({ text }); return; } catch (e) { if (e?.name === "AbortError") return; }
+      try { await navigator.share({ text: message }); return; } catch (e) { if (e?.name === "AbortError") return; }
     }
-    copy(text, "Message copied. Paste it into an email or WhatsApp to parents.");
+    copy(message, "Message copied. Paste it into an email or WhatsApp to parents.");
   }
   async function regenerate() {
     setBusy(true);
-    try { await onNewCode(); setConfirm(false); flash("New code ready. The old code no longer works."); }
+    try { await onNewCode(); setConfirm(false); flash("New link ready. The old link and code no longer work."); }
     catch (e) { flash(e.message); }
     finally { setBusy(false); }
   }
 
   return (
     <div className="tut-card tut-code">
-      <div>
-        <div className="tut-tile-label">Your join code</div>
-        <div className="tut-code-value" data-testid="tutor-code">{tutor.code}</div>
-        <div className="tut-small">Parents enter this in 11 PlusLab under Settings → Tutors.</div>
+      <div className="tut-code-main">
+        <div className="tut-tile-label">Your join link</div>
+        <div className="tut-code-link" data-testid="tutor-link">{link.replace(/^https?:\/\//, "")}</div>
+        <div className="tut-small">Code for parents already using 11 PlusLab (Settings → Tutors): <b data-testid="tutor-code">{tutor.code}</b></div>
       </div>
       <div className="tut-code-actions">
         <button className="tut-btn primary" onClick={share}>Send to parents</button>
-        <button className="tut-btn ghost" onClick={() => copy(tutor.code, "Code copied")}>Copy code</button>
+        <a className="tut-btn ghost" href={`https://wa.me/?text=${encodeURIComponent(message)}`} target="_blank" rel="noopener noreferrer">WhatsApp</a>
+        <button className="tut-btn ghost" onClick={() => copy(link, "Link copied")}>Copy link</button>
+        <button className="tut-btn ghost" onClick={onPoster}>QR poster</button>
         {confirm ? (
           <span className="tut-confirm">
-            Old code stops working. <button className="tut-link" onClick={regenerate} disabled={busy}>{busy ? "Making…" : "Yes, new code"}</button>
+            Old link stops working. <button className="tut-link" onClick={regenerate} disabled={busy}>{busy ? "Making…" : "Yes, new link"}</button>
             {" · "}<button className="tut-link" onClick={() => setConfirm(false)}>Cancel</button>
           </span>
         ) : (
-          <button className="tut-link" onClick={() => setConfirm(true)}>Get a new code</button>
+          <button className="tut-link" onClick={() => setConfirm(true)}>Get a new link</button>
         )}
       </div>
       {note && <div className="tut-note" role="status">{note}</div>}
+    </div>
+  );
+}
+
+// "Get your first pupils": shown until the first family connects.
+function FirstPupils({ tutor, onPoster }) {
+  const { link, message } = useJoin(tutor);
+  const subject = `Follow your child's 11+ practice with ${tutor.business || tutor.name}`;
+  return (
+    <div className="tut-card tut-first" data-testid="first-pupils">
+      <h2 className="tut-h2">Get your first pupils</h2>
+      <ol className="tut-steps">
+        <li><b>Send your link to parents</b> by WhatsApp or email. Use <i>Send to parents</i> above, or <a href={`https://wa.me/?text=${encodeURIComponent(message)}`} target="_blank" rel="noopener noreferrer">open WhatsApp</a>.</li>
+        <li><b>Email it to everyone at once:</b> <a href={`mailto:?bcc=&subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(message)}`}>open a ready-written email</a> (add parents in BCC).</li>
+        <li><b>Teaching in person?</b> <button className="tut-link" onClick={onPoster}>Print the QR poster</button>. Parents scan it with their phone camera.</li>
+        <li>When a parent confirms, their child appears here. You'll get an email too.</li>
+      </ol>
+      <div className="tut-small">Your link: {link}</div>
+    </div>
+  );
+}
+
+// A4 poster with a QR code to the tutor's join link. Printed from the browser.
+function Poster({ tutor, onClose }) {
+  const { link } = useJoin(tutor);
+  const [qr, setQr] = useState("");
+  useEffect(() => {
+    let live = true;
+    QRCode.toDataURL(link, { width: 640, margin: 1, color: { dark: "#0E1116", light: "#FFFFFF" } })
+      .then((url) => { if (live) setQr(url); }).catch(() => {});
+    return () => { live = false; };
+  }, [link]);
+  return (
+    <div className="tut-poster-wrap" role="dialog" aria-modal="true" aria-label="QR poster">
+      <div className="tut-poster-bar">
+        <button className="tut-btn primary" onClick={() => window.print()}>Print poster</button>
+        <button className="tut-btn ghost" onClick={onClose}>Close</button>
+      </div>
+      <div className="tut-poster" data-testid="tutor-poster">
+        <img src="/logo-lockup.svg" alt="11 PlusLab" className="tut-poster-logo" />
+        <h1 className="tut-poster-title">Practise for the 11+ at home</h1>
+        <p className="tut-poster-sub">{tutor.business || tutor.name} uses 11 PlusLab: fun vocabulary and English games for ages 8–11.</p>
+        {qr ? <img src={qr} alt={`QR code for ${link}`} className="tut-poster-qr" /> : <div className="tut-poster-qr" />}
+        <p className="tut-poster-scan">Scan with your phone camera to connect your child</p>
+        <p className="tut-poster-link">{link.replace(/^https?:\/\//, "")}</p>
+        <p className="tut-poster-small">Free to start · Parents confirm before anything is shared · Disconnect any time</p>
+      </div>
     </div>
   );
 }
@@ -291,6 +366,7 @@ function Dashboard({ tutor, refreshTutor }) {
   const [error, setError] = useState("");
   const [openUid, setOpenUid] = useState(null);
   const [toast, setToast] = useState("");
+  const [poster, setPoster] = useState(false);
 
   const load = useCallback(async () => {
     setError("");
@@ -324,6 +400,7 @@ function Dashboard({ tutor, refreshTutor }) {
     await load();
   }
 
+  if (poster) return <Poster tutor={tutor} onClose={() => setPoster(false)} />;
   return (
     <div className="tut-page">
       <Header title={open ? "Pupil progress" : `Hi ${tutor.name}`} />
@@ -331,16 +408,13 @@ function Dashboard({ tutor, refreshTutor }) {
         <PupilDetail p={open} onBack={() => setOpenUid(null)} onRemove={() => remove(open)} />
       ) : (
         <>
-          <CodeCard tutor={tutor} onNewCode={newCode} />
+          <CodeCard tutor={tutor} onNewCode={newCode} onPoster={() => setPoster(true)} />
           {rows === null ? (
             <div className="tut-card tut-empty">Loading your pupils…</div>
           ) : error ? (
             <div className="tut-card tut-empty">{error} <button className="tut-link" onClick={load}>Try again</button></div>
           ) : rows.length === 0 ? (
-            <div className="tut-card tut-empty" data-testid="no-pupils">
-              <h2 className="tut-h2">No pupils yet</h2>
-              <p>Send your join code to your pupils' parents. When they enter it in 11 PlusLab, their child appears here.</p>
-            </div>
+            <div data-testid="no-pupils"><FirstPupils tutor={tutor} onPoster={() => setPoster(true)} /></div>
           ) : (
             <>
               <div className="tut-tiles">
@@ -388,6 +462,7 @@ export default function TutorScreen() {
   useEffect(() => { document.title = "Tutor dashboard · 11 PlusLab"; }, []);
   if (loading) return <div className="app-loading"><p>Loading…</p></div>;
   if (!tutor) return <Apply onDone={refresh} />;
-  if (tutor.status !== "active") return <Status tutor={tutor} />;
+  if (tutor.status === "pending") return <Pending tutor={tutor} refreshTutor={refresh} />;
+  if (tutor.status !== "active") return <Paused />;
   return <Dashboard tutor={tutor} refreshTutor={refresh} />;
 }

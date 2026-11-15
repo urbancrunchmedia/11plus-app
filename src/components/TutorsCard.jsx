@@ -2,6 +2,7 @@ import React, { useEffect, useState, useCallback } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import { useTutor } from "../contexts/TutorContext";
 import { getMyTutors, disconnectTutor, tutorApi, MAX_TUTORS } from "../utils/tutor";
+import TutorConnectSheet from "./TutorConnectSheet";
 
 // Settings → Tutors (grown-up area). A parent connects their child to a tutor
 // by entering the tutor's join code, sees exactly what will be shared before
@@ -55,7 +56,7 @@ export default function TutorsCard({ childName, onToast }) {
   async function connect() {
     setBusy(true); setError("");
     try {
-      const res = await tutorApi("connect", { code });
+      const res = await tutorApi("connect", { code, via: "code" });
       await load();
       setSheet(null);
       onToast?.(res.already ? `Already connected to ${res.tutorName}` : `Connected to ${res.tutorName}`);
@@ -140,35 +141,7 @@ export default function TutorsCard({ childName, onToast }) {
       )}
 
       {sheet === "confirm" && found && (
-        <div className="set-sheet-overlay" onClick={close}>
-          <div className="set-sheet" role="dialog" aria-modal="true" aria-labelledby="tutor-confirm-title" onClick={(e) => e.stopPropagation()}>
-            <div className="set-sheet-title" id="tutor-confirm-title">Connect {childName} to {found.tutorName}?</div>
-            {found.business && <div className="set-sheet-sub">{found.business}</div>}
-            <div className="tutor-share">
-              <div className="tutor-share-col">
-                <div className="tutor-share-head">They'll see</div>
-                <ul>
-                  <li>{childName}'s name on 11 PlusLab</li>
-                  <li>Games played, scores and accuracy</li>
-                  <li>Words {childName} finds tricky</li>
-                  <li>When and how long {childName} practises</li>
-                </ul>
-              </div>
-              <div className="tutor-share-col tutor-share-col--no">
-                <div className="tutor-share-head">They won't see</div>
-                <ul>
-                  <li>Your email address or name</li>
-                  <li>Your billing or plan</li>
-                  <li>Anything else on this account</li>
-                </ul>
-              </div>
-            </div>
-            <div className="set-sheet-sub">We'll email you to confirm. You can disconnect at any time here in Settings.</div>
-            {error && <div className="board-msg err" role="alert">{error}</div>}
-            <button className="set-sheet-confirm" onClick={connect} disabled={busy}>{busy ? "Connecting…" : "Connect"}</button>
-            <button className="set-sheet-cancel" onClick={close}>Cancel</button>
-          </div>
-        </div>
+        <TutorConnectSheet childName={childName} found={found} busy={busy} error={error} onConfirm={connect} onCancel={close} />
       )}
 
       {sheet?.disconnect && (

@@ -35,14 +35,36 @@ describe("applying to be a tutor", () => {
     expect((await call(handler, { token: u.token, body: { action: "apply", name: "A", confirm: true } })).status).toBe(400);
   });
 
-  it("creates a pending application and emails the owner", async () => {
+  it("creates a pending application with a join code to share straight away", async () => {
     const u = await makeUser("t", "t@tutors.test");
     const res = await call(handler, { token: u.token, body: { action: "apply", name: "  Ms   Patel ", business: "Patel Tuition", confirm: true } });
-    expect(res).toEqual({ status: 200, data: { status: "pending" } });
+    expect(res.data).toMatchObject({ status: "pending", code: expect.stringMatching(/^TUT-/) });
     const doc = (await adminDb().doc("tutors/t").get()).data();
-    expect(doc).toMatchObject({ status: "pending", name: "Ms Patel", email: "t@tutors.test" });
-    expect(doc.code).toBeUndefined();
-    expect(outbox().map((m) => m.to)).toEqual(["hello@11pluslab.com"]);
+    expect(doc).toMatchObject({ status: "pending", name: "Ms Patel", email: "t@tutors.test", code: res.data.code });
+    expect(doc.autoApproved).toBeUndefined();
+    const owner = outbox().find((m) => m.to === "hello@11pluslab.com");
+    expect(owner.subject).toMatch(/New tutor to approve/);
+    expect(owner.html).toMatch(/\/api\/tutor\?approve=t&amp;exp=\d+&amp;t=|\/api\/tutor\?approve=t&exp=\d+&t=/);
+    expect(outbox().find((m) => m.to === "t@tutors.test").subject).toMatch(/link is ready/);
+  });
+
+  it("approves straight away someone on the outreach list (same email or same business domain)", async () => {
+    await adminDb().doc("outreach/a").set({ email: "lorenzo@lorenzostutoring.co.uk", business: "Lorenzo's Tutoring" });
+    for (const [uid, email] of [["t1", "lorenzo@lorenzostutoring.co.uk"], ["t2", "admin@lorenzostutoring.co.uk"]]) {
+      const u = await makeUser(uid, email);
+      const res = await call(handler, { token: u.token, body: { action: "apply", name: "Lorenzo", confirm: true } });
+      expect(res.data.status).toBe("active");
+      expect((await adminDb().doc(`tutors/${uid}`).get()).data()).toMatchObject({ autoApproved: true, business: "Lorenzo's Tutoring" });
+    }
+    expect(outbox().some((m) => m.to === "lorenzo@lorenzostutoring.co.uk" && /approved/i.test(m.subject))).toBe(true);
+    expect(outbox().find((m) => m.to === "hello@11pluslab.com").subject).toMatch(/pre-approved/);
+  });
+
+  it("never treats a shared email provider as a business match", async () => {
+    await adminDb().doc("outreach/a").set({ email: "sam.tutor@gmail.com", business: "Sam Tutors" });
+    const u = await makeUser("t", "someone.else@gmail.com");
+    const res = await call(handler, { token: u.token, body: { action: "apply", name: "Someone", confirm: true } });
+    expect(res.data.status).toBe("pending");
   });
 
   it("can't be used to change an existing tutor's status", async () => {
@@ -91,7 +113,7 @@ describe("connecting a child with the join code", () => {
     const t = await approvedTutor();
     const kid = await makeUser("kid1", "parent1@family.test", "Amu");
     const look = await call(handler, { token: kid.token, body: { action: "lookup", code: t.code.toLowerCase().replace("-", " ") } });
-    expect(look).toEqual({ status: 200, data: { tutorName: "Ms Patel", business: "Patel Tuition" } });
+    expect(look).toEqual({ status: 200, data: { tutorName: "Ms Patel", business: "Patel Tuition", pending: false } });
 
     globalThis.__emailOutbox = [];
     const res = await call(handler, { token: kid.token, body: { action: "connect", code: t.code } });
@@ -136,12 +158,29 @@ describe("connecting a child with the join code", () => {
     expect((await call(handler, { token: kid.token, body: { action: "connect", code: fresh.code } })).status).toBe(404);
   });
 
-  it("doesn't let a pending tutor be found", async () => {
+  it("lets families connect to a pending tutor, saying progress unlocks on approval", async () => {
     const u = await makeUser("t", "t@tutors.test");
-    await call(handler, { token: u.token, body: { action: "apply", name: "Ms Patel", confirm: true } });
-    await adminDb().doc("tutorCodes/TUT-ABCDEFGH").set({ tutorUid: "t" });
+    const { data } = await call(handler, { token: u.token, body: { action: "apply", name: "Ms Patel", confirm: true } });
     const kid = await makeUser("kid1", "p@family.test", "Amu");
-    expect((await call(handler, { token: kid.token, body: { action: "lookup", code: "TUT-ABCDEFGH" } })).status).toBe(404);
+    expect((await call(handler, { token: kid.token, body: { action: "lookup", code: data.code } })).data).toMatchObject({ pending: true });
+    globalThis.__emailOutbox = [];
+    const res = await call(handler, { token: kid.token, body: { action: "connect", code: data.code, via: "link" } });
+    expect(res.data).toMatchObject({ connected: true, pending: true });
+    expect(outbox().find((m) => m.to === "p@family.test").html).toMatch(/Once we've checked their tutor account/);
+    expect((await call(handler, { token: u.token, body: { action: "summary" } })).data).toEqual({ status: "pending", pupils: 1 });
+    // A family that signed up just now through the link counts as one the tutor brought in.
+    expect((await adminDb().doc("tutorLinks/t__kid1").get()).data()).toMatchObject({ via: "link", newFamily: true });
+  });
+
+  it("declining a pending tutor disconnects any families and removes the code", async () => {
+    const u = await makeUser("t", "t@tutors.test");
+    const { data } = await call(handler, { token: u.token, body: { action: "apply", name: "Ms Patel", confirm: true } });
+    const kid = await makeUser("kid1", "p@family.test", "Amu");
+    await call(handler, { token: kid.token, body: { action: "connect", code: data.code } });
+    expect((await asAdmin({ action: "decline", uid: "t" })).data).toEqual({ declined: true, disconnected: 1 });
+    expect((await adminDb().doc("tutorLinks/t__kid1").get()).exists).toBe(false);
+    expect((await adminDb().doc(`tutorCodes/${data.code}`).get()).exists).toBe(false);
+    expect((await call(handler, { token: kid.token, body: { action: "lookup", code: data.code } })).status).toBe(404);
   });
 
   it("stops tutors connecting to tutors, or to themselves", async () => {
@@ -184,3 +223,63 @@ describe("join codes", () => {
   });
 });
 
+
+describe("public lookup for the /join page", () => {
+  it("needs no sign-in and returns only the tutor's name and business", async () => {
+    const t = await approvedTutor();
+    const res = await call(handler, { body: { action: "publicLookup", code: t.code } });
+    expect(res).toEqual({ status: 200, data: { tutorName: "Ms Patel", business: "Patel Tuition" } });
+    expect((await call(handler, { body: { action: "publicLookup", code: "TUT-AAAAAAAA" } })).status).toBe(404);
+  });
+
+  it("is rate-limited per network address", async () => {
+    let last;
+    for (let i = 0; i < 61; i++) last = await call(handler, { body: { action: "publicLookup", code: "TUT-AAAAAAAA" }, ip: "7.7.7.7" });
+    expect(last.status).toBe(429);
+  });
+});
+
+describe("one-tap approve link from the owner's email", () => {
+  // A response helper that captures HTML pages too.
+  async function raw(req) {
+    const res = { headers: {}, statusCode: 200, body: "", setHeader(k, v) { this.headers[k] = v; }, status(s) { this.statusCode = s; return this; }, json(d) { this.body = JSON.stringify(d); return this; }, end(b) { this.body = b; } };
+    await handler({ headers: {}, ...req }, res);
+    return res;
+  }
+  async function pendingWithLink() {
+    const u = await makeUser("t", "t@tutors.test");
+    await call(handler, { token: u.token, body: { action: "apply", name: "Ms Patel", confirm: true } });
+    const html = outbox().find((m) => m.to === "hello@11pluslab.com").html.replace(/&amp;/g, "&");
+    const url = new URL(html.match(/https:\/\/11pluslab\.com\/api\/tutor\?approve=[^"]+/)[0]);
+    return Object.fromEntries(url.searchParams);
+  }
+
+  it("opening the link only shows a confirm page (link scanners can't approve)", async () => {
+    const q = await pendingWithLink();
+    const page = await raw({ method: "GET", query: q });
+    expect(page.body).toContain("Approve Ms Patel?");
+    expect((await adminDb().doc("tutors/t").get()).get("status")).toBe("pending");
+  });
+
+  it("pressing Approve approves the tutor and emails them", async () => {
+    const q = await pendingWithLink();
+    globalThis.__emailOutbox = [];
+    const res = await raw({ method: "POST", body: { action: "approveLink", uid: q.approve, exp: q.exp, t: q.t } });
+    expect(res.body).toContain("Approved");
+    expect((await adminDb().doc("tutors/t").get()).get("status")).toBe("active");
+    expect(outbox().some((m) => m.to === "t@tutors.test" && /approved/i.test(m.subject))).toBe(true);
+  });
+
+  it("rejects a tampered, wrong-tutor or expired link", async () => {
+    const q = await pendingWithLink();
+    for (const body of [
+      { action: "approveLink", uid: q.approve, exp: q.exp, t: q.t.slice(0, -2) + "xx" },
+      { action: "approveLink", uid: "someone-else", exp: q.exp, t: q.t },
+      { action: "approveLink", uid: q.approve, exp: String(Date.now() - 1000), t: q.t },
+    ]) {
+      const res = await raw({ method: "POST", body });
+      expect(res.statusCode).toBe(400);
+    }
+    expect((await adminDb().doc("tutors/t").get()).get("status")).toBe("pending");
+  });
+});

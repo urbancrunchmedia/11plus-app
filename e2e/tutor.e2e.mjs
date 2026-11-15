@@ -36,7 +36,7 @@ async function makeUser(uid, email, displayName) {
 const outbox = async () => (await fetch(`${APP}/__outbox`)).json();
 
 async function signIn(page, url, email) {
-  await page.goto(`${APP}${url}`);
+  if (url) await page.goto(`${APP}${url}`);
   await page.getByRole("button", { name: "Sign in with email" }).click();
   await page.getByPlaceholder("you@email.com").fill(email);
   await page.getByPlaceholder("••••••••").fill(PASSWORD);
@@ -101,7 +101,7 @@ async function journey(browsers) {
     browsers.push(chrome);
     const desk = { viewport: { width: 1280, height: 900 } };
 
-    // 1. Tutor signs in at /tutor and applies.
+    // 1. Tutor signs in at /tutor, applies, and can share a link straight away.
     const tutorCtx = await chrome.newContext(desk);
     const tutor = await tutorCtx.newPage();
     await tutor.goto(`${APP}/tutor`);
@@ -114,34 +114,61 @@ async function journey(browsers) {
     await tutor.getByLabel(/Tutoring business/).fill("Patel Tuition");
     await tutor.getByRole("checkbox").check();
     await applyBtn.click();
-    await tutor.getByRole("heading", { name: "Thanks for applying" }).waitFor();
-    assert.ok((await outbox()).some((m) => m.to === "hello@11pluslab.com" && /New tutor application/.test(m.subject)));
-    log("Tutor applies at /tutor; owner is emailed; tutor sees 'Thanks for applying'");
+    await tutor.getByTestId("tutor-pending").waitFor();
+    const code = (await tutor.getByTestId("tutor-code").innerText()).trim();
+    assert.match(code, /^TUT-[2-9A-HJKMNP-Z]{8}$/);
+    assert.match(await tutor.getByTestId("tutor-link").innerText(), new RegExp(`/join/${code}$`));
+    await tutor.getByTestId("first-pupils").waitFor();
+    await tutor.screenshot({ path: path.join(SHOTS, "tutor-pending.png"), fullPage: true });
+    let mails = await outbox();
+    assert.ok(mails.some((m) => m.to === "hello@11pluslab.com" && /New tutor to approve/.test(m.subject)), "owner asked to approve");
+    assert.ok(mails.some((m) => m.to === "ms.patel@tutors.test" && /link is ready/.test(m.subject)), "tutor gets their link");
+    log(`Tutor applies and gets join link /join/${code} straight away; owner is asked to approve`);
 
-    // 2. A pending tutor can't be connected to.
-    const pendingCode = (await adminDb().doc("tutors/tutor1").get()).get("code");
-    assert.equal(pendingCode, undefined, "no join code before approval");
-    log("No join code exists before approval");
+    // 2. A parent taps the link (signed out) before approval, signs in and confirms.
+    const kidCtx = await chrome.newContext(desk);
+    const kid = await kidCtx.newPage();
+    await kid.goto(`${APP}/join/${code}`);
+    await kid.getByTestId("tutor-join-banner").getByText("Ms Patel (Patel Tuition) uses 11 PlusLab").waitFor();
+    assert.equal(new URL(kid.url()).pathname, "/", "join link leaves the address bar on the home page");
+    await kid.locator(".login2-toggle button").click(); // "Log in" (the link opens on sign-up)
+    await signIn(kid, null, "parent.amu@family.test");
+    const confirm = kid.getByRole("dialog", { name: "Connect Amu to Ms Patel?" });
+    await confirm.getByTestId("tutor-pending-note").waitFor();
+    await confirm.getByText("Your email address or name").waitFor();
+    await kid.screenshot({ path: path.join(SHOTS, "parent-confirm.png") });
+    await confirm.getByRole("button", { name: "Connect" }).click();
+    const done = kid.getByRole("dialog", { name: /Connected to Ms Patel/ });
+    await done.getByText(/once we've checked their tutor account/).waitFor();
+    await done.getByRole("button", { name: "Start practising" }).click();
+    mails = await outbox();
+    assert.ok(mails.some((m) => m.to === "parent.amu@family.test" && /Amu is now connected to Ms Patel/.test(m.subject)), "parent is told");
+    assert.ok(mails.some((m) => m.to === "ms.patel@tutors.test" && /Amu has joined/.test(m.subject)), "tutor is told");
+    log("Parent taps the link, signs in, sees what's shared and that the tutor is being checked, confirms; both emailed");
 
-    // 3. Owner approves on /owner.
+    // 3. While pending, the tutor sees how many families joined, but no child's data.
+    await adminDb().doc("users/kid1").set(practice(), { merge: true });
+    await tutor.reload();
+    await tutor.getByTestId("pending-count").getByText("1 family has connected").waitFor();
+    assert.equal(await tutor.getByTestId("pupil-row").count(), 0);
+    log("Before approval the tutor sees '1 family has connected' and no progress");
+
+    // 4. Owner approves with one tap from the email (opening the link alone doesn't approve).
+    const ownerMail = (await outbox()).find((m) => m.to === "hello@11pluslab.com" && /New tutor to approve/.test(m.subject));
+    const approveUrl = ownerMail.html.replace(/&amp;/g, "&").match(/https:\/\/11pluslab\.com\/api\/tutor\?approve=[^"]+/)[0].replace("https://11pluslab.com", APP);
     const ownerCtx = await chrome.newContext(desk);
     const owner = await ownerCtx.newPage();
     owner.on("dialog", (d) => d.accept());
-    await signIn(owner, "/owner", "reuben.dongre@gmail.com");
-    const row = owner.getByTestId("tutor-admin-row").filter({ hasText: "Ms Patel" });
-    await row.getByRole("button", { name: "Approve" }).click();
-    await row.getByText("active").waitFor();
-    await owner.screenshot({ path: path.join(SHOTS, "owner-tutors.png"), fullPage: true });
+    await owner.goto(approveUrl);
+    await owner.getByRole("heading", { name: "Approve Ms Patel?" }).waitFor();
+    assert.equal((await adminDb().doc("tutors/tutor1").get()).get("status"), "pending", "opening the link doesn't approve");
+    await owner.getByRole("button", { name: "Approve" }).click();
+    await owner.getByRole("heading", { name: "Approved ✓" }).waitFor();
     assert.ok((await outbox()).some((m) => m.to === "ms.patel@tutors.test" && /approved/i.test(m.subject)));
-    log("Owner approves the tutor on /owner; tutor gets the 'approved' email");
-
-    // 4. Tutor sees the dashboard with a join code and no pupils.
-    await tutor.reload();
-    await tutor.getByTestId("no-pupils").waitFor();
-    const code = (await tutor.getByTestId("tutor-code").innerText()).trim();
-    assert.match(code, /^TUT-[2-9A-HJKMNP-Z]{8}$/);
-    await tutor.screenshot({ path: path.join(SHOTS, "tutor-empty.png"), fullPage: true });
-    log(`Tutor dashboard shows join code ${code} and 'No pupils yet'`);
+    await signIn(owner, "/owner", "reuben.dongre@gmail.com");
+    await owner.getByTestId("tutor-admin-row").filter({ hasText: "Ms Patel" }).getByText("active").waitFor();
+    await owner.screenshot({ path: path.join(SHOTS, "owner-tutors.png"), fullPage: true });
+    log("Owner approves from the email in one tap; the tutor gets the 'approved' email");
 
     // 5. Tutor accounts don't get friends.
     await tutor.goto(`${APP}/`);
@@ -149,31 +176,7 @@ async function journey(browsers) {
     await tutor.getByText("Tutor accounts don't use friends").waitFor();
     log("Tutor account sees no friends option on the leaderboard");
 
-    // 6. Parent connects their child in Settings → Tutors.
-    const kidCtx = await chrome.newContext(desk);
-    const kid = await kidCtx.newPage();
-    await signIn(kid, "/", "parent.amu@family.test");
-    await kid.getByRole("button", { name: "Me", exact: true }).click();
-    const card = kid.getByTestId("tutors-card");
-    await card.getByRole("button", { name: "Connect" }).click();
-    await kid.getByLabel("Tutor's join code").fill("TUT-WRONGCOD");
-    await kid.getByRole("button", { name: "Next" }).click();
-    await kid.getByText("We couldn't find a tutor with that code").waitFor();
-    await kid.getByLabel("Tutor's join code").fill(code.toLowerCase());
-    await kid.getByRole("button", { name: "Next" }).click();
-    const confirm = kid.getByRole("dialog", { name: "Connect Amu to Ms Patel?" });
-    await confirm.waitFor();
-    await confirm.getByText("Your email address or name").waitFor();
-    await kid.screenshot({ path: path.join(SHOTS, "parent-confirm.png") });
-    await confirm.getByRole("button", { name: "Connect" }).click();
-    await card.getByText("Ms Patel · Patel Tuition").waitFor();
-    const mails = await outbox();
-    assert.ok(mails.some((m) => m.to === "parent.amu@family.test" && /Amu is now connected to Ms Patel/.test(m.subject)), "parent is told");
-    assert.ok(mails.some((m) => m.to === "ms.patel@tutors.test" && /Amu has joined/.test(m.subject)), "tutor is told");
-    log("Wrong code is refused; right code shows what's shared; parent confirms; parent and tutor are emailed");
-
-    // 7. The child practises (synced progress), and the tutor sees it.
-    await adminDb().doc("users/kid1").set(practice(), { merge: true });
+    // 6. Now approved, the tutor sees Amu's practice.
     await tutor.goto(`${APP}/tutor`);
     const pupil = tutor.getByTestId("pupil-row").filter({ hasText: "Amu" });
     await pupil.waitFor();
@@ -188,16 +191,17 @@ async function journey(browsers) {
     await tutor.getByRole("cell", { name: "Meticulous" }).waitFor();
     await tutor.getByText("1 tricky word has already been turned around").waitFor();
     await tutor.screenshot({ path: path.join(SHOTS, "tutor-pupil.png"), fullPage: true });
-    log("Tutor sees Amu's rounds, flags, weak words and recent rounds");
+    log("Approved: the tutor sees Amu's rounds, flags, weak words and recent rounds");
 
-    // 8. The tutor can't see a child who isn't connected (Leo).
+    // 7. The tutor can't see a child who isn't connected (Leo).
     await adminDb().doc("users/kid2").set(practice(), { merge: true });
     await tutor.getByRole("button", { name: "← All pupils" }).click();
     assert.equal(await tutor.getByTestId("pupil-row").filter({ hasText: "Leo" }).count(), 0);
     log("A child who isn't connected never appears");
 
-    // 9. Parent disconnects; the tutor loses access straight away.
+    // 8. Parent disconnects in Settings; the tutor loses access straight away.
     await kid.reload();
+    await kid.getByRole("button", { name: "Me", exact: true }).click();
     await kid.getByTestId("tutors-card").getByRole("button", { name: "Disconnect" }).click();
     await kid.getByRole("dialog", { name: "Disconnect Ms Patel?" }).getByRole("button", { name: "Disconnect" }).click();
     await kid.getByTestId("tutors-card").getByText("Ms Patel · Patel Tuition").waitFor({ state: "detached" });
@@ -205,7 +209,7 @@ async function journey(browsers) {
     await tutor.getByTestId("no-pupils").waitFor();
     log("Parent disconnects; Amu disappears from the tutor's dashboard");
 
-    // 10. Owner suspends the tutor; the dashboard closes.
+    // 9. Owner suspends the tutor; the dashboard closes.
     await owner.reload();
     await owner.getByTestId("tutor-admin-row").filter({ hasText: "Ms Patel" }).getByRole("button", { name: "Suspend" }).click();
     await owner.getByTestId("tutor-admin-row").filter({ hasText: "Ms Patel" }).getByText("suspended").waitFor();
@@ -229,7 +233,10 @@ async function journey(browsers) {
     await signIn(leo, "/", "parent.leo@family.test");
     await leo.getByRole("button", { name: "Me", exact: true }).click();
     await leo.getByTestId("tutors-card").getByRole("button", { name: "Connect" }).click();
-    await leo.getByLabel("Tutor's join code").fill(code);
+    await leo.getByLabel("Tutor's join code").fill("TUT-WRONGCOD");
+    await leo.getByRole("button", { name: "Next" }).click();
+    await leo.getByText("We couldn't find a tutor with that code").waitFor();
+    await leo.getByLabel("Tutor's join code").fill(code.toLowerCase());
     await leo.getByRole("button", { name: "Next" }).click();
     const leoConfirm = leo.getByRole("dialog", { name: "Connect Leo to Ms Patel?" });
     await leoConfirm.waitFor();
@@ -238,7 +245,7 @@ async function journey(browsers) {
     await leoConfirm.getByRole("button", { name: "Connect" }).click();
     await leo.getByTestId("tutors-card").getByText("Ms Patel · Patel Tuition").waitFor();
     await noSideScroll(leo, "phone settings");
-    log("Parent connects Leo from a phone");
+    log("On a phone, a wrong code is refused and the right one connects Leo (Settings → Tutors)");
 
     // 12. Tutor's dashboard on a phone.
     const tPhoneCtx = await safari.newContext(phone);
@@ -283,6 +290,48 @@ async function journey(browsers) {
     await kid.reload();
     await kid.locator(".board-row").filter({ hasText: "Leo" }).waitFor();
     log("Leo sees the request on Home, accepts; both now see each other on the leaderboard");
+
+    console.log("\nNew families and pre-approved tutors");
+    // 15. A brand-new family signs up through the tutor's link.
+    const miaCtx = await chrome.newContext(desk);
+    const mia = await miaCtx.newPage();
+    await mia.goto(`${APP}/join/${code}`);
+    await mia.getByTestId("tutor-join-banner").waitFor();
+    await mia.getByRole("button", { name: "Sign up with email" }).click();
+    await mia.getByPlaceholder("Your child's name").fill("Mia");
+    await mia.getByPlaceholder("you@email.com").fill("parent.mia@family.test");
+    await mia.getByPlaceholder("••••••••").fill(PASSWORD);
+    await mia.getByRole("button", { name: "Create account" }).click();
+    const miaConfirm = mia.getByRole("dialog", { name: "Connect Mia to Ms Patel?" });
+    await miaConfirm.getByRole("button", { name: "Connect" }).click();
+    await mia.getByRole("dialog", { name: /Connected to Ms Patel/ }).getByText(/can now follow Mia's practice/).waitFor();
+    const miaUid = (await adminAuth().getUserByEmail("parent.mia@family.test")).uid;
+    const miaLink = (await adminDb().doc(`tutorLinks/tutor1__${miaUid}`).get()).data();
+    assert.equal(miaLink.via, "link");
+    assert.equal(miaLink.newFamily, true);
+    await owner.reload();
+    await owner.getByTestId("tutor-admin-row").filter({ hasText: "Ms Patel" }).getByText(/1 by link/).waitFor();
+    log("A new family signs up through the link and connects; the owner sees it counted as 'by link'");
+
+    // 16. A tutor on the outreach list is approved instantly, with link and poster ready.
+    await adminDb().doc("outreach/bright").set({ email: "hello@brightminds.test", business: "Bright Minds Tuition" });
+    await makeUser("tutor2", "head@brightminds.test", "Mr Khan");
+    const t2Ctx = await chrome.newContext(desk);
+    const t2 = await t2Ctx.newPage();
+    await signIn(t2, "/tutor", "head@brightminds.test");
+    await t2.getByLabel("Your name").fill("Mr Khan");
+    await t2.getByRole("checkbox").check();
+    await t2.getByRole("button", { name: "Apply for a free tutor account" }).click();
+    await t2.getByRole("heading", { name: "Hi Mr Khan" }).waitFor();
+    await t2.getByTestId("first-pupils").waitFor();
+    await t2.getByRole("button", { name: "QR poster", exact: true }).click();
+    const qr = t2.getByTestId("tutor-poster").getByRole("img", { name: /QR code for/ });
+    await qr.waitFor();
+    assert.match(await qr.getAttribute("src"), /^data:image\/png;base64,/);
+    await t2.getByTestId("tutor-poster").getByText("Bright Minds Tuition uses 11 PlusLab", { exact: false }).waitFor();
+    await t2.screenshot({ path: path.join(SHOTS, "tutor-poster.png"), fullPage: true });
+    assert.ok((await outbox()).some((m) => m.to === "hello@11pluslab.com" && /pre-approved/.test(m.subject)));
+    log("A tutor whose business is on the outreach list is approved instantly; QR poster shows their link");
 
     console.log(`\nAll ${step} end-to-end checks passed. Screenshots: e2e/screenshots/\n`);
   }
