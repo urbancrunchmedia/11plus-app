@@ -193,8 +193,17 @@ export async function pushToCloud(user) {
   if (typeof user === "object" && user) await syncProfile(user);
 }
 
-// Add a friend by their code. Returns { ok, friend } or { ok:false, error }.
-export async function addFriendByCode(uid, codeRaw) {
+const requestId = (from, to) => `${from}__${to}`;
+
+async function exists(ref) {
+  try { return (await getDoc(ref)).exists(); } catch { return false; }
+}
+
+// Ask to be friends using their code. Friends only once they accept, unless
+// they'd already asked us, in which case this accepts their request.
+// Returns { ok, status: "requested" | "accepted" | "pending" | "already", friend }
+// or { ok:false, error }.
+export async function addFriendByCode(uid, codeRaw, myName) {
   const code = (codeRaw || "").trim().toUpperCase();
   if (!code) return { ok: false, error: "Please enter a code." };
   try {
@@ -205,16 +214,51 @@ export async function addFriendByCode(uid, codeRaw) {
     if (!codeSnap.exists()) return { ok: false, error: "No player found with that code." };
     const { uid: friendUid, displayName } = codeSnap.data();
     if (friendUid === uid) return { ok: false, error: "That's your own code!" };
-    // One shared friendship doc → both sides see each other (mutual).
-    await setDoc(doc(db, "friendships", pairId(uid, friendUid)), {
-      uids: [uid, friendUid].sort(),
-      createdAt: new Date().toISOString(),
-    }, { merge: true });
-    return { ok: true, friend: { uid: friendUid, displayName } };
+    const friend = { uid: friendUid, displayName };
+
+    if (await exists(doc(db, "friendships", pairId(uid, friendUid)))) return { ok: true, status: "already", friend };
+    if (await exists(doc(db, "friendRequests", requestId(friendUid, uid)))) {
+      await acceptFriendRequest(uid, friendUid);
+      return { ok: true, status: "accepted", friend };
+    }
+    if (await exists(doc(db, "friendRequests", requestId(uid, friendUid)))) return { ok: true, status: "pending", friend };
+
+    await setDoc(doc(db, "friendRequests", requestId(uid, friendUid)), {
+      from: uid, to: friendUid, fromName: myName || "Player", toName: displayName || "", code, createdAt: new Date().toISOString(),
+    });
+    return { ok: true, status: "requested", friend };
   } catch (e) {
     console.error("addFriendByCode:", e);
-    return { ok: false, error: "Couldn't add friend — please try again." };
+    return { ok: false, error: "Couldn't send the request. Please try again." };
   }
+}
+
+// Requests sent to me (incoming) and by me (outgoing).
+export async function getFriendRequests(uid) {
+  const [incoming, outgoing] = await Promise.all([
+    getDocs(query(collection(db, "friendRequests"), where("to", "==", uid))),
+    getDocs(query(collection(db, "friendRequests"), where("from", "==", uid))),
+  ]);
+  const rows = (snap) => snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+  return { incoming: rows(incoming), outgoing: rows(outgoing) };
+}
+
+// Accept fromUid's request: create the shared friendship, then tidy up.
+export async function acceptFriendRequest(uid, fromUid) {
+  await setDoc(doc(db, "friendships", pairId(uid, fromUid)), {
+    uids: [uid, fromUid].sort(),
+    createdAt: new Date().toISOString(),
+  });
+  await Promise.all([
+    deleteDoc(doc(db, "friendRequests", requestId(fromUid, uid))),
+    // If we'd both asked, our own request is no longer needed either.
+    deleteDoc(doc(db, "friendRequests", requestId(uid, fromUid))).catch(() => {}),
+  ]);
+}
+
+// Decline a request sent to me, or cancel one I sent.
+export function removeFriendRequest(from, to) {
+  return deleteDoc(doc(db, "friendRequests", requestId(from, to)));
 }
 
 // Remove a friend — deletes the shared friendship doc (affects both sides).

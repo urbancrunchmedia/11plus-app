@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { getStats } from "../utils/gamify";
-import { getLeaderboard } from "../utils/cloudScores";
+import { getLeaderboard, getFriendRequests } from "../utils/cloudScores";
+import { getSetting } from "../utils/leaderboard";
 import { useAuth } from "../contexts/AuthContext";
 import Icon, { SKILL_ICON } from "./Icon";
 import Gem from "./Gem";
@@ -40,10 +41,15 @@ export default function HomeDashboard({ onPlaySkill, onOpenBoard, onOpenBadges }
   const ringPct = Math.round((daily.done / daily.target) * 100);
 
   const [friends, setFriends] = useState(null); // null = loading
+  const [incoming, setIncoming] = useState([]); // friend requests waiting for this child
   useEffect(() => {
     let ok = true;
     if (user) {
       getLeaderboard(user.uid).then((b) => ok && setFriends(b)).catch(() => ok && setFriends([]));
+      if (getSetting("allowFriends", true)) {
+        Promise.resolve().then(() => getFriendRequests(user.uid))
+          .then((r) => ok && setIncoming(r.incoming)).catch(() => {});
+      }
     } else {
       // eslint-disable-next-line react-hooks/set-state-in-effect -- fetch-on-mount pattern: resolves async in the branch above, or resets to "no friends" here when there's no signed-in user.
       setFriends([]);
@@ -119,6 +125,12 @@ export default function HomeDashboard({ onPlaySkill, onOpenBoard, onOpenBadges }
 
         <div className="dash-side">
           <div className="dash-side-title">Friends this week</div>
+          {incoming.length > 0 && (
+            <button className="dash-request" onClick={onOpenBoard} data-testid="home-friend-request">
+              <b>{incoming.length === 1 ? `${incoming[0].fromName} wants to be friends` : `${incoming.length} friend requests`}</b>
+              <span>Tap to answer</span>
+            </button>
+          )}
           <div className="dash-friends">
             {friends === null && <div className="dash-friend-empty">Loading…</div>}
             {friends !== null && !hasFriends && (

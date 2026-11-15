@@ -24,9 +24,13 @@ vi.mock("../utils/cloudScores", () => ({
   ]),
   addFriendByCode: vi.fn(),
   removeFriend: vi.fn(),
+  getFriendRequests: vi.fn(async () => ({ incoming: [], outgoing: [] })),
+  acceptFriendRequest: vi.fn(async () => {}),
+  removeFriendRequest: vi.fn(async () => {}),
 }));
 
 import LeaderboardScreen from "./LeaderboardScreen";
+import { getFriendRequests, acceptFriendRequest, removeFriendRequest, addFriendByCode } from "../utils/cloudScores";
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -191,5 +195,54 @@ describe("LeaderboardScreen", () => {
     expect(el.textContent).toContain("Sam");
 
     vi.useRealTimers();
+  });
+
+  describe("friend requests", () => {
+    const REQS = {
+      incoming: [{ id: "u3__u1", from: "u3", to: "u1", fromName: "Leo" }],
+      outgoing: [{ id: "u1__u4", from: "u1", to: "u4", toName: "Mia" }],
+    };
+    const flush = () => act(async () => { await new Promise((r) => setTimeout(r, 0)); });
+
+    it("shows who wants to be friends and who you're waiting on", async () => {
+      getFriendRequests.mockResolvedValueOnce(REQS);
+      const el = await render();
+      await flush();
+      const box = el.querySelector("[data-testid=friend-requests]");
+      expect(box.textContent).toContain("Leo wants to be friends");
+      expect(box.textContent).toContain("Waiting for Mia to accept");
+    });
+
+    it("accepts and declines incoming requests, and cancels your own", async () => {
+      getFriendRequests.mockResolvedValue(REQS);
+      const el = await render();
+      await flush();
+      const btn = (label) => [...el.querySelectorAll("[data-testid=friend-requests] button")].find((b) => b.textContent === label);
+      await act(async () => { btn("Accept").click(); });
+      expect(acceptFriendRequest).toHaveBeenCalledWith("u1", "u3");
+      await flush();
+      await act(async () => { btn("Decline").click(); });
+      expect(removeFriendRequest).toHaveBeenCalledWith("u3", "u1");
+      await flush();
+      await act(async () => { btn("Cancel").click(); });
+      expect(removeFriendRequest).toHaveBeenCalledWith("u1", "u4");
+      getFriendRequests.mockResolvedValue({ incoming: [], outgoing: [] });
+    });
+
+    it("says a request was sent, not that you're friends, after entering a code", async () => {
+      addFriendByCode.mockResolvedValueOnce({ ok: true, status: "requested", friend: { uid: "u5", displayName: "Zara" } });
+      const el = await render();
+      await act(async () => { el.querySelector(".board-addbtn").click(); });
+      const input = document.querySelector(".board-sheet-input--code");
+      await act(async () => {
+        const set = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value").set;
+        set.call(input, "WM7H2KX");
+        input.dispatchEvent(new Event("input", { bubbles: true }));
+      });
+      await act(async () => { document.querySelector(".board-sheet form").requestSubmit(); });
+      await flush();
+      expect(addFriendByCode).toHaveBeenCalledWith("u1", "WM-7H2KX", "Ava");
+      expect(document.querySelector(".set-toast").textContent).toContain("Request sent to Zara");
+    });
   });
 });

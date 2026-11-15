@@ -85,12 +85,13 @@ describe("deleteMyAccount", () => {
     expect(Math.max(...deleteDoc.mock.invocationCallOrder)).toBeLessThan(authTime);
   });
 
-  it("also removes tutor connections on both sides and the account's own tutor record", async () => {
+  it("also removes tutor connections, friend requests and the account's own tutor record", async () => {
     getDoc.mockResolvedValue({ exists: () => true, data: () => ({ code: "WM-ABCDE" }) });
     getDocs.mockImplementation(async (q) => {
       const field = q?.[1]?.[0];
       if (field === "childUid") return { docs: [{ ref: docRef("tutorLinks", "t1__u1") }] };
       if (field === "tutorUid") return { docs: [{ ref: docRef("tutorLinks", "u1__c9") }] };
+      if (field === "from") return { docs: [{ ref: docRef("friendRequests", "u1__u7") }] };
       return { docs: [] };
     });
     deleteUser.mockResolvedValue();
@@ -98,7 +99,7 @@ describe("deleteMyAccount", () => {
     await deleteMyAccount(USER);
 
     const deletedPaths = deleteDoc.mock.calls.map((c) => c[0].path);
-    expect(deletedPaths).toEqual(expect.arrayContaining(["tutorLinks/t1__u1", "tutorLinks/u1__c9", "tutors/u1"]));
+    expect(deletedPaths).toEqual(expect.arrayContaining(["tutorLinks/t1__u1", "tutorLinks/u1__c9", "tutors/u1", "friendRequests/u1__u7"]));
   });
 
   it("silently re-proves identity for a Google account on a stale session, then retries", async () => {

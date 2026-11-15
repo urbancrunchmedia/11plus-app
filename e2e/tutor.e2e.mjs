@@ -254,6 +254,36 @@ async function journey(browsers) {
     await tPhone.screenshot({ path: path.join(SHOTS, "phone-tutor-pupil.png"), fullPage: true });
     log("Tutor dashboard and pupil page fit an iPhone screen");
 
+    console.log("\nFriend requests");
+    // 13. Amu (desktop) enters Leo's code: that's a request, not a friendship.
+    const leoCode = (await adminDb().doc("profiles/kid2").get()).get("code");
+    await kid.goto(`${APP}/`);
+    await kid.getByRole("button", { name: /Board/ }).first().click();
+    await kid.getByRole("button", { name: "+ Add friend" }).click();
+    await kid.getByPlaceholder("e.g. WM-7H2K9").fill(leoCode);
+    await kid.getByRole("button", { name: "Send friend request" }).click();
+    await kid.getByText(/Request sent to Leo/).waitFor();
+    await kid.getByTestId("friend-requests").getByText("Waiting for Leo to accept").waitFor();
+    const pair = ["kid1", "kid2"].sort().join("__");
+    assert.equal((await adminDb().doc(`friendships/${pair}`).get()).exists, false, "not friends before Leo accepts");
+    log("Entering a friend's code sends a request; they aren't friends yet");
+
+    // 14. Leo (phone) sees it on Home, accepts on the leaderboard.
+    await leo.goto(`${APP}/`);
+    await leo.getByRole("button", { name: "Home", exact: true }).first().click();
+    await leo.getByTestId("home-friend-request").getByText("Amu wants to be friends").click();
+    await leo.getByTestId("friend-requests").getByRole("button", { name: "Accept" }).click();
+    await leo.getByText("You and Amu are now friends!").waitFor();
+    await leo.locator(".board-row").filter({ hasText: "Amu" }).waitFor();
+    await leo.getByTestId("friend-requests").waitFor({ state: "detached" });
+    await noSideScroll(leo, "phone leaderboard");
+    await leo.screenshot({ path: path.join(SHOTS, "phone-friend-accepted.png"), fullPage: true });
+    assert.equal((await adminDb().doc(`friendships/${pair}`).get()).exists, true);
+    assert.equal((await adminDb().doc("friendRequests/kid1__kid2").get()).exists, false, "request tidied up");
+    await kid.reload();
+    await kid.locator(".board-row").filter({ hasText: "Leo" }).waitFor();
+    log("Leo sees the request on Home, accepts; both now see each other on the leaderboard");
+
     console.log(`\nAll ${step} end-to-end checks passed. Screenshots: e2e/screenshots/\n`);
   }
 }

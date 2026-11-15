@@ -64,12 +64,12 @@ describe("Finding 1 — profiles collection can no longer be enumerated", () => 
 });
 
 describe("Finding 2 — friendships can't be forced without going through a code", () => {
-  it("addFriendByCode's new path: get the code, then create the friendship", async () => {
+  it("knowing a code is no longer enough to become friends: it takes a request", async () => {
     await seedProfile(FRIEND);
     await seedCode("WM-ABCDE", FRIEND, "Sam");
     const snap = await assertSucceeds(ctx(ME).doc("codes/WM-ABCDE").get());
     expect(snap.data().uid).toBe(FRIEND);
-    await assertSucceeds(
+    await assertFails(
       ctx(ME).doc(`friendships/${pairId(ME, FRIEND)}`).set({ uids: [ME, FRIEND].sort(), createdAt: "x" })
     );
   });
@@ -312,6 +312,74 @@ describe("Tutors — only connected, active tutors can read a pupil's progress",
     await assertFails(ctx(TUTOR).doc(`friendships/${uids.join("__")}`).set({ uids, createdAt: "x" }));
     await assertFails(ctx(PUPIL).doc(`friendships/${uids.join("__")}`).set({ uids, createdAt: "x" }));
     const kids = [PUPIL, OTHER_PUPIL].sort();
+    await seed((db) => db.doc(`friendRequests/${OTHER_PUPIL}__${PUPIL}`).set({ from: OTHER_PUPIL, to: PUPIL, fromName: "Leo", code: "WM-X", createdAt: "x" }));
     await assertSucceeds(ctx(PUPIL).doc(`friendships/${kids.join("__")}`).set({ uids: kids, createdAt: "x" }));
+  });
+});
+
+describe("Friend requests — friends only once the other child accepts", () => {
+  const reqId = (from, to) => `${from}__${to}`;
+  const request = (from, to, over = {}) => ({ from, to, fromName: "Amu", toName: "Sam", code: "WM-SAM12", createdAt: "x", ...over });
+  async function seedRequest(from, to) {
+    await testEnv.withSecurityRulesDisabled(async (env) => env.firestore().doc(`friendRequests/${reqId(from, to)}`).set(request(from, to)));
+  }
+
+  it("a child with the other child's code can send a request", async () => {
+    await seedCode("WM-SAM12", FRIEND, "Sam");
+    await assertSucceeds(ctx(ME).doc(`friendRequests/${reqId(ME, FRIEND)}`).set(request(ME, FRIEND)));
+  });
+
+  it("a request needs a code that really belongs to the recipient", async () => {
+    await seedCode("WM-SAM12", STRANGER, "Sam");
+    await assertFails(ctx(ME).doc(`friendRequests/${reqId(ME, FRIEND)}`).set(request(ME, FRIEND)));
+    await assertFails(ctx(ME).doc(`friendRequests/${reqId(ME, FRIEND)}`).set(request(ME, FRIEND, { code: "WM-NOPE1" })));
+  });
+
+  it("you can't send a request as someone else, to yourself, under the wrong id, or with extra fields", async () => {
+    await seedCode("WM-SAM12", FRIEND, "Sam");
+    await assertFails(ctx(STRANGER).doc(`friendRequests/${reqId(ME, FRIEND)}`).set(request(ME, FRIEND)));
+    await seedCode("WM-ME123", ME, "Amu");
+    await assertFails(ctx(ME).doc(`friendRequests/${reqId(ME, ME)}`).set(request(ME, ME, { code: "WM-ME123" })));
+    await assertFails(ctx(ME).doc(`friendRequests/${reqId(FRIEND, ME)}`).set(request(ME, FRIEND)));
+    await assertFails(ctx(ME).doc(`friendRequests/${reqId(ME, FRIEND)}`).set(request(ME, FRIEND, { accepted: true })));
+    await assertFails(ctx(ME).doc(`friendRequests/${reqId(ME, FRIEND)}`).set(request(ME, FRIEND, { fromName: "<b>" })));
+  });
+
+  it("only the recipient can turn a request into a friendship", async () => {
+    await seedRequest(ME, FRIEND);
+    const uids = [ME, FRIEND].sort();
+    await assertFails(ctx(ME).doc(`friendships/${pairId(ME, FRIEND)}`).set({ uids, createdAt: "x" }));
+    await assertSucceeds(ctx(FRIEND).doc(`friendships/${pairId(ME, FRIEND)}`).set({ uids, createdAt: "x" }));
+  });
+
+  it("a friendship doc must use the sorted pair id", async () => {
+    await seedRequest(ME, FRIEND);
+    const uids = [ME, FRIEND].sort();
+    await assertFails(ctx(FRIEND).doc(`friendships/${[...uids].reverse().join("__")}`).set({ uids: [...uids].reverse(), createdAt: "x" }));
+  });
+
+  it("the sender and recipient can see and remove a request; nobody else can", async () => {
+    await seedRequest(ME, FRIEND);
+    await assertSucceeds(ctx(FRIEND).collection("friendRequests").where("to", "==", FRIEND).get());
+    await assertSucceeds(ctx(ME).collection("friendRequests").where("from", "==", ME).get());
+    await assertFails(ctx(STRANGER).doc(`friendRequests/${reqId(ME, FRIEND)}`).get());
+    await assertFails(ctx(STRANGER).collection("friendRequests").get());
+    await assertFails(ctx(STRANGER).doc(`friendRequests/${reqId(ME, FRIEND)}`).delete());
+    await assertSucceeds(ctx(FRIEND).doc(`friendRequests/${reqId(ME, FRIEND)}`).delete());
+  });
+
+  it("a request can't be edited (e.g. faked as accepted)", async () => {
+    await seedRequest(ME, FRIEND);
+    await assertFails(ctx(ME).doc(`friendRequests/${reqId(ME, FRIEND)}`).update({ to: STRANGER }));
+  });
+
+  it("checking for a request that doesn't exist is allowed and reveals nothing", async () => {
+    await assertSucceeds(ctx(ME).doc(`friendRequests/${reqId(FRIEND, ME)}`).get());
+  });
+
+  it("tutor accounts can't send or receive requests", async () => {
+    await testEnv.withSecurityRulesDisabled(async (env) => env.firestore().doc(`tutors/${FRIEND}`).set({ status: "active" }));
+    await seedCode("WM-SAM12", FRIEND, "Sam");
+    await assertFails(ctx(ME).doc(`friendRequests/${reqId(ME, FRIEND)}`).set(request(ME, FRIEND)));
   });
 });

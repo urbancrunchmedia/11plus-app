@@ -96,12 +96,42 @@ service cloud.firestore {
       allow delete: if signedIn() && resource.data.uid == request.auth.uid;
     }
 
+    // Friend requests: sending one needs the other child's friend code (the
+    // code must resolve to them), and only they can turn it into a friendship
+    // by accepting. Id scheme: "<fromUid>__<toUid>" (cloudScores.js).
+    function otherUid(uids) { return uids[0] == request.auth.uid ? uids[1] : uids[0]; }
+
+    match /friendRequests/{id} {
+      // `resource == null` lets the app check whether a request exists
+      // without revealing anything when it doesn't.
+      allow read: if signedIn() && (resource == null
+        || resource.data.from == request.auth.uid || resource.data.to == request.auth.uid);
+      allow create: if signedIn()
+        && request.resource.data.keys().hasOnly(["from", "to", "fromName", "toName", "code", "createdAt"])
+        && request.resource.data.from == request.auth.uid
+        && request.resource.data.to is string
+        && request.resource.data.to != request.auth.uid
+        && id == request.auth.uid + "__" + request.resource.data.to
+        && validDisplayName(request.resource.data.fromName)
+        && request.resource.data.code is string
+        && get(/databases/$(database)/documents/codes/$(request.resource.data.code)).data.uid == request.resource.data.to
+        && !isTutorAccount(request.auth.uid)
+        && !isTutorAccount(request.resource.data.to);
+      // Sender cancels, recipient declines (or the app tidies up after accepting).
+      allow delete: if signedIn()
+        && (resource.data.from == request.auth.uid || resource.data.to == request.auth.uid);
+    }
+
     // Shared, mutual friendship links
     match /friendships/{id} {
-      allow read:   if signedIn() && request.auth.uid in resource.data.uids;
-      // Tutor accounts (adults) can never be friends with anyone.
+      allow read:   if signedIn() && (resource == null || request.auth.uid in resource.data.uids);
+      // Only by accepting a request the other child sent you. Tutor accounts
+      // (adults) can never be friends with anyone.
       allow create: if signedIn() && request.auth.uid in request.resource.data.uids
                     && request.resource.data.uids.size() == 2
+                    && request.resource.data.uids[0] < request.resource.data.uids[1]
+                    && id == request.resource.data.uids[0] + "__" + request.resource.data.uids[1]
+                    && exists(/databases/$(database)/documents/friendRequests/$(otherUid(request.resource.data.uids) + "__" + request.auth.uid))
                     && !isTutorAccount(request.resource.data.uids[0])
                     && !isTutorAccount(request.resource.data.uids[1]);
       allow delete: if signedIn() && request.auth.uid in resource.data.uids;

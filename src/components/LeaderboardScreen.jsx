@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useAuth } from "../contexts/AuthContext";
-import { getProfile, getLeaderboard, addFriendByCode, removeFriend, syncProfile } from "../utils/cloudScores";
+import { getProfile, getLeaderboard, addFriendByCode, removeFriend, syncProfile, getFriendRequests, acceptFriendRequest, removeFriendRequest } from "../utils/cloudScores";
 import Icon from "./Icon";
 import { msUntilReset, formatResetIn } from "../utils/weekly";
 import { RANK_TIERS } from "../utils/rank";
@@ -38,6 +38,8 @@ export default function LeaderboardScreen({ onPlay, onExit }) {
   const { user, updateDisplayName } = useAuth();
   const [me, setMe]           = useState(null);
   const [people, setPeople]   = useState([]);
+  const [requests, setRequests] = useState({ incoming: [], outgoing: [] });
+  const [answering, setAnswering] = useState(null); // request id being accepted/declined
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
   const [managing, setManaging]       = useState(false);
@@ -69,6 +71,9 @@ export default function LeaderboardScreen({ onPlay, onExit }) {
       );
       setMe(profile);
       setPeople(board);
+      // Requests are a bonus: if they fail to load, the board still shows.
+      Promise.resolve().then(() => getFriendRequests(user.uid))
+        .then(setRequests).catch(() => setRequests({ incoming: [], outgoing: [] }));
     } catch (e) {
       console.error("LeaderboardScreen load:", e);
       setLoadError(true);
@@ -111,10 +116,41 @@ export default function LeaderboardScreen({ onPlay, onExit }) {
     e.preventDefault();
     if (!user || adding) return;
     setMsg(null); setAdding(true);
-    const res = await addFriendByCode(user.uid, code);
+    const res = await addFriendByCode(user.uid, code, myName);
     setAdding(false);
-    if (res.ok) { showToast(`Added ${res.friend.displayName}`); setCode(""); setAddSheet(false); load(); }
-    else setMsg({ type: "err", text: res.error });
+    if (!res.ok) { setMsg({ type: "err", text: res.error }); return; }
+    const name = res.friend.displayName || "your friend";
+    showToast({
+      requested: `Request sent to ${name}. You'll be friends when they accept`,
+      accepted: `You and ${name} are now friends!`,
+      pending: `You've already asked ${name}. Waiting for them to accept`,
+      already: `You and ${name} are already friends`,
+    }[res.status]);
+    setCode(""); setAddSheet(false); load();
+  }
+
+  // Take an answered request off the screen straight away.
+  const dropRequest = (id) => setRequests((r) => ({ incoming: r.incoming.filter((x) => x.id !== id), outgoing: r.outgoing.filter((x) => x.id !== id) }));
+
+  async function answer(req, accept) {
+    setAnswering(req.id);
+    try {
+      if (accept) { await acceptFriendRequest(user.uid, req.from); showToast(`You and ${req.fromName} are now friends!`); }
+      else await removeFriendRequest(req.from, req.to);
+      dropRequest(req.id);
+      await load();
+    } catch {
+      showToast("Couldn't do that. Please try again.");
+    } finally {
+      setAnswering(null);
+    }
+  }
+
+  async function cancelRequest(req) {
+    setAnswering(req.id);
+    try { await removeFriendRequest(req.from, req.to); dropRequest(req.id); await load(); }
+    catch { showToast("Couldn't cancel. Please try again."); }
+    finally { setAnswering(null); }
   }
 
   async function confirmRemove() {
@@ -150,7 +186,7 @@ export default function LeaderboardScreen({ onPlay, onExit }) {
     try {
       const how = await shareInvite(me.code, me.displayName);
       if (how === "copied") showToast("Invite link copied! Paste it into a message to your friend");
-      else if (how === "shared") showToast("Invite sent! You'll be friends once they join");
+      else if (how === "shared") showToast("Invite sent! You'll be friends once you accept their request");
     } catch {
       setMsg({ type: "err", text: `Couldn't share automatically. Your code is ${me.code}` });
     }
@@ -204,6 +240,30 @@ export default function LeaderboardScreen({ onPlay, onExit }) {
           <button className="board-addbtn board-empty-retry" onClick={load}>Try again</button>
         </div>
       ) : (
+        <>
+        {friendsAllowed && (requests.incoming.length > 0 || requests.outgoing.length > 0) && (
+          <div className="board-requests" data-testid="friend-requests">
+            {requests.incoming.map((r) => (
+              <div className="board-request" key={r.id}>
+                <span className="board-avatar">{initials(r.fromName)}</span>
+                <span className="board-request-txt"><b>{r.fromName}</b> wants to be friends</span>
+                <span className="board-request-actions">
+                  <button className="board-request-yes" disabled={answering === r.id} onClick={() => answer(r, true)}>Accept</button>
+                  <button className="board-request-no" disabled={answering === r.id} onClick={() => answer(r, false)}>Decline</button>
+                </span>
+              </div>
+            ))}
+            {requests.outgoing.map((r) => (
+              <div className="board-request board-request--out" key={r.id}>
+                <span className="board-avatar">{initials(r.toName)}</span>
+                <span className="board-request-txt">Waiting for <b>{r.toName || "your friend"}</b> to accept</span>
+                <span className="board-request-actions">
+                  <button className="board-request-no" disabled={answering === r.id} onClick={() => cancelRequest(r)}>Cancel</button>
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
         <div className="board-rows">
           {rows.map((p, i) => {
             const tier = rankTierInfo(p.rankTier);
@@ -231,12 +291,13 @@ export default function LeaderboardScreen({ onPlay, onExit }) {
             );
           })}
         </div>
+        </>
       )}
 
       {!loading && !loadError && rows.length <= 1 && (
         <div className="board-empty">
           <div className="board-empty-title">No friends yet</div>
-          <div className="board-empty-sub">Swap codes with a friend to see each other on the leaderboard.</div>
+          <div className="board-empty-sub">Send a friend your invite link or code. Once they accept, you'll see each other here.</div>
         </div>
       )}
 
@@ -254,7 +315,7 @@ export default function LeaderboardScreen({ onPlay, onExit }) {
         <div className="set-sheet-overlay" onClick={() => setAddSheet(false)}>
           <div className="set-sheet board-sheet" onClick={(e) => e.stopPropagation()}>
             <div className="set-sheet-title">Add a friend</div>
-            <div className="set-sheet-sub">Send an invite link, or swap codes, to see each other on the leaderboard.</div>
+            <div className="set-sheet-sub">Send an invite link, or enter a friend's code. You'll be friends once they accept.</div>
 
             <button className="board-invitebtn" onClick={inviteFriend} disabled={!me?.code}>
               <Icon name="star" size={18} stroke="currentColor" strokeWidth={2.2} /> Invite a friend
@@ -281,7 +342,7 @@ export default function LeaderboardScreen({ onPlay, onExit }) {
               />
               {msg?.type === "err" && <div className="board-msg err">{msg.text}</div>}
               <button className="set-sheet-confirm" type="submit" disabled={adding || codeChars < 7}>
-                {adding ? "Adding…" : "Add friend"}
+                {adding ? "Sending…" : "Send friend request"}
               </button>
             </form>
             <button className="set-sheet-cancel" onClick={() => setAddSheet(false)}>Close</button>

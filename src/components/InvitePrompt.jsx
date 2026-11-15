@@ -14,6 +14,7 @@ export default function InvitePrompt({ onOpenBoard }) {
   const [invite, setInvite] = useState(null); // { code, displayName }
   const [state, setState] = useState("idle"); // idle | ask | blocked | adding | added | error
   const [error, setError] = useState("");
+  const [result, setResult] = useState(null); // addFriendByCode's status
 
   useEffect(() => {
     const code = getPendingInvite();
@@ -39,8 +40,8 @@ export default function InvitePrompt({ onOpenBoard }) {
 
   async function accept() {
     setState("adding");
-    const res = await addFriendByCode(user.uid, invite.code);
-    if (res.ok) { clearPendingInvite(); setState("added"); }
+    const res = await addFriendByCode(user.uid, invite.code, user.displayName);
+    if (res.ok) { clearPendingInvite(); setResult(res.status); setState("added"); }
     else { setError(res.error); setState("error"); }
   }
 
@@ -54,6 +55,12 @@ export default function InvitePrompt({ onOpenBoard }) {
             <div className="set-sheet-sub">Friends are switched off in grown-up settings on this device, so this invite can't be added.</div>
             <button className="set-sheet-confirm" onClick={close}>OK</button>
           </>
+        ) : state === "added" && (result === "requested" || result === "pending") ? (
+          <>
+            <div className="set-sheet-title" id="invite-title">Request sent to {name}</div>
+            <div className="set-sheet-sub">You'll be friends as soon as {name} accepts. Then you'll see each other on the weekly leaderboard.</div>
+            <button className="set-sheet-confirm" onClick={close}>OK</button>
+          </>
         ) : state === "added" ? (
           <>
             <div className="set-sheet-title" id="invite-title">You're friends with {name}! 🎉</div>
@@ -64,10 +71,10 @@ export default function InvitePrompt({ onOpenBoard }) {
         ) : (
           <>
             <div className="set-sheet-title" id="invite-title">{name} invited you!</div>
-            <div className="set-sheet-sub">Add {name} as a friend to see each other on the weekly leaderboard.</div>
+            <div className="set-sheet-sub">Send {name} a friend request. Once they accept, you'll see each other on the weekly leaderboard.</div>
             {state === "error" && <div className="board-msg err">{error}</div>}
             <button className="set-sheet-confirm" onClick={accept} disabled={state === "adding"}>
-              {state === "adding" ? "Adding…" : `Add ${name} as a friend`}
+              {state === "adding" ? "Sending…" : `Send ${name} a friend request`}
             </button>
             <button className="set-sheet-cancel" onClick={close} disabled={state === "adding"}>Not now</button>
           </>
