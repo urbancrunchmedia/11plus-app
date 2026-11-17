@@ -147,7 +147,7 @@ function headline([before = "", highlight = "", after = ""]) {
   return `${escapeHtml(before)}${hi}${escapeHtml(after)}`;
 }
 
-function layout({ preheader, eyebrow, heading, lead, blocks, footerUid, optOutUrl }) {
+function layout({ preheader, eyebrow, heading, lead, blocks, footerUid, optOutUrl, hero }) {
   const title = heading.join("");
   const unsub = optOutUrl
     ? `<br><a href="${optOutUrl}" style="color:${C.muted};text-decoration:underline">Don't want emails from us? Unsubscribe</a>`
@@ -168,10 +168,11 @@ function layout({ preheader, eyebrow, heading, lead, blocks, footerUid, optOutUr
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:600px">
 
 <tr><td style="line-height:0;font-size:0"><a href="${SITE}"><img src="${IMG}/header-banner.png" width="600" height="112" alt="11 PlusLab" style="display:block;border:0;width:100%;max-width:600px;height:auto;font-family:${FONT};font-size:20px;font-weight:800;color:${C.ink}"></a></td></tr>
+${hero ? `<tr><td bgcolor="${C.sky}" class="px" style="background:${C.sky};padding:6px 36px 12px">${hero}</td></tr>` : ""}
 <tr><td bgcolor="${C.sky}" class="px" style="background:${C.sky};padding:6px 36px 30px">
   <!-- Plain colour, no background image: Gmail's dark mode recolours text, so the
        background behind it has to be recolourable too or the text disappears. -->
-  <span style="display:inline-block;background:${C.ink};color:${C.lime};font-family:${FONT};font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;padding:7px 13px;border-radius:999px">${escapeHtml(eyebrow)}</span>
+  ${eyebrow ? `<span style="display:inline-block;background:${C.ink};color:${C.lime};font-family:${FONT};font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;padding:7px 13px;border-radius:999px">${escapeHtml(eyebrow)}</span>` : ""}
   <h1 class="h1" style="margin:16px 0 0;font-family:${FONT};font-size:36px;line-height:1.15;font-weight:800;letter-spacing:-.025em;color:${C.ink}">${headline(heading)}</h1>
   ${lead ? `<p style="margin:14px 0 0;font-family:${FONT};font-size:17px;line-height:1.55;color:#3E4A58">${lead}</p>` : ""}
 </td></tr>
@@ -585,13 +586,12 @@ export function tutorInviteEmail({ business, email, code }) {
     subject: "Free Full Access to 11 PlusLab for tutors, plus a dashboard for your students",
     html: layout({
       preheader: "Every game and level free for tutors, plus a dashboard of your students' practice. You're already approved.",
-      eyebrow: "Free for tutors",
-      heading: ["", "Free Full Access", " for tutors"],
+      hero: `<p style="margin:0"><a href="${SITE}/tutor"><img src="${IMG}/tutor-free-access.png" width="520" height="250" alt="Free for tutors: Full Access, completely free. Normally £34.99 a year, £0 for tutors. 7 games, 3 levels, 1,000+ words, unlimited rounds." style="display:block;border:0;width:100%;max-width:520px;height:auto;border-radius:24px;font-family:${FONT};font-size:16px;font-weight:800;color:${C.ink}"></a></p>`,
+      eyebrow: "",
+      heading: ["Plus a dashboard of your ", "students' progress", ""],
       lead: `Hi ${name} team, it's Reuben from 11 PlusLab again. We've opened 11 PlusLab to tutors: <strong>Full Access is free for you</strong>, and you get a dashboard showing how each of your students is getting on between lessons.`,
       optOutUrl: outreachOptOutUrl(email),
       blocks: [
-        `<p style="margin:4px 0 22px"><a href="${SITE}/tutor"><img src="${IMG}/tutor-free-access.png" width="520" height="250" alt="Free for tutors: Full Access, completely free. Normally £34.99 a year, £0 for tutors. 7 games, 3 levels, 1,000+ words, unlimited rounds." style="display:block;border:0;width:100%;max-width:520px;height:auto;border-radius:24px;font-family:${FONT};font-size:16px;font-weight:800;color:${C.ink}"></a></p>`,
-        `<div style="margin:0 0 10px;font-family:${FONT};font-size:18px;font-weight:800;color:${C.ink}">Plus a dashboard of your students' progress</div>`,
         `<p style="margin:4px 0 22px"><a href="${SITE}/tutor"><img src="${IMG}/tutor-dashboard.png" width="520" height="320" alt="The 11 PlusLab tutor dashboard: four students with their rounds this week, minutes practised, accuracy, weakest game and words to review" style="display:block;border:1px solid ${C.line};width:100%;max-width:520px;height:auto;border-radius:18px;font-family:${FONT};font-size:13px;color:${C.muted}"></a></p>`,
         featureRow("pupils", "Every student at a glance", "Who's practising, for how long, their accuracy in each game, and a flag when someone needs attention."),
         featureRow("words", "The words they find tricky", "Each student's weak words, plus the words your whole group keeps missing: ready-made ideas for your next lesson."),
