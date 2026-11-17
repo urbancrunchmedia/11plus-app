@@ -17,4 +17,4 @@ The same files are copied into `public/`.
 ## Regenerating
 
 1. `scripts/trace.py source/gemini-original.jpg source/traced.json` (needs Python with pillow, numpy, scipy, potracer). Splits the image into colour layers and traces each with potrace.
-2. `scripts/export.mjs source/traced.json <outDir> fonts` (needs Node with opentype.js and @resvg/resvg-js). Builds every SVG and PNG above.
+2. `scripts/export.mjs source/traced.json <outDir> fonts` (needs Node with opentype.js 1.x (2.x cannot read the Jakarta WOFF) and @resvg/resvg-js). Builds every SVG and PNG above.

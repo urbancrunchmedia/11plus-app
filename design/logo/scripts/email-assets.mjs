@@ -19,6 +19,8 @@ const ICONS = {
   tag: '<path d="M9 6.5v11"/><path d="M9 6.5h3"/><path d="M9 17.5h3"/><path d="M15 6.5v11"/><path d="M15 6.5h-3"/><path d="M15 17.5h-3"/><circle cx="12" cy="12" r="1.3"/>',
   book: '<path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3z"/><path d="M5 17h14"/><path d="M9 8h6"/><path d="M9 11.5h4"/>',
   clock: '<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/>',
+  link: '<path d="M10 14a4.5 4.5 0 0 0 6.4 0l3-3a4.5 4.5 0 0 0-6.4-6.4l-1.2 1.2"/><path d="M14 10a4.5 4.5 0 0 0-6.4 0l-3 3a4.5 4.5 0 0 0 6.4 6.4l1.2-1.2"/>',
+  qr: '<rect x="4" y="4" width="6" height="6" rx="1.2"/><rect x="14" y="4" width="6" height="6" rx="1.2"/><rect x="4" y="14" width="6" height="6" rx="1.2"/><path d="M14 14h2.5v2.5H14z"/><path d="M19.5 14v2"/><path d="M14 19.5h2"/><path d="M18 18h2v2h-2z"/>',
   flame: '<path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.07-2.14-.22-4.05 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.15.43-2.29 1-3a2.5 2.5 0 0 0 2.5 2.5z"/>',
 };
 const CHIPS = {
@@ -27,7 +29,7 @@ const CHIPS = {
   punctuation: ["punct", "#0e1116", "#f0f2f5"], spelling: ["spelling", "#8b5cf6", "#f1ecfe"],
   wordclass: ["tag", "#0d9488", "#e0f5f3"], wordlist: ["book", "#12a5ff", "#eaf4fc"],
   confidence: ["trophy", "#12a5ff", "#e4f6ff"], progress: ["chart", "#22a35b", "#e3f7ea"],
-  motivated: ["people", "#e0507a", "#fdeef3"], clock: ["clock", "#12a5ff", "#e4f6ff"], flame: ["flame", "#ff6b4a", "#ffe9e3"],
+  motivated: ["people", "#e0507a", "#fdeef3"], pupils: ["people", "#12a5ff", "#e4f6ff"], link: ["link", "#7fa30c", "#f3fbd4"], qr: ["qr", "#8b5cf6", "#f1ecfe"], words: ["book", "#ff6b4a", "#ffe9e3"], clock: ["clock", "#12a5ff", "#e4f6ff"], flame: ["flame", "#ff6b4a", "#ffe9e3"],
 };
 for (const [name, [icon, stroke, bg]] of Object.entries(CHIPS)) {
   png(`icon-${name}`, `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48"><rect width="48" height="48" rx="16" fill="${bg}"/>
@@ -73,7 +75,7 @@ const jk8 = opentype.parse(fs.readFileSync(`${fontsDir}/Jakarta-800.woff`).buffe
 }
 
 // CTA buttons as images: lime pill, ink label, ink arrow circle (exported 2x).
-const BUTTONS = { start: "Start practising", open: "Open 11 PlusLab", play: "Play a quick round", try: "Try 11 PlusLab" };
+const BUTTONS = { start: "Start practising", open: "Open 11 PlusLab", play: "Play a quick round", try: "Try 11 PlusLab", tutor: "Create my free tutor account" };
 for (const [id, label] of Object.entries(BUTTONS)) {
   const size = 18, tw = jk8.getAdvanceWidth(label, size);
   const w = Math.ceil(28 + tw + 16 + 40 + 8), h = 56;

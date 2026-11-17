@@ -67,6 +67,7 @@ function p(html) {
 // falls back to an HTML pill, which still works, just recoloured in dark mode.
 const BUTTON_IMAGES = {
   "Start practising": ["btn-start", 230], "Open 11 PlusLab": ["btn-open", 232], "Play a quick round": ["btn-play", 252], "Try 11 PlusLab": ["btn-try", 209],
+  "Create my free tutor account": ["btn-tutor", 348],
 };
 function button({ label, url }) {
   const img = BUTTON_IMAGES[label];
@@ -146,11 +147,13 @@ function headline([before = "", highlight = "", after = ""]) {
   return `${escapeHtml(before)}${hi}${escapeHtml(after)}`;
 }
 
-function layout({ preheader, eyebrow, heading, lead, blocks, footerUid }) {
+function layout({ preheader, eyebrow, heading, lead, blocks, footerUid, optOutUrl }) {
   const title = heading.join("");
-  const unsub = footerUid
-    ? `<br><a href="${unsubUrl(footerUid)}" style="color:${C.muted};text-decoration:underline">Unsubscribe from updates and reminders</a>`
-    : "";
+  const unsub = optOutUrl
+    ? `<br><a href="${optOutUrl}" style="color:${C.muted};text-decoration:underline">Don't want emails from us? Unsubscribe</a>`
+    : footerUid
+      ? `<br><a href="${unsubUrl(footerUid)}" style="color:${C.muted};text-decoration:underline">Unsubscribe from updates and reminders</a>`
+      : "";
   return `<!doctype html>
 <html lang="en"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
@@ -545,6 +548,70 @@ If you'd rather not hear from me again, reply "no thanks" or <a href="${optOut}"
 Urban Crunch Media Limited · Company no. 15899109 · Registered in England and Wales · Registered office: 16 Hoylake Road, Sale, M33 2XH
 </p>
 </td></tr></table></td></tr></table></body></html>`,
+  };
+}
+
+// ---- Tutor invitation (follow-up to the tuition-centre outreach) ----
+
+// Icon chip, bold title and a line of detail: one row of "what you get".
+function featureRow(icon, title, detail) {
+  return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 14px"><tr>
+<td width="60" valign="top"><img src="${IMG}/icon-${icon}.png" width="48" height="48" alt="" style="display:block;border:0"></td>
+<td valign="top" style="padding-left:6px">
+<div style="font-family:${FONT};font-size:16px;font-weight:800;line-height:1.3;color:${C.ink}">${title}</div>
+<div style="margin-top:3px;font-family:${FONT};font-size:14px;line-height:1.5;color:#3E4A58">${detail}</div>
+</td></tr></table>`;
+}
+
+function stepsCard(steps) {
+  const row = (n, html) => `<tr>
+<td width="44" valign="top" style="padding:0 0 14px"><div style="width:32px;height:32px;line-height:32px;border-radius:16px;background:${C.lime};text-align:center;font-family:${FONT};font-size:15px;font-weight:800;color:${C.ink}">${n}</div></td>
+<td valign="top" style="padding:5px 0 14px;font-family:${FONT};font-size:15px;line-height:1.5;color:${C.ink}">${html}</td></tr>`;
+  return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:6px 0 22px;background:#F4F9FF;border-radius:22px"><tr><td style="padding:20px 20px 6px">
+<div style="padding:0 0 14px;font-family:${FONT};font-size:18px;font-weight:800;color:${C.ink}">How it works</div>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0">${steps.map((h, i) => row(i + 1, h)).join("")}</table>
+</td></tr></table>`;
+}
+
+const SHARED_MAIL = /@(gmail|googlemail|hotmail|outlook|live|yahoo|icloud|me|aol|btinternet|sky)\./i;
+
+export function tutorInviteEmail({ business, email, code }) {
+  const name = escapeHtml(business || "there");
+  const domain = String(email || "").split("@")[1] || "";
+  const anyAddress = domain && !SHARED_MAIL.test(email) ? ` (or any <strong>@${escapeHtml(domain)}</strong> address)` : "";
+  return {
+    marketing: true,
+    unsubscribeUrl: outreachOptOutUrl(email),
+    subject: "A free dashboard to follow your students' 11+ practice",
+    html: layout({
+      preheader: "See each student's practice, accuracy and tricky words between lessons. Free for tutors, and you're already approved.",
+      eyebrow: "Free for tutors",
+      heading: ["See your students' ", "11+ progress", ""],
+      lead: `Hi ${name} team, it's Reuben from 11 PlusLab again. Since I last wrote, we've built something just for tutors: a <strong>free dashboard</strong> showing how each of your students is getting on between lessons.`,
+      optOutUrl: outreachOptOutUrl(email),
+      blocks: [
+        `<p style="margin:4px 0 22px"><a href="${SITE}/tutor"><img src="${IMG}/tutor-dashboard.png" width="520" height="320" alt="The 11 PlusLab tutor dashboard: four students with their rounds this week, minutes practised, accuracy, weakest game and words to review" style="display:block;border:1px solid ${C.line};width:100%;max-width:520px;height:auto;border-radius:18px;font-family:${FONT};font-size:13px;color:${C.muted}"></a></p>`,
+        featureRow("pupils", "Every student at a glance", "Who's practising, for how long, their accuracy in each game, and a flag when someone needs attention."),
+        featureRow("words", "The words they find tricky", "Each student's weak words, plus the words your whole group keeps missing: ready-made ideas for your next lesson."),
+        featureRow("link", "One link to invite families", "Send your join link by WhatsApp or email, or print your QR poster. Parents tap it, confirm, and they're connected."),
+        featureRow("confidence", "Full Access, free", "Your tutor account includes every game and level, so you can try everything yourself."),
+        `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:10px 0 18px;background:#F3FBD4;border:1px solid #DFEF9A;border-radius:18px"><tr><td style="padding:16px 18px;font-family:${FONT};font-size:15px;line-height:1.55;color:${C.ink}">
+<strong>You're already approved.</strong> Sign up with <strong>${escapeHtml(email)}</strong>${anyAddress} and your dashboard and join link are ready straight away.</td></tr></table>`,
+        button({ label: "Create my free tutor account", url: `${SITE}/tutor` }),
+        `<div style="height:14px"></div>`,
+        stepsCard([
+          "<strong>Create your free account</strong> at 11pluslab.com/tutor. It takes a minute.",
+          "<strong>Share your join link</strong> with your students' parents, or put your QR poster up in class.",
+          "<strong>Follow their progress</strong> as they practise at home, and spot who needs help before the next lesson.",
+        ]),
+        p(`Parents always confirm before anything is shared, and tutors only see learning progress, never parents' details. Families can still use your code <strong style="background:#F3FBD4;padding:2px 6px;border-radius:6px;letter-spacing:.03em">${escapeHtml(code)}</strong> for 20% off their first month of Full Access.`),
+        p("I'd love to hear what you think. Just reply to this email."),
+        `<table role="presentation" cellpadding="0" cellspacing="0" style="margin:4px 0 6px"><tr>
+<td style="padding-right:12px"><img src="${SITE}/pwa-192.png" width="40" height="40" alt="" style="display:block;border:0;border-radius:10px"></td>
+<td style="font-family:${FONT};font-size:14px;line-height:1.45;color:${C.ink}"><strong>Reuben</strong><br><span style="color:${C.muted}">Founder, 11 PlusLab</span></td>
+</tr></table>`,
+      ],
+    }),
   };
 }
 

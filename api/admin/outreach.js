@@ -11,11 +11,16 @@
 //   { action: "send", limit? }                  send the next batch now
 //   { action: "status" }                        counts, plus redemptions per code
 //   { action: "verify" }                        check every queued centre's code in Stripe
+//   { action: "tutorTest", to, business?, code?, email? }   one sample of the tutor invitation
+//   { action: "tutorQueue" }                    queue the tutor invitation for every centre emailed
+//                                               (not manual/sole-trader rows, opt-outs or existing tutors)
+//   { action: "tutorStart" } / { action: "tutorPause" }   daily sending of tutor invitations on/off
+//   { action: "tutorStatus" }                   tutor-invitation counts
 // GET from Vercel Cron (Authorization: Bearer <CRON_SECRET>): sends the next
 // batch, but only once "start" has been called.
 import { getStripe } from "../../server/stripe.js";
 import { adminDb } from "../../server/firebaseAdmin.js";
-import { sendEmail, outreachEmail, outreachKey, OUTREACH_FROM } from "../../server/email.js";
+import { sendEmail, outreachEmail, tutorInviteEmail, outreachKey, OUTREACH_FROM } from "../../server/email.js";
 
 const COUPON_ID = "tuition-centre-first-month";
 const DAILY_LIMIT = 30; // new domain: keep cold email slow and steady
@@ -97,6 +102,44 @@ async function sendBatch(db, limit) {
   return { sent, skipped, failed };
 }
 
+// Already a tutor (applied with that email, or the same business domain)?
+async function tutorEmails(db) {
+  const tutors = await db.collection("tutors").get();
+  const emails = new Set(), domains = new Set();
+  for (const t of tutors.docs) {
+    const e = String(t.get("email") || "").toLowerCase();
+    emails.add(e);
+    domains.add(e.split("@")[1]);
+  }
+  return { emails, domains };
+}
+
+async function sendTutorInvites(db, limit) {
+  const queued = await db.collection("outreach").where("tutorInvite", "==", "queued").limit(limit).get();
+  const { emails, domains } = await tutorEmails(db);
+  let sent = 0, skipped = 0, failed = 0;
+  for (const doc of queued.docs) {
+    const p = doc.data();
+    const domain = String(p.email).split("@")[1];
+    const optedOut = (await db.collection("outreachOptOut").doc(doc.id).get()).exists;
+    if (optedOut || emails.has(p.email) || domains.has(domain)) {
+      await doc.ref.update({ tutorInvite: optedOut ? "optedOut" : "alreadyTutor" });
+      skipped++;
+      continue;
+    }
+    try {
+      await sendEmail({ to: p.email, from: OUTREACH_FROM, email: tutorInviteEmail(p), idempotencyKey: `tutor-invite-${doc.id}` });
+      await doc.ref.update({ tutorInvite: "sent", tutorInviteSentAt: new Date().toISOString() });
+      sent++;
+    } catch (e) {
+      await doc.ref.update({ tutorInvite: "failed", tutorInviteError: String(e.message).slice(0, 300) });
+      failed++;
+    }
+    await new Promise((r) => setTimeout(r, 600));
+  }
+  return { sent, skipped, failed };
+}
+
 export default async function handler(req, res) {
   const auth = req.headers.authorization || "";
   const admin = clean(process.env.ADMIN_SECRET) && auth === `Bearer ${clean(process.env.ADMIN_SECRET)}`;
@@ -108,9 +151,13 @@ export default async function handler(req, res) {
   try {
     if (req.method === "GET") {
       if (!cron) return res.status(405).json({ error: "Use POST" });
-      const enabled = (await config.get()).data()?.enabled === true;
-      if (!enabled) return res.status(200).json({ skipped: "paused" });
-      return res.status(200).json(await sendBatch(db, DAILY_LIMIT));
+      const cfg = (await config.get()).data() || {};
+      const out = {};
+      out.outreach = cfg.enabled === true ? await sendBatch(db, DAILY_LIMIT) : "paused";
+      // Tutor invitations use whatever is left of the day's allowance.
+      const left = DAILY_LIMIT - ((out.outreach.sent || 0) + (out.outreach.failed || 0));
+      out.tutorInvites = cfg.tutorInvites === true && left > 0 ? await sendTutorInvites(db, left) : "paused";
+      return res.status(200).json(out);
     }
     if (!admin) return res.status(401).json({ error: "Unauthorized" });
     const body = req.body || {};
@@ -177,6 +224,33 @@ export default async function handler(req, res) {
         }
         const coupon = await stripe.coupons.retrieve(COUPON_ID);
         return res.status(200).json({ checked: queued.size, ok: queued.size - problems.length, problems, coupon: { valid: coupon.valid, amount_off: coupon.amount_off, currency: coupon.currency, duration: coupon.duration, months: coupon.duration_in_months } });
+      }
+      case "tutorTest": {
+        if (!body.to) return res.status(400).json({ error: "Missing to" });
+        const email = tutorInviteEmail({ business: body.business || "Sample Tuition", email: body.email || body.to, code: body.code || "SAMPLE20" });
+        await sendEmail({ to: body.to, from: OUTREACH_FROM, email: { ...email, subject: `[TEST] ${email.subject}` } });
+        return res.status(200).json({ test: true, to: body.to });
+      }
+      case "tutorQueue": {
+        // Centres that were emailed (status "sent"); never the manual sole-trader rows.
+        const sent = await db.collection("outreach").where("status", "==", "sent").get();
+        let queued = 0;
+        for (const d of sent.docs) {
+          if (d.get("tutorInvite")) continue;
+          await d.ref.update({ tutorInvite: "queued" });
+          queued++;
+        }
+        return res.status(200).json({ queued });
+      }
+      case "tutorStart":
+      case "tutorPause":
+        await config.set({ tutorInvites: body.action === "tutorStart", updatedAt: new Date().toISOString() }, { merge: true });
+        return res.status(200).json({ tutorInvites: body.action === "tutorStart" });
+      case "tutorStatus": {
+        const all = await db.collection("outreach").get();
+        const counts = {};
+        for (const d of all.docs) { const k = d.get("tutorInvite") || "notQueued"; counts[k] = (counts[k] || 0) + 1; }
+        return res.status(200).json({ tutorInvites: (await config.get()).data()?.tutorInvites === true, counts });
       }
       case "status": {
         const all = await db.collection("outreach").get();
