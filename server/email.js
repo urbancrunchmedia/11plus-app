@@ -582,21 +582,22 @@ export function tutorInviteEmail({ business, email, code }) {
   return {
     marketing: true,
     unsubscribeUrl: outreachOptOutUrl(email),
-    subject: "A free dashboard to follow your students' 11+ practice",
+    subject: "Free Full Access to 11 PlusLab for tutors, plus a dashboard for your students",
     html: layout({
-      preheader: "See each student's practice, accuracy and tricky words between lessons. Free for tutors, and you're already approved.",
+      preheader: "Every game and level free for tutors, plus a dashboard of your students' practice. You're already approved.",
       eyebrow: "Free for tutors",
-      heading: ["See your students' ", "11+ progress", ""],
-      lead: `Hi ${name} team, it's Reuben from 11 PlusLab again. Since I last wrote, we've built something just for tutors: a <strong>free dashboard</strong> showing how each of your students is getting on between lessons.`,
+      heading: ["", "Free Full Access", " for tutors"],
+      lead: `Hi ${name} team, it's Reuben from 11 PlusLab again. We've opened 11 PlusLab to tutors: <strong>Full Access is free for you</strong>, and you get a dashboard showing how each of your students is getting on between lessons.`,
       optOutUrl: outreachOptOutUrl(email),
       blocks: [
+        `<p style="margin:4px 0 22px"><a href="${SITE}/tutor"><img src="${IMG}/tutor-free-access.png" width="520" height="250" alt="Free for tutors: Full Access, completely free. Normally £34.99 a year, £0 for tutors. 7 games, 3 levels, 1,000+ words, unlimited rounds." style="display:block;border:0;width:100%;max-width:520px;height:auto;border-radius:24px;font-family:${FONT};font-size:16px;font-weight:800;color:${C.ink}"></a></p>`,
+        `<div style="margin:0 0 10px;font-family:${FONT};font-size:18px;font-weight:800;color:${C.ink}">Plus a dashboard of your students' progress</div>`,
         `<p style="margin:4px 0 22px"><a href="${SITE}/tutor"><img src="${IMG}/tutor-dashboard.png" width="520" height="320" alt="The 11 PlusLab tutor dashboard: four students with their rounds this week, minutes practised, accuracy, weakest game and words to review" style="display:block;border:1px solid ${C.line};width:100%;max-width:520px;height:auto;border-radius:18px;font-family:${FONT};font-size:13px;color:${C.muted}"></a></p>`,
         featureRow("pupils", "Every student at a glance", "Who's practising, for how long, their accuracy in each game, and a flag when someone needs attention."),
         featureRow("words", "The words they find tricky", "Each student's weak words, plus the words your whole group keeps missing: ready-made ideas for your next lesson."),
         featureRow("link", "One link to invite families", "Send your join link by WhatsApp or email, or print your QR poster. Parents tap it, confirm, and they're connected."),
-        featureRow("confidence", "Full Access, free", "Your tutor account includes every game and level, so you can try everything yourself."),
         `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:10px 0 18px;background:#F3FBD4;border:1px solid #DFEF9A;border-radius:18px"><tr><td style="padding:16px 18px;font-family:${FONT};font-size:15px;line-height:1.55;color:${C.ink}">
-<strong>You're already approved.</strong> Sign up with <strong>${escapeHtml(email)}</strong>${anyAddress} and your dashboard and join link are ready straight away.</td></tr></table>`,
+<strong>You're already approved for free Full Access.</strong> Sign up with <strong>${escapeHtml(email)}</strong>${anyAddress} and your dashboard and join link are ready straight away.</td></tr></table>`,
         button({ label: "Create my free tutor account", url: `${SITE}/tutor` }),
         `<div style="height:14px"></div>`,
         stepsCard([

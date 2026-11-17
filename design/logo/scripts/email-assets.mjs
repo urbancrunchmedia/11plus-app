@@ -87,3 +87,38 @@ for (const [id, label] of Object.entries(BUTTONS)) {
   </svg>`, w * 2);
   console.log("btn", id, w, h);
 }
+
+// "Free Full Access" hero for the tutor invitation email (520 x 250, 2x).
+{
+const jk7 = opentype.parse(fs.readFileSync(`${fontsDir}/Jakarta-700.woff`).buffer.slice(0));
+// Text as paths (email clients and resvg can't rely on the web font).
+const text = (font, str, x, y, size, fill) => `<path d="${font.getPath(str, x, y, size).toPathData(2)}" fill="${fill}"/>`;
+const width = (font, str, size) => font.getAdvanceWidth(str, size);
+
+// "Free Full Access" hero for the tutor email: 520 x 250, exported 2x.
+const W = 520, H = 250;
+const chip = (label, x) => {
+  const w = width(jk7, label, 13) + 24;
+  return { w, svg: `<rect x="${x}" y="196" width="${w}" height="30" rx="15" fill="#232B37"/>${text(jk7, label, x + 12, 216, 13, "#FFFFFF")}` };
+};
+let cx = 28, chips = "";
+for (const label of ["7 games", "3 levels", "1,000+ words", "Unlimited rounds"]) { const c = chip(label, cx); chips += c.svg; cx += c.w + 8; }
+const pill = "FREE FOR TUTORS", pw = width(jk8, pill, 12) + 26;
+const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}">
+<defs><clipPath id="c"><rect width="${W}" height="${H}" rx="24"/></clipPath></defs>
+<g clip-path="url(#c)">
+<rect width="${W}" height="${H}" fill="#0E1116"/>
+<circle cx="${W - 30}" cy="-10" r="120" fill="#D4F520" opacity="0.13"/>
+<circle cx="-20" cy="${H + 30}" r="110" fill="#12A5FF" opacity="0.16"/>
+<rect x="28" y="26" width="${pw}" height="26" rx="13" fill="#D4F520"/>${text(jk8, pill, 41, 43.5, 12, "#0E1116")}
+${text(jk8, "Full Access,", 28, 100, 36, "#FFFFFF")}
+${text(jk8, "completely free", 28, 142, 36, "#D4F520")}
+${text(jk7, "Every game and level, to use with your students", 28, 176, 14, "#AEB9C6")}
+${chips}
+${text(jk7, "Normally", 392, 70, 13, "#AEB9C6")}
+${text(jk7, "£34.99 a year", 392, 89, 15, "#AEB9C6")}
+<rect x="391" y="82" width="${width(jk7, "£34.99 a year", 15) + 2}" height="2" fill="#E0507A"/>
+${text(jk8, "£0", 390, 160, 72, "#D4F520")}
+</g></svg>`;
+fs.writeFileSync(`${out}/tutor-free-access.png`, new Resvg(svg, { fitTo: { mode: "width", value: W * 2 } }).render().asPng());
+}
