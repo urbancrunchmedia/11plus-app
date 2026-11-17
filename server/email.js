@@ -592,7 +592,7 @@ export function tutorInviteEmail({ business, email, code }) {
       lead: `Hi ${name} team, it's Reuben from 11 PlusLab again. We've opened 11 PlusLab to tutors: <strong>Full Access is free for you</strong>, and you get a dashboard showing how each of your students is getting on between lessons.`,
       optOutUrl: outreachOptOutUrl(email),
       blocks: [
-        `<p style="margin:4px 0 22px"><a href="${SITE}/tutor"><img src="${IMG}/tutor-dashboard.png" width="520" height="320" alt="The 11 PlusLab tutor dashboard: four students with their rounds this week, minutes practised, accuracy, weakest game and words to review" style="display:block;border:1px solid ${C.line};width:100%;max-width:520px;height:auto;border-radius:18px;font-family:${FONT};font-size:13px;color:${C.muted}"></a></p>`,
+        `<p style="margin:4px 0 22px"><a href="${SITE}/tutor"><img src="${IMG}/tutor-dashboard-phone.png" width="520" height="533" alt="The 11 PlusLab tutor dashboard on a phone: your whole class (who's practising and who needs help), and each student in detail (accuracy by game and tricky words)" style="display:block;border:0;width:100%;max-width:520px;height:auto;border-radius:24px;font-family:${FONT};font-size:13px;color:${C.muted}"></a></p>`,
         featureRow("pupils", "Every student at a glance", "Who's practising, for how long, their accuracy in each game, and a flag when someone needs attention."),
         featureRow("words", "The words they find tricky", "Each student's weak words, plus the words your whole group keeps missing: ready-made ideas for your next lesson."),
         featureRow("link", "One link to invite families", "Send your join link by WhatsApp or email, or print your QR poster. Parents tap it, confirm, and they're connected."),
