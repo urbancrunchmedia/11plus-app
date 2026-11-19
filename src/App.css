@@ -3531,3 +3531,16 @@ a.set-ghost { display: inline-flex; align-items: center; justify-content: center
   .tut-poster-wrap { padding: 0; background: #fff; }
   .tut-poster { box-shadow: none; border-radius: 0; max-width: none; width: 210mm; height: 297mm; padding: 22mm 18mm; }
 }
+
+/* Tutor: example class, sorting, five tiles */
+.tut-tiles--5 { grid-template-columns: repeat(5, 1fr); }
+.tut-list-tools { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+.tut-sort { font-size: 0.8rem; font-weight: 700; color: var(--muted); display: flex; align-items: center; gap: 6px; }
+.tut-sort select { font: inherit; font-weight: 700; color: var(--ink); border: 1.5px solid var(--line, #dde7f0); border-radius: 10px; padding: 6px 8px; background: #fff; }
+.tut-demo-banner { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; background: #f3fbd4; border: 1px solid #dfef9a; border-radius: 18px; padding: 12px 16px; font-size: 0.9rem; color: var(--ink); }
+.tut-demo-cta { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--line, #dde7f0); font-size: 0.9rem; color: var(--ink); }
+.tut-card.tut-demo-cta { margin-top: 0; padding-top: 20px; border-top: 1px solid var(--line, #dde7f0); }
+@media (max-width: 1000px) { .tut-tiles--5 { grid-template-columns: repeat(3, 1fr); } }
+@media (max-width: 860px) { .tut-tiles--5 { grid-template-columns: 1fr 1fr; } .tut-tiles--5 .tut-tile:last-child { grid-column: 1 / -1; } }
+@media print { .tut-sort, .tut-demo-banner .tut-btn { display: none !important; } }
+@media (max-width: 560px) { .tut-list-head { flex-direction: column; align-items: flex-start; gap: 8px; } }

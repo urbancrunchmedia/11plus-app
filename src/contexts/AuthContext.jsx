@@ -21,6 +21,9 @@ const AuthContext = createContext(null);
 // last few minutes; the server also checks it hasn't been sent already, so
 // calling this more than once (other tab, reload) is harmless.
 function maybeSendWelcome(u, name) {
+  // Tutors sign up at /tutor; the children's welcome email isn't for them
+  // (they get their own email when they apply).
+  if (typeof window !== "undefined" && window.location.pathname.startsWith("/tutor")) return;
   const created = Date.parse(u?.metadata?.creationTime || "");
   if (!created || Date.now() - created > 10 * 60 * 1000 || typeof u.getIdToken !== "function") return;
   u.getIdToken()

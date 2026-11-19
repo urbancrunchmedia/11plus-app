@@ -4,7 +4,8 @@ import { useTutor } from "../contexts/TutorContext";
 import QRCode from "qrcode";
 import { tutorApi, getPupils, removePupil, joinMessage } from "../utils/tutor";
 import { tutorJoinLink } from "../utils/tutorJoin";
-import { pupilSummary, classSummary, GAME_ORDER } from "../utils/tutorMetrics";
+import { pupilSummary, classSummary, sortPupils, SORTS, GAME_ORDER } from "../utils/tutorMetrics";
+import { demoPupils } from "../utils/tutorDemo";
 import { SKILL_LABEL } from "../utils/progress";
 
 // /tutor — everything a tutor needs: apply, wait for approval, then a
@@ -115,6 +116,7 @@ function Paused() {
 function Pending({ tutor, refreshTutor }) {
   const [pupils, setPupils] = useState(null);
   const [poster, setPoster] = useState(false);
+  const [demo, setDemo] = useState(false);
   useEffect(() => {
     let live = true;
     tutorApi("summary").then((r) => { if (live) setPupils(r.pupils); }).catch(() => {});
@@ -122,6 +124,7 @@ function Pending({ tutor, refreshTutor }) {
   }, []);
   async function newCode() { await tutorApi("newCode"); await refreshTutor(); }
   if (poster) return <Poster tutor={tutor} onClose={() => setPoster(false)} />;
+  if (demo) return <DemoClass onExit={() => setDemo(false)} />;
   return (
     <div className="tut-page">
       <Header title="Your link is ready" />
@@ -132,7 +135,12 @@ function Pending({ tutor, refreshTutor }) {
         )}
       </div>
       <CodeCard tutor={tutor} onNewCode={newCode} onPoster={() => setPoster(true)} />
-      {pupils === 0 && <FirstPupils tutor={tutor} onPoster={() => setPoster(true)} />}
+      {pupils === 0 ? <FirstPupils tutor={tutor} onPoster={() => setPoster(true)} onDemo={() => setDemo(true)} /> : (
+        <div className="tut-card tut-demo-cta">
+          <div><b>See what you'll get once approved.</b> Explore an example dashboard with 12 made-up pupils.</div>
+          <button className="tut-btn ghost" onClick={() => setDemo(true)} data-testid="see-example">See an example class</button>
+        </div>
+      )}
     </div>
   );
 }
@@ -194,7 +202,7 @@ function CodeCard({ tutor, onNewCode, onPoster }) {
 }
 
 // "Get your first pupils": shown until the first family connects.
-function FirstPupils({ tutor, onPoster }) {
+function FirstPupils({ tutor, onPoster, onDemo }) {
   const { link, message } = useJoin(tutor);
   const subject = `Follow your child's 11+ practice with ${tutor.business || tutor.name}`;
   return (
@@ -207,6 +215,12 @@ function FirstPupils({ tutor, onPoster }) {
         <li>When a parent confirms, their child appears here. You'll get an email too.</li>
       </ol>
       <div className="tut-small">Your link: {link}</div>
+      {onDemo && (
+        <div className="tut-demo-cta">
+          <div><b>Want to see it with a full class?</b> Explore an example dashboard with 12 made-up pupils.</div>
+          <button className="tut-btn ghost" onClick={onDemo} data-testid="see-example">See an example class</button>
+        </div>
+      )}
     </div>
   );
 }
@@ -277,6 +291,7 @@ function Bars({ rows, empty }) {
 }
 
 function PupilDetail({ p, onBack, onRemove }) {
+  const canRemove = !p.demo;
   const s = p.summary;
   const [confirm, setConfirm] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -286,7 +301,7 @@ function PupilDetail({ p, onBack, onRemove }) {
         <button className="tut-btn ghost" onClick={onBack}>← All pupils</button>
         <div className="tut-detail-actions">
           <button className="tut-btn ghost" onClick={() => window.print()}>Print summary</button>
-          {confirm ? (
+          {!canRemove ? null : confirm ? (
             <span className="tut-confirm">
               Remove {p.name}? <button className="tut-link danger" disabled={busy} onClick={async () => { setBusy(true); await onRemove(); }}>{busy ? "Removing…" : "Yes, remove"}</button>
               {" · "}<button className="tut-link" onClick={() => setConfirm(false)}>Cancel</button>
@@ -361,6 +376,83 @@ function PupilDetail({ p, onBack, onRemove }) {
   );
 }
 
+// The class overview: tiles, the sortable pupil list, and group insights.
+// Shared by the real dashboard and the example class.
+function ClassView({ rows, cls, sort, onSort, onOpen, onRefresh }) {
+  const top = cls.topPractiser;
+  return (
+    <>
+      <div className="tut-tiles tut-tiles--5">
+        <Tile label="Pupils" value={cls.pupils} />
+        <Tile label="Active this week" value={`${cls.activeWeek} of ${cls.pupils}`} />
+        <Tile label="Rounds this week" value={cls.roundsWeek} />
+        <Tile label="Average accuracy" value={pctText(cls.averageAccuracy)} sub={cls.needsAttention ? `${cls.needsAttention} need${cls.needsAttention === 1 ? "s" : ""} attention` : "Everyone on track"} />
+        <Tile label="Most practice this week" value={top ? top.name : "–"} sub={top ? `${top.minutes} min · ${top.rounds} ${top.rounds === 1 ? "round" : "rounds"}` : "Nobody yet this week"} />
+      </div>
+      <section className="tut-card tut-list">
+        <div className="tut-list-head">
+          <h2 className="tut-h2">Your pupils</h2>
+          <div className="tut-list-tools">
+            <label className="tut-sort">Sort by{" "}
+              <select value={sort} onChange={(e) => onSort(e.target.value)} data-testid="pupil-sort">
+                {Object.entries(SORTS).map(([id, s]) => <option key={id} value={id}>{s.label}</option>)}
+              </select>
+            </label>
+            {onRefresh && <button className="tut-link" onClick={onRefresh}>Refresh</button>}
+          </div>
+        </div>
+        {rows.map((p) => <PupilRow key={p.uid} p={p} onOpen={() => onOpen(p.uid)} />)}
+      </section>
+      <div className="tut-grid2">
+        <section className="tut-card">
+          <h3 className="tut-h3">Words the group keeps missing</h3>
+          {cls.commonWeakWords.length ? (
+            <table className="tut-table">
+              <thead><tr><th>Word</th><th>Game</th><th>Pupils</th></tr></thead>
+              <tbody>{cls.commonWeakWords.map((w) => (
+                <tr key={`${w.skill}:${w.word}`}><td><b>{w.word}</b>{w.meaning ? <small> · {w.meaning}</small> : null}</td><td>{w.skillLabel}</td><td>{w.pupils}</td></tr>
+              ))}</tbody>
+            </table>
+          ) : <div className="tut-empty-small">No shared tricky words yet.</div>}
+        </section>
+        <section className="tut-card">
+          <h3 className="tut-h3">Accuracy by game (group average)</h3>
+          <Bars rows={cls.skillAverages.map((k) => ({ key: k.skill, label: k.label, pct: k.pct, sub: `(${k.pupils})` }))} empty="No answers yet." />
+          <div className="tut-small">Numbers in brackets are how many pupils have played that game.</div>
+        </section>
+      </div>
+    </>
+  );
+}
+
+function useClass(pupils, sort) {
+  const summarised = useMemo(() => (pupils ? pupils.map((p) => ({ ...p, summary: pupilSummary(p.data) })) : null), [pupils]);
+  const rows = useMemo(() => (summarised ? sortPupils(summarised, sort) : null), [summarised, sort]);
+  const cls = useMemo(() => (summarised ? classSummary(summarised) : null), [summarised]);
+  return { rows, cls };
+}
+
+// "See an example class": made-up pupils, generated on this device only.
+function DemoClass({ onExit }) {
+  const [pupils] = useState(() => demoPupils());
+  const [sort, setSort] = useState("attention");
+  const [openUid, setOpenUid] = useState(null);
+  const { rows, cls } = useClass(pupils, sort);
+  const open = rows.find((p) => p.uid === openUid);
+  return (
+    <div className="tut-page">
+      <Header title={open ? "Pupil progress" : "Example class"} />
+      <div className="tut-demo-banner" data-testid="demo-banner">
+        <span><b>Example class with 12 made-up pupils.</b> Your real pupils appear on your dashboard once parents connect.</span>
+        <button className="tut-btn ghost" onClick={onExit}>Back to my dashboard</button>
+      </div>
+      {open
+        ? <PupilDetail p={open} onBack={() => setOpenUid(null)} />
+        : <ClassView rows={rows} cls={cls} sort={sort} onSort={setSort} onOpen={(uid) => { setOpenUid(uid); window.scrollTo(0, 0); }} />}
+    </div>
+  );
+}
+
 function Dashboard({ tutor, refreshTutor }) {
   const [pupils, setPupils] = useState(null);
   const [error, setError] = useState("");
@@ -378,13 +470,9 @@ function Dashboard({ tutor, refreshTutor }) {
     load();
   }, [load]);
 
-  const rows = useMemo(() => {
-    if (!pupils) return null;
-    return pupils
-      .map((p) => ({ ...p, summary: pupilSummary(p.data) }))
-      .sort((a, b) => (b.summary.flags.length > 0) - (a.summary.flags.length > 0) || a.name.localeCompare(b.name));
-  }, [pupils]);
-  const cls = useMemo(() => (rows ? classSummary(rows) : null), [rows]);
+  const [sort, setSort] = useState("attention");
+  const [demo, setDemo] = useState(false);
+  const { rows, cls } = useClass(pupils, sort);
   const open = rows?.find((p) => p.uid === openUid);
 
   async function newCode() {
@@ -401,6 +489,7 @@ function Dashboard({ tutor, refreshTutor }) {
   }
 
   if (poster) return <Poster tutor={tutor} onClose={() => setPoster(false)} />;
+  if (demo) return <DemoClass onExit={() => setDemo(false)} />;
   return (
     <div className="tut-page">
       <Header title={open ? "Pupil progress" : `Hi ${tutor.name}`} />
@@ -414,41 +503,9 @@ function Dashboard({ tutor, refreshTutor }) {
           ) : error ? (
             <div className="tut-card tut-empty">{error} <button className="tut-link" onClick={load}>Try again</button></div>
           ) : rows.length === 0 ? (
-            <div data-testid="no-pupils"><FirstPupils tutor={tutor} onPoster={() => setPoster(true)} /></div>
+            <div data-testid="no-pupils"><FirstPupils tutor={tutor} onPoster={() => setPoster(true)} onDemo={() => setDemo(true)} /></div>
           ) : (
-            <>
-              <div className="tut-tiles">
-                <Tile label="Pupils" value={cls.pupils} />
-                <Tile label="Active this week" value={`${cls.activeWeek} of ${cls.pupils}`} />
-                <Tile label="Rounds this week" value={cls.roundsWeek} />
-                <Tile label="Average accuracy" value={pctText(cls.averageAccuracy)} sub={cls.needsAttention ? `${cls.needsAttention} need${cls.needsAttention === 1 ? "s" : ""} attention` : "Everyone on track"} />
-              </div>
-              <section className="tut-card tut-list">
-                <div className="tut-list-head">
-                  <h2 className="tut-h2">Your pupils</h2>
-                  <button className="tut-link" onClick={load}>Refresh</button>
-                </div>
-                {rows.map((p) => <PupilRow key={p.uid} p={p} onOpen={() => { setOpenUid(p.uid); window.scrollTo(0, 0); }} />)}
-              </section>
-              <div className="tut-grid2">
-                <section className="tut-card">
-                  <h3 className="tut-h3">Words the group keeps missing</h3>
-                  {cls.commonWeakWords.length ? (
-                    <table className="tut-table">
-                      <thead><tr><th>Word</th><th>Game</th><th>Pupils</th></tr></thead>
-                      <tbody>{cls.commonWeakWords.map((w) => (
-                        <tr key={`${w.skill}:${w.word}`}><td><b>{w.word}</b>{w.meaning ? <small> · {w.meaning}</small> : null}</td><td>{w.skillLabel}</td><td>{w.pupils}</td></tr>
-                      ))}</tbody>
-                    </table>
-                  ) : <div className="tut-empty-small">No shared tricky words yet.</div>}
-                </section>
-                <section className="tut-card">
-                  <h3 className="tut-h3">Accuracy by game (group average)</h3>
-                  <Bars rows={cls.skillAverages.map((k) => ({ key: k.skill, label: k.label, pct: k.pct, sub: `(${k.pupils})` }))} empty="No answers yet." />
-                  <div className="tut-small">Numbers in brackets are how many pupils have played that game.</div>
-                </section>
-              </div>
-            </>
+            <ClassView rows={rows} cls={cls} sort={sort} onSort={setSort} onRefresh={load} onOpen={(uid) => { setOpenUid(uid); window.scrollTo(0, 0); }} />
           )}
         </>
       )}

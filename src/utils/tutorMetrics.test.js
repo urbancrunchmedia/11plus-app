@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { runsFrom, pupilSummary, classSummary } from "./tutorMetrics";
+import { runsFrom, pupilSummary, classSummary, sortPupils } from "./tutorMetrics";
+import { demoPupils } from "./tutorDemo";
 
 const NOW = new Date(2026, 10, 15, 18, 0).getTime(); // Sun 15 Nov 2026, 6pm
 const day = (daysAgo) => new Date(NOW - daysAgo * 864e5).toLocaleDateString("en-GB");
@@ -55,6 +56,12 @@ describe("pupilSummary", () => {
     expect(s.flags.map((f) => f.label)).not.toContain("Struggling with Synonyms");
   });
 
+  it("shows one flag for the weakest struggling game, counting the rest", () => {
+    const progress = { words: {}, skills: { spelling: { hits: 10, misses: 20 }, punctuation: { hits: 12, misses: 13 }, synonyms: { hits: 9, misses: 11 } } };
+    const labels = pupilSummary({ progress, history: { "A-spelling-10": [run(0)] } }, NOW).flags.map((f) => f.label);
+    expect(labels).toEqual(["Struggling with Spelling (+2 more)"]);
+  });
+
   it("spots accuracy dropping compared with earlier weeks", () => {
     const history = { "A-synonyms-10": [run(1, { wrong: 10 }), run(3, { wrong: 8 }), run(20), run(25)] };
     const s = pupilSummary({ history }, NOW);
@@ -99,5 +106,46 @@ describe("classSummary", () => {
 
   it("is safe with no pupils", () => {
     expect(classSummary([], NOW)).toMatchObject({ pupils: 0, averageAccuracy: null, weakestSkill: null, commonWeakWords: [] });
+  });
+});
+
+describe("sorting and the top practiser", () => {
+  const p = (name, minutes, rounds, flags = 0, accuracy = 80) => ({ name, summary: { minutesWeek: minutes, roundsWeek: rounds, flags: Array(flags).fill({}), accuracy } });
+  const rows = [p("Cara", 10, 2), p("Abe", 30, 5, 1, 60), p("Ben", 30, 3), p("Dan", 0, 0, 1, null)];
+
+  it("orders by most and least practice, accuracy, attention and name", () => {
+    expect(sortPupils(rows, "most").map((r) => r.name)).toEqual(["Abe", "Ben", "Cara", "Dan"]);
+    expect(sortPupils(rows, "least").map((r) => r.name)).toEqual(["Dan", "Cara", "Ben", "Abe"]);
+    expect(sortPupils(rows, "accuracy").map((r) => r.name)).toEqual(["Abe", "Ben", "Cara", "Dan"]);
+    expect(sortPupils(rows, "attention").map((r) => r.name)).toEqual(["Abe", "Dan", "Ben", "Cara"]);
+    expect(sortPupils(rows, "name").map((r) => r.name)).toEqual(["Abe", "Ben", "Cara", "Dan"]);
+  });
+
+  it("names who practised most this week", () => {
+    const c = classSummary([
+      { name: "A", data: { history: { "A-synonyms-10": [run(0, { time: 600 }), run(1, { time: 600 })] } } },
+      { name: "B", data: { history: { "A-synonyms-10": [run(0, { time: 120 })] } } },
+      { name: "C", data: {} },
+    ], NOW);
+    expect(c.topPractiser).toEqual({ name: "A", minutes: 20, rounds: 2 });
+    expect(classSummary([{ name: "C", data: {} }], NOW).topPractiser).toBe(null);
+  });
+});
+
+describe("example class", () => {
+  it("is 12 made-up pupils with a realistic mix of activity, flags and tricky words", () => {
+    const pupils = demoPupils(NOW);
+    expect(pupils).toHaveLength(12);
+    expect(pupils.every((x) => x.demo)).toBe(true);
+    const s = pupils.map((x) => ({ name: x.name, ...pupilSummary(x.data, NOW) }));
+    const flags = s.flatMap((x) => x.flags.map((f) => f.id));
+    expect(flags).toContain("never");
+    expect(flags).toContain("inactive");
+    expect(flags.some((f) => f.startsWith("struggling-"))).toBe(true);
+    expect(s.filter((x) => x.roundsWeek > 0).length).toBeGreaterThanOrEqual(7);
+    expect(classSummary(pupils, NOW).commonWeakWords.length).toBeGreaterThan(0);
+  });
+  it("is the same every time for the same day", () => {
+    expect(JSON.stringify(demoPupils(NOW))).toBe(JSON.stringify(demoPupils(NOW)));
   });
 });

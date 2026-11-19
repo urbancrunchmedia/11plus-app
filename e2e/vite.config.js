@@ -14,6 +14,6 @@ export default defineConfig({
     resolveId(id) { return id === "virtual:pwa-register" ? "\0no-pwa" : null; },
     load(id) { return id === "\0no-pwa" ? "export function registerSW() {}" : null; },
   }],
-  server: { port: 5310, strictPort: true, proxy: { "/api": "http://127.0.0.1:5311", "/__outbox": "http://127.0.0.1:5311" } },
+  server: { host: "127.0.0.1", port: 5310, strictPort: true, proxy: { "/api": "http://127.0.0.1:5311", "/__outbox": "http://127.0.0.1:5311" } },
   logLevel: "warn",
 });

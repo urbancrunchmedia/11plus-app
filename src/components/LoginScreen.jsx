@@ -71,6 +71,8 @@ export default function LoginScreen() {
   const { signInWithEmail, signUpWithEmail, signInWithGoogle, resetPassword, redirectError } = useAuth();
 
   const [mode, setMode]         = useState("signin");  // "signin" | "signup"
+  // Tutors sign up at /tutor: ask for their own name, not a child's.
+  const isTutorPage = window.location.pathname.startsWith("/tutor");
   // Arrived from a tutor's /join link: show who invited them.
   const [joinTutor, setJoinTutor] = useState(null);
   useEffect(() => {
@@ -156,7 +158,7 @@ export default function LoginScreen() {
       {/* Right: sign-in */}
       <div className="login2-panel">
         <div className="login2-card">
-          {window.location.pathname.startsWith("/tutor") ? (
+          {isTutorPage ? (
             <div className="login2-invite" role="status" data-testid="tutor-signin-banner">
               <span aria-hidden="true">🎓</span>
               <div><strong>Tutors: create your free account.</strong> Sign up or sign in with your own email (not a child's account), then apply for your tutor dashboard.</div>
@@ -182,8 +184,8 @@ export default function LoginScreen() {
               ←
             </button>
           )}
-          <div className="login2-h">{mode === "signin" ? "Grown-up sign in" : "Create an account"}</div>
-          <div className="login2-p">See progress, set daily goals and manage profiles.</div>
+          <div className="login2-h">{isTutorPage ? (mode === "signin" ? "Tutor sign in" : "Create your tutor account") : mode === "signin" ? "Grown-up sign in" : "Create an account"}</div>
+          <div className="login2-p">{isTutorPage ? "Free for tutors: follow your students' progress." : "See progress, set daily goals and manage profiles."}</div>
 
           {(error || redirectError) && (
             <div className="login2-error">
@@ -211,8 +213,8 @@ export default function LoginScreen() {
               <form className="login2-form" onSubmit={handleSubmit}>
                 {mode === "signup" && (
                   <label className="login2-field">
-                    <span>CHILD NAME</span>
-                    <input type="text" placeholder="Your child's name" value={name} onChange={(e) => setName(e.target.value)} required autoComplete="name" />
+                    <span>{isTutorPage ? "YOUR NAME" : "CHILD NAME"}</span>
+                    <input type="text" placeholder={isTutorPage ? "Your name" : "Your child's name"} value={name} onChange={(e) => setName(e.target.value)} required autoComplete="name" />
                   </label>
                 )}
                 <label className="login2-field">

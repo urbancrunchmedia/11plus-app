@@ -318,6 +318,13 @@ async function journey(browsers) {
     await makeUser("tutor2", "head@brightminds.test", "Mr Khan");
     const t2Ctx = await chrome.newContext(desk);
     const t2 = await t2Ctx.newPage();
+    // The sign-up form on /tutor asks for the tutor's own name, not a child's.
+    await t2.goto(`${APP}/tutor`);
+    await t2.locator(".login2-toggle button").click();
+    await t2.getByRole("button", { name: "Sign up with email" }).click();
+    await t2.getByText("Create your tutor account").waitFor();
+    await t2.getByText("YOUR NAME").waitFor();
+    assert.equal(await t2.getByPlaceholder("Your child's name").count(), 0, "tutors aren't asked for a child's name");
     await signIn(t2, "/tutor", "head@brightminds.test");
     await t2.getByLabel("Your name").fill("Mr Khan");
     await t2.getByRole("checkbox").check();
@@ -331,7 +338,32 @@ async function journey(browsers) {
     await t2.getByTestId("tutor-poster").getByText("Bright Minds Tuition uses 11 PlusLab", { exact: false }).waitFor();
     await t2.screenshot({ path: path.join(SHOTS, "tutor-poster.png"), fullPage: true });
     assert.ok((await outbox()).some((m) => m.to === "hello@11pluslab.com" && /pre-approved/.test(m.subject)));
-    log("A tutor whose business is on the outreach list is approved instantly; QR poster shows their link");
+    log("A tutor whose business is on the outreach list is approved instantly (signed up as a tutor, not a child); QR poster shows their link");
+
+    // 17. Example class: 12 made-up pupils, sortable by who practises most.
+    await t2.getByRole("button", { name: "Close" }).click();
+    await t2.getByTestId("see-example").click();
+    await t2.getByTestId("demo-banner").waitFor();
+    assert.equal(await t2.getByTestId("pupil-row").count(), 12);
+    await t2.getByTestId("pupil-sort").selectOption("most");
+    const topName = (await t2.locator(".tut-tile").filter({ hasText: "Most practice this week" }).locator(".tut-tile-value").innerText()).trim();
+    assert.match(await t2.getByTestId("pupil-row").first().innerText(), new RegExp(topName));
+    await t2.screenshot({ path: path.join(SHOTS, "tutor-example-class.png"), fullPage: true });
+    await t2.getByTestId("pupil-row").first().click();
+    await t2.getByRole("heading", { name: topName }).waitFor();
+    assert.equal(await t2.getByRole("button", { name: "Remove pupil" }).count(), 0, "example pupils can't be removed");
+    await t2.getByRole("button", { name: "← All pupils" }).click();
+    await t2.getByRole("button", { name: "Back to my dashboard" }).click();
+    await t2.getByTestId("first-pupils").waitFor();
+    // And on a phone.
+    const t2PhoneCtx = await safari.newContext(phone);
+    const t2Phone = await t2PhoneCtx.newPage();
+    await signIn(t2Phone, "/tutor", "head@brightminds.test");
+    await t2Phone.getByTestId("see-example").click();
+    await t2Phone.getByTestId("pupil-row").nth(11).waitFor();
+    await noSideScroll(t2Phone, "phone example class");
+    await t2Phone.screenshot({ path: path.join(SHOTS, "phone-example-class.png"), fullPage: true });
+    log(`Example class shows 12 made-up pupils; 'Most practice' puts ${topName} first; fits an iPhone`);
 
     console.log(`\nAll ${step} end-to-end checks passed. Screenshots: e2e/screenshots/\n`);
   }

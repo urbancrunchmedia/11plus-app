@@ -88,7 +88,12 @@ export function pupilSummary(data, now = Date.now()) {
   if (lastActive == null) flags.push({ id: "never", label: "Hasn't played yet" });
   else if (daysSinceActive >= INACTIVE_DAYS) flags.push({ id: "inactive", label: `Not played for ${daysSinceActive} days` });
   if (trend != null && trend <= -DROP_POINTS) flags.push({ id: "dropping", label: "Accuracy dropping" });
-  for (const s of struggling) flags.push({ id: `struggling-${s.skill}`, label: `Struggling with ${s.label}` });
+  // One flag for the weakest struggling game, so a pupil weak in several
+  // doesn't get a wall of flags (the rest show in their detail page).
+  if (struggling.length) {
+    const more = struggling.length - 1;
+    flags.push({ id: `struggling-${struggling[0].skill}`, label: `Struggling with ${struggling[0].label}${more ? ` (+${more} more)` : ""}` });
+  }
 
   const gameCounts = Object.fromEntries(GAME_ORDER.map((g) => [g, 0]));
   for (const r of month) if (r.game in gameCounts) gameCounts[r.game]++;
@@ -150,5 +155,27 @@ export function classSummary(pupils, now = Date.now()) {
     .map(([skill, pcts]) => ({ skill, label: SKILL_LABEL[skill] || skill, pct: avg(pcts), pupils: pcts.length }))
     .sort((a, b) => a.pct - b.pct);
 
-  return { pupils: n, activeWeek, roundsWeek, averageAccuracy, needsAttention, commonWeakWords, skillAverages, weakestSkill: skillAverages[0] || null };
+  // Who practised most this week (minutes, then rounds): worth praising.
+  const topPractiser = summaries
+    .filter((p) => p.summary.roundsWeek > 0)
+    .sort((a, b) => b.summary.minutesWeek - a.summary.minutesWeek || b.summary.roundsWeek - a.summary.roundsWeek)[0];
+
+  return {
+    pupils: n, activeWeek, roundsWeek, averageAccuracy, needsAttention, commonWeakWords, skillAverages,
+    weakestSkill: skillAverages[0] || null,
+    topPractiser: topPractiser ? { name: topPractiser.name, minutes: topPractiser.summary.minutesWeek, rounds: topPractiser.summary.roundsWeek } : null,
+  };
+}
+
+// Orders for the pupil list. Ties fall back to name.
+export const SORTS = {
+  attention: { label: "Needs attention first", cmp: (a, b) => (b.summary.flags.length > 0) - (a.summary.flags.length > 0) },
+  most: { label: "Most practice this week", cmp: (a, b) => b.summary.minutesWeek - a.summary.minutesWeek || b.summary.roundsWeek - a.summary.roundsWeek },
+  least: { label: "Least practice this week", cmp: (a, b) => a.summary.minutesWeek - b.summary.minutesWeek || a.summary.roundsWeek - b.summary.roundsWeek },
+  accuracy: { label: "Lowest accuracy first", cmp: (a, b) => (a.summary.accuracy ?? 101) - (b.summary.accuracy ?? 101) },
+  name: { label: "Name (A–Z)", cmp: () => 0 },
+};
+export function sortPupils(rows, mode = "attention") {
+  const cmp = (SORTS[mode] || SORTS.attention).cmp;
+  return [...rows].sort((a, b) => cmp(a, b) || a.name.localeCompare(b.name));
 }
