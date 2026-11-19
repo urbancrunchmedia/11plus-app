@@ -81,6 +81,7 @@ export async function ownerStats() {
   const byGame = {};
   const plans = {};
   const players = [];
+  const trialsActive = [];
   const signupsByDay = {};
   for (let i = 13; i >= 0; i--) signupsByDay[ukDay(now - i * DAY)] = 0;
 
@@ -109,6 +110,19 @@ export async function ownerStats() {
     for (const k of Object.keys(counts)) {
       rounds[k] += counts[k];
       if (counts[k]) active[k]++;
+    }
+    // In a free trial: which plan they chose and how long until the first payment.
+    const trialSub = (subsMap.get(u.uid) || []).find((x) => x.status === "trialing");
+    if (trialSub && !hasCompAccess(u.email)) {
+      const ends = (trialSub.trial_end || 0) * 1000;
+      trialsActive.push({
+        name: nameOf.get(u.uid) || u.displayName || "(no name yet)",
+        interval: trialSub.items?.data?.[0]?.price?.recurring?.interval || null,
+        trialEnd: ends || null,
+        daysLeft: ends ? Math.max(0, Math.ceil((ends - now) / DAY)) : null,
+        cancelling: !!trialSub.cancel_at_period_end,
+        startedAt: (trialSub.start_date || trialSub.created || 0) * 1000 || null,
+      });
     }
     players.push({
       name: nameOf.get(u.uid) || u.displayName || "(no name yet)",
@@ -151,7 +165,7 @@ export async function ownerStats() {
       .map(([id, v]) => ({ game: GAME_NAMES[id] || id, ...v }))
       .sort((a, b) => b.month - a.month),
     plans,
-    trials: { converted, droppedAfterTrial },
+    trials: { converted, droppedAfterTrial, active: trialsActive.sort((a, b) => (a.trialEnd || 0) - (b.trialEnd || 0)) },
     players: players.sort((a, b) => (b.lastPlayed || 0) - (a.lastPlayed || 0) || b.signedUp - a.signedUp),
     quiet: quiet.sort((a, b) => b.lastPlayed - a.lastPlayed).slice(0, 20),
     emails: { unsubscribed: emailStates.docs.filter((d) => d.get("unsubscribed")).length },

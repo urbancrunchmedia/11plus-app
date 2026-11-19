@@ -3555,3 +3555,7 @@ a.set-ghost { display: inline-flex; align-items: center; justify-content: center
 .tut-phone { display: flex; gap: 8px; }
 .tut-phone select { flex: none; border: 1.5px solid var(--line, #dde7f0); border-radius: 14px; padding: 12px 10px; font: inherit; font-weight: 600; background: #fff; color: var(--ink); max-width: 46%; }
 .tut-phone input { flex: 1; min-width: 0; }
+.own-trials { margin-top: 14px; border-top: 1px solid var(--line, #dde7f0); padding-top: 12px; }
+.own-h3 { margin: 0 0 6px; font-size: 0.95rem; font-weight: 800; }
+.own-trial { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; padding: 8px 0; border-bottom: 1px solid var(--line, #dde7f0); }
+.own-trial:last-child { border-bottom: none; }

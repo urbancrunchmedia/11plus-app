@@ -575,18 +575,14 @@ function stepsCard(steps) {
 </td></tr></table>`;
 }
 
-const SHARED_MAIL = /@(gmail|googlemail|hotmail|outlook|live|yahoo|icloud|me|aol|btinternet|sky)\./i;
-
 export function tutorInviteEmail({ business, email, code }) {
   const name = escapeHtml(business || "there");
-  const domain = String(email || "").split("@")[1] || "";
-  const anyAddress = domain && !SHARED_MAIL.test(email) ? ` (or any <strong>@${escapeHtml(domain)}</strong> address)` : "";
   return {
     marketing: true,
     unsubscribeUrl: outreachOptOutUrl(email),
     subject: "Free Full Access to 11 PlusLab for tutors, plus a dashboard for your students",
     html: layout({
-      preheader: "Every game and level free for tutors, plus a dashboard of your students' practice. You're already approved.",
+      preheader: "Every game and level free for tutors, plus a dashboard of your students' practice.",
       hero: `<p style="margin:0"><a href="${SITE}/tutor"><img src="${IMG}/tutor-free-access.png" width="520" height="250" alt="Free for tutors: Full Access, completely free. Normally £34.99 a year, £0 for tutors. 7 games, 3 levels, 1,000+ words, unlimited rounds." style="display:block;border:0;width:100%;max-width:520px;height:auto;border-radius:24px;font-family:${FONT};font-size:16px;font-weight:800;color:${C.ink}"></a></p>`,
       eyebrow: "",
       heading: ["Plus a dashboard of your ", "students' progress", ""],
@@ -598,7 +594,7 @@ export function tutorInviteEmail({ business, email, code }) {
         featureRow("words", "The words they find tricky", "Each student's weak words, plus the words your whole group keeps missing: ready-made ideas for your next lesson."),
         featureRow("link", "One link to invite families", "Send your join link by WhatsApp or email, or print your QR poster. Parents tap it, confirm, and they're connected."),
         `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:10px 0 18px;background:#F3FBD4;border:1px solid #DFEF9A;border-radius:18px"><tr><td style="padding:16px 18px;font-family:${FONT};font-size:15px;line-height:1.55;color:${C.ink}">
-<strong>You're already approved for free Full Access.</strong> Sign up with <strong>${escapeHtml(email)}</strong>${anyAddress} and your dashboard and join link are ready straight away.</td></tr></table>`,
+<strong>Sign up with any email address you like.</strong> We check every new tutor, usually the same day, and your free Full Access starts as soon as you're approved. You can start sharing your join link straight away.</td></tr></table>`,
         button({ label: "Create my free tutor account", url: `${SITE}/tutor` }),
         `<div style="height:14px"></div>`,
         stepsCard([

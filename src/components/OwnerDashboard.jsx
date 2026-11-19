@@ -233,6 +233,26 @@ export default function OwnerDashboard() {
         <p className="own-muted" style={{ marginTop: 12 }}>
           Trials finished: {trialsDone} · became paying: {trials.converted} ({pct(trials.converted, trialsDone)})
         </p>
+        {trials.active?.length > 0 && (
+          <div className="own-trials" data-testid="trials-active">
+            <h3 className="own-h3">In a free trial now</h3>
+            {trials.active.map((t, i) => (
+              <div className="own-trial" key={i}>
+                <div>
+                  <strong>{t.name}</strong>{" "}
+                  <span className={`own-pill own-pill-${t.interval === "year" ? "good" : "brand"}`}>{t.interval === "year" ? "Yearly £34.99" : t.interval === "month" ? "Monthly £4.99" : "Plan unknown"}</span>
+                  {t.cancelling && <> <span className="own-pill own-pill-bad">Cancelled: won't pay</span></>}
+                </div>
+                <div className="own-muted">
+                  {t.daysLeft == null ? "" : t.cancelling
+                    ? `Access ends in ${plural(t.daysLeft, "day")}`
+                    : t.daysLeft === 0 ? "First payment due today" : `${plural(t.daysLeft, "day")} until their first payment`}
+                  {t.trialEnd ? ` (${new Date(t.trialEnd).toLocaleDateString("en-GB", { day: "numeric", month: "short" })})` : ""}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </section>
 
       <section className="own-card">

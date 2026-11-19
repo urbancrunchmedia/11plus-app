@@ -12,8 +12,9 @@
 //   { action: "status" }                        counts, plus redemptions per code
 //   { action: "verify" }                        check every queued centre's code in Stripe
 //   { action: "tutorTest", to, business?, code?, email? }   one sample of the tutor invitation
-//   { action: "tutorQueue" }                    queue the tutor invitation for every centre emailed
-//                                               (not manual/sole-trader rows, opt-outs or existing tutors)
+//   { action: "tutorQueue", include? }          queue the tutor invitation for every centre emailed
+//                                               (not manual/sole-trader rows, opt-outs or existing tutors);
+//                                               `include`: extra emails to queue whatever their status
 //   { action: "tutorStart" } / { action: "tutorPause" }   daily sending of tutor invitations on/off
 //   { action: "tutorStatus" }                   tutor-invitation counts
 // GET from Vercel Cron (Authorization: Bearer <CRON_SECRET>): sends the next
@@ -234,13 +235,17 @@ export default async function handler(req, res) {
       case "tutorQueue": {
         // Centres that were emailed (status "sent"); never the manual sole-trader rows.
         const sent = await db.collection("outreach").where("status", "==", "sent").get();
+        const extra = await Promise.all((Array.isArray(body.include) ? body.include : [])
+          .map((e) => db.collection("outreach").doc(outreachKey(clean(e).toLowerCase())).get()));
         let queued = 0;
-        for (const d of sent.docs) {
-          if (d.get("tutorInvite")) continue;
+        const missing = [];
+        for (const d of [...sent.docs, ...extra]) {
+          if (!d.exists) { missing.push(d.id); continue; }
+          if (d.get("tutorInvite") || d.get("status") === "optedOut") continue;
           await d.ref.update({ tutorInvite: "queued" });
           queued++;
         }
-        return res.status(200).json({ queued });
+        return res.status(200).json({ queued, missing });
       }
       case "tutorStart":
       case "tutorPause":
