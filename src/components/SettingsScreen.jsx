@@ -12,6 +12,7 @@ import { exportMyData, downloadMyData, deleteMyAccount } from "../utils/dataRigh
 import { submitSupportRequest, SUPPORT_CATEGORIES } from "../utils/support";
 import { auth } from "../firebase";
 import TutorsCard from "./TutorsCard";
+import { useTutor } from "../contexts/TutorContext";
 
 const GOALS = [3, 5, 10];
 const DIFFS = [
@@ -32,6 +33,7 @@ const PARENT_TOGGLES = [
 function initial(name) { return name ? name.trim().charAt(0).toUpperCase() : "A"; }
 
 export default function SettingsScreen({ onOpenReport, onOpenBadges }) {
+  const { isTutor } = useTutor();
   const { user, signOut, updateDisplayName } = useAuth();
   const { isPremium, subscription, openPaywall, loading: subLoading } = usePremium();
   const stats = getStats();
@@ -330,6 +332,15 @@ export default function SettingsScreen({ onOpenReport, onOpenBadges }) {
           )}
         </div>
 
+        {!isTutor && (
+          <>
+            <div className="set-divider" />
+            <div className="set-row" data-testid="become-tutor">
+              <div className="set-row-txt"><div className="set-row-label">Are you a tutor?</div><div className="set-row-sub">Follow your students' progress, free for tutors</div></div>
+              <button className="set-ghost" onClick={() => window.location.assign("/tutor")}>Get a free tutor account →</button>
+            </div>
+          </>
+        )}
       </div>
 
       <TutorsCard childName={name} onToast={(t) => { setToast(t); setTimeout(() => setToast(null), 2600); }} />

@@ -162,18 +162,22 @@ async function apply(db, who, body) {
   const asChild = await db.collection("tutorLinks").where("childUid", "==", who.uid).limit(1).get();
   if (!asChild.empty) return [400, { error: "This account is connected to a tutor as a pupil. Please create a separate account for tutoring." }];
 
+  // Rounds this account has played as a learner: shown to the owner when
+  // approving (a hint it might be a child's account). Not a blocker.
+  const history = (await db.collection("users").doc(who.uid).get()).get("history") || {};
+  const learnerRounds = Object.values(history).reduce((n, runs) => n + (Array.isArray(runs) ? runs.length : 0), 0);
   const known = await knownTutor(db, who.email);
   const now = new Date().toISOString();
   const code = await assignCode(db, who.uid);
   const status = known ? "active" : "pending";
   await ref.set({
-    status, name, business: business || known?.business || "", website, phone, email: who.email, code, appliedAt: now,
+    status, name, business: business || known?.business || "", website, phone, email: who.email, code, appliedAt: now, learnerRounds,
     ...(known ? { approvedAt: now, autoApproved: true, matchedOutreach: known.outreachEmail } : {}),
   });
   if (known) await removeFriendships(db, who.uid);
   await Promise.all([
     sendEmail({ to: SUPPORT_INBOX, email: tutorApplicationEmail({
-      name, business, email: who.email, website, phone, autoApproved: !!known, approveUrl: known ? null : approveLink(who.uid),
+      name, business, email: who.email, website, phone, learnerRounds, autoApproved: !!known, approveUrl: known ? null : approveLink(who.uid),
     }) }),
     sendEmail({ to: who.email, email: known ? tutorApprovedEmail({ name, code, link: joinUrl(code) }) : tutorReceivedEmail({ name, code, link: joinUrl(code) }) }),
   ]).catch((e) => console.error("tutor apply email:", e.message));

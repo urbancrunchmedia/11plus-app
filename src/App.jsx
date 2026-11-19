@@ -31,6 +31,7 @@ import OnboardingScreen from "./components/OnboardingScreen";
 import { getSetting, setSetting } from "./utils/leaderboard";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { TutorProvider, useTutor } from "./contexts/TutorContext";
+import { shouldOpenTutorDashboard, goToTutorDashboard } from "./utils/tutorNav";
 import { PremiumProvider, usePremium } from "./contexts/PremiumContext";
 import { roundsToday, bumpRoundsToday, dailyRoundLimit, isLevelFree, tasterLeftToday, spendTasterRound, starterLimit } from "./utils/entitlement";
 import "./App.css";
@@ -38,7 +39,13 @@ import "./App.css";
 function AppInner() {
   const { user } = useAuth();
   const { isPremium, openPaywall, refresh, refreshUntilPremium } = usePremium();
-  const { isTutor } = useTutor();
+  const { isTutor, loading: tutorLoading } = useTutor();
+  // Tutors opening the app (or its home-screen icon) land on their dashboard.
+  useEffect(() => {
+    if (!tutorLoading && shouldOpenTutorDashboard({ isTutor, path: window.location.pathname })) {
+      window.location.replace("/tutor");
+    }
+  }, [isTutor, tutorLoading]);
 
   // All hooks must run on every render (before any early return) — otherwise
   // the hook count changes when auth flips logged-out → logged-in and React
@@ -197,6 +204,7 @@ function AppInner() {
   }
 
   function handleSelectGame(id) {
+    if (id === "tutor") { goToTutorDashboard(); return; }
     // Re-lock only when leaving the grown-up area (Settings + Report) entirely.
     // Badges is excluded too — reached from Settings as much as Home, so
     // stepping into it and back shouldn't force a parent to re-enter the PIN.

@@ -308,7 +308,7 @@ export function googleSignInEmail() {
 
 // To the owner: a new tutor. Approved already if they were on the outreach
 // list; otherwise waiting, with a one-tap approve button (a signed link).
-export function tutorApplicationEmail({ name, business, email, website, phone, autoApproved, approveUrl }) {
+export function tutorApplicationEmail({ name, business, email, website, phone, learnerRounds = 0, autoApproved, approveUrl }) {
   const row = (k, v) => v ? `<strong>${escapeHtml(k)}:</strong> ${escapeHtml(v)}<br>` : "";
   return {
     marketing: false,
@@ -323,7 +323,8 @@ export function tutorApplicationEmail({ name, business, email, website, phone, a
         ? "Their email matches someone on your outreach list, so they were approved automatically. Nothing to do unless something looks wrong."
         : "Check they're a real tutor or tuition centre. Families can already connect using their link, but they won't see any child's progress until you approve them.",
       blocks: [
-        p(row("Name", name) + row("Business", business) + row("Email", email) + row("Website", website) + row("Phone", phone)),
+        p(row("Name", name) + row("Business", business) + row("Email", email) + row("Website", website) + row("Phone", phone)
+          + row("Played as a learner", learnerRounds ? `${learnerRounds} rounds on this account (could be a child's account: check before approving)` : "No rounds (a fresh account)")),
         approveUrl ? button({ label: "Approve", url: approveUrl }) : "",
         p(`<a href="${SITE}/owner" style="color:${C.brand}">Review on the owner dashboard</a>${approveUrl ? " to decline or check more details." : " (suspend them there if needed)."}`),
       ],

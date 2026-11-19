@@ -2,6 +2,7 @@ import React from "react";
 import Icon from "./Icon";
 import { getStreak } from "../utils/gamify";
 import { useAuth } from "../contexts/AuthContext";
+import { useTutor } from "../contexts/TutorContext";
 
 // Primary navigation, matching the design prototype: a dark icon-rail on desktop
 // (logo top, streak + avatar at the bottom) and a bottom tab bar on mobile.
@@ -10,9 +11,16 @@ const ITEMS = [
   { id: "home",         label: "Home",   icon: "home" },
   { id: "leaderboard",  label: "Board",  icon: "board" },
 ];
+// Tutors can't use the friends leaderboard; their second tab is their dashboard.
+const TUTOR_ITEMS = [
+  { id: "home",   label: "Home",   icon: "home" },
+  { id: "tutor",  label: "Pupils", icon: "people" },
+];
 
 export default function AppNav({ active, onNavigate }) {
   const { user } = useAuth();
+  const { isTutor } = useTutor();
+  const items = isTutor ? TUTOR_ITEMS : ITEMS;
   const streak = getStreak();
   const initial = user?.displayName ? user.displayName.trim().charAt(0).toUpperCase() : "A";
 
@@ -21,7 +29,7 @@ export default function AppNav({ active, onNavigate }) {
       <button className="appnav-logo" onClick={() => onNavigate("home")} aria-label="Home"><img src="/logo-mark-simple.svg" alt="" width="46" height="46" /></button>
 
       <div className="appnav-items">
-        {ITEMS.map((it) => (
+        {items.map((it) => (
           <button
             key={it.id}
             className={`appnav-item ${active === it.id ? "active" : ""}`}

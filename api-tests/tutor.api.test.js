@@ -60,6 +60,15 @@ describe("applying to be a tutor", () => {
     expect(outbox().find((m) => m.to === "hello@11pluslab.com").subject).toMatch(/pre-approved/);
   });
 
+  it("records how many rounds the account has played as a learner, without blocking it", async () => {
+    const u = await makeUser("t", "t@tutors.test");
+    await adminDb().doc("users/t").set({ history: { "A-synonyms-10": [{ date: "1/11/2026" }, { date: "2/11/2026" }], "B-spelling-10": [{ date: "3/11/2026" }] } });
+    const res = await call(handler, { token: u.token, body: { action: "apply", name: "Ms Patel", confirm: true } });
+    expect(res.data.status).toBe("pending");
+    expect((await adminDb().doc("tutors/t").get()).get("learnerRounds")).toBe(3);
+    expect(outbox().find((m) => m.to === "hello@11pluslab.com").html).toContain("3 rounds on this account");
+  });
+
   it("never treats a shared email provider as a business match", async () => {
     await adminDb().doc("outreach/a").set({ email: "sam.tutor@gmail.com", business: "Sam Tutors" });
     const u = await makeUser("t", "someone.else@gmail.com");

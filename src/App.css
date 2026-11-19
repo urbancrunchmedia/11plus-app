@@ -3544,3 +3544,14 @@ a.set-ghost { display: inline-flex; align-items: center; justify-content: center
 @media (max-width: 860px) { .tut-tiles--5 { grid-template-columns: 1fr 1fr; } .tut-tiles--5 .tut-tile:last-child { grid-column: 1 / -1; } }
 @media print { .tut-sort, .tut-demo-banner .tut-btn { display: none !important; } }
 @media (max-width: 560px) { .tut-list-head { flex-direction: column; align-items: flex-start; gap: 8px; } }
+
+/* Tutor: back button, home-screen tip, account note */
+.tut-back { align-self: flex-start; border: none; background: none; padding: 4px 0; font: inherit; font-weight: 800; font-size: 0.9rem; color: var(--brand-ink); cursor: pointer; }
+.tut-brand { border: none; background: none; padding: 0; cursor: pointer; }
+.tut-hometip { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; background: #f3fbd4; border-color: #dfef9a; font-size: 0.9rem; color: var(--ink); }
+.tut-hometip-actions { display: flex; align-items: center; gap: 12px; }
+.tut-note-box { background: #fff8ec; border: 1px solid #ffd9a8; border-radius: 14px; padding: 12px 14px; font-size: 0.85rem; line-height: 1.5; color: var(--ink); }
+@media print { .tut-back, .tut-hometip { display: none !important; } }
+.tut-phone { display: flex; gap: 8px; }
+.tut-phone select { flex: none; border: 1.5px solid var(--line, #dde7f0); border-radius: 14px; padding: 12px 10px; font: inherit; font-weight: 600; background: #fff; color: var(--ink); max-width: 46%; }
+.tut-phone input { flex: 1; min-width: 0; }

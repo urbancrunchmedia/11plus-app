@@ -112,9 +112,12 @@ async function journey(browsers) {
     assert.equal(await applyBtn.isDisabled(), true, "apply button should wait for name + confirmation");
     await tutor.getByLabel("Your name").fill("Ms Patel");
     await tutor.getByLabel(/Tutoring business/).fill("Patel Tuition");
+    assert.equal(await tutor.getByLabel("Country code").inputValue(), "+44", "UK is the default country code");
+    await tutor.getByLabel("Phone number").fill("07700 900123");
     await tutor.getByRole("checkbox").check();
     await applyBtn.click();
     await tutor.getByTestId("tutor-pending").waitFor();
+    assert.equal((await adminDb().doc("tutors/tutor1").get()).get("phone"), "+44 7700 900123");
     const code = (await tutor.getByTestId("tutor-code").innerText()).trim();
     assert.match(code, /^TUT-[2-9A-HJKMNP-Z]{8}$/);
     assert.match(await tutor.getByTestId("tutor-link").innerText(), new RegExp(`/join/${code}$`));
@@ -170,11 +173,18 @@ async function journey(browsers) {
     await owner.screenshot({ path: path.join(SHOTS, "owner-tutors.png"), fullPage: true });
     log("Owner approves from the email in one tap; the tutor gets the 'approved' email");
 
-    // 5. Tutor accounts don't get friends.
+    // 5. A tutor opening the app lands on their dashboard; "Back to games" and the Pupils tab move between them.
     await tutor.goto(`${APP}/`);
-    await tutor.getByRole("button", { name: /Board/ }).first().click();
-    await tutor.getByText("Tutor accounts don't use friends").waitFor();
-    log("Tutor account sees no friends option on the leaderboard");
+    await tutor.waitForURL(/\/tutor$/);
+    await tutor.getByTestId("back-to-games").click();
+    await tutor.waitForURL(/127\.0\.0\.1:5310\/$/);
+    await tutor.getByRole("button", { name: "Pupils", exact: true }).first().waitFor();
+    assert.equal(await tutor.getByRole("button", { name: "Board", exact: true }).count(), 0, "tutors get Pupils, not the friends Board");
+    await tutor.waitForTimeout(800);
+    assert.equal(new URL(tutor.url()).pathname, "/", "stays in the games after Back to games");
+    await tutor.getByRole("button", { name: "Pupils", exact: true }).first().click();
+    await tutor.waitForURL(/\/tutor$/);
+    log("Tutor lands on their dashboard; 'Back to games' stays in the games; the Pupils tab (not Board) goes back");
 
     // 6. Now approved, the tutor sees Amu's practice.
     await tutor.goto(`${APP}/tutor`);
@@ -192,6 +202,15 @@ async function journey(browsers) {
     await tutor.getByText("1 tricky word has already been turned around").waitFor();
     await tutor.screenshot({ path: path.join(SHOTS, "tutor-pupil.png"), fullPage: true });
     log("Approved: the tutor sees Amu's rounds, flags, weak words and recent rounds");
+
+    // A parent sees "Are you a tutor?" in Settings; the tutor page gently flags a child's account.
+    await kid.reload();
+    await kid.getByRole("button", { name: "Me", exact: true }).click();
+    await kid.getByTestId("become-tutor").getByRole("button", { name: /Get a free tutor account/ }).click();
+    await kid.waitForURL(/\/tutor$/);
+    await kid.getByTestId("child-account-note").getByText(/This account has played \d+ rounds/).waitFor();
+    await kid.goto(`${APP}/`);
+    log("Settings offers 'Are you a tutor?'; the tutor page notes when an account has played as a learner");
 
     // 7. The tutor can't see a child who isn't connected (Leo).
     await adminDb().doc("users/kid2").set(practice(), { merge: true });

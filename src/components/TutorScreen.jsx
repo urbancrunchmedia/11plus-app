@@ -4,6 +4,8 @@ import { useTutor } from "../contexts/TutorContext";
 import QRCode from "qrcode";
 import { tutorApi, getPupils, removePupil, joinMessage } from "../utils/tutor";
 import { tutorJoinLink } from "../utils/tutorJoin";
+import { goToGames } from "../utils/tutorNav";
+import { getAllHistory } from "../utils/leaderboard";
 import { pupilSummary, classSummary, sortPupils, SORTS, GAME_ORDER } from "../utils/tutorMetrics";
 import { demoPupils } from "../utils/tutorDemo";
 import { SKILL_LABEL } from "../utils/progress";
@@ -38,23 +40,71 @@ function Tile({ label, value, sub }) {
 function Header({ title }) {
   const { signOut } = useAuth();
   return (
-    <header className="tut-head">
-      <a href="/" className="tut-brand" aria-label="11 PlusLab home"><img src="/logo-mark-simple.svg" alt="" width="40" height="40" /></a>
-      <div className="tut-head-txt">
-        <div className="tut-eyebrow">11 PlusLab for tutors</div>
-        <h1 className="tut-title">{title}</h1>
-      </div>
-      <div className="tut-head-actions">
-        <a className="tut-btn ghost" href="/">Play the games</a>
-        <button className="tut-btn ghost" onClick={signOut}>Sign out</button>
-      </div>
-    </header>
+    <>
+      <button className="tut-back" onClick={goToGames} data-testid="back-to-games">← Back to games</button>
+      <header className="tut-head">
+        <button className="tut-brand" onClick={goToGames} aria-label="11 PlusLab games"><img src="/logo-mark-simple.svg" alt="" width="40" height="40" /></button>
+        <div className="tut-head-txt">
+          <div className="tut-eyebrow">11 PlusLab for tutors</div>
+          <h1 className="tut-title">{title}</h1>
+        </div>
+        <div className="tut-head-actions">
+          <button className="tut-btn ghost" onClick={goToGames}>Play the games</button>
+          <button className="tut-btn ghost" onClick={signOut}>Sign out</button>
+        </div>
+      </header>
+    </>
   );
 }
 
+// "Add to Home Screen" tip for phones: Android's install prompt where the
+// browser offers one, Safari's Share → Add to Home Screen otherwise.
+let installPrompt = null;
+if (typeof window !== "undefined") {
+  window.addEventListener("beforeinstallprompt", (e) => { e.preventDefault(); installPrompt = e; });
+}
+const TIP_KEY = "11plus_tutor_home_tip";
+function HomeScreenTip() {
+  const [show, setShow] = useState(() => {
+    try {
+      const standalone = window.matchMedia?.("(display-mode: standalone)").matches || window.navigator.standalone;
+      const phone = window.matchMedia?.("(max-width: 820px)").matches;
+      return !!phone && !standalone && localStorage.getItem(TIP_KEY) !== "1";
+    } catch { return false; }
+  });
+  if (!show) return null;
+  const dismiss = () => { try { localStorage.setItem(TIP_KEY, "1"); } catch { /* private mode */ } setShow(false); };
+  const ios = /iPhone|iPad|iPod/.test(navigator.userAgent);
+  return (
+    <div className="tut-card tut-hometip" data-testid="home-screen-tip">
+      <div>
+        <b>Keep your dashboard one tap away.</b>{" "}
+        {installPrompt ? "Add it to your home screen like an app." : ios ? "In Safari, tap Share, then Add to Home Screen." : "Use your browser's menu: Add to Home Screen."}
+      </div>
+      <div className="tut-hometip-actions">
+        {installPrompt && <button className="tut-btn primary" onClick={async () => { installPrompt.prompt(); await installPrompt.userChoice.catch(() => {}); installPrompt = null; dismiss(); }}>Add to Home Screen</button>}
+        <button className="tut-link" onClick={dismiss}>Not now</button>
+      </div>
+    </div>
+  );
+}
+
+// Country codes for the phone field: UK first (the default), then nearby and
+// common ones, then the rest alphabetically.
+const DIAL_CODES = [
+  ["+44", "🇬🇧 UK"], ["+353", "🇮🇪 Ireland"], ["+1", "🇺🇸 US / Canada"], ["+91", "🇮🇳 India"], ["+971", "🇦🇪 UAE"],
+  ["+61", "🇦🇺 Australia"], ["+880", "🇧🇩 Bangladesh"], ["+33", "🇫🇷 France"], ["+49", "🇩🇪 Germany"], ["+852", "🇭🇰 Hong Kong"],
+  ["+39", "🇮🇹 Italy"], ["+254", "🇰🇪 Kenya"], ["+60", "🇲🇾 Malaysia"], ["+31", "🇳🇱 Netherlands"], ["+64", "🇳🇿 New Zealand"],
+  ["+234", "🇳🇬 Nigeria"], ["+92", "🇵🇰 Pakistan"], ["+48", "🇵🇱 Poland"], ["+351", "🇵🇹 Portugal"], ["+974", "🇶🇦 Qatar"],
+  ["+966", "🇸🇦 Saudi Arabia"], ["+65", "🇸🇬 Singapore"], ["+27", "🇿🇦 South Africa"], ["+34", "🇪🇸 Spain"], ["+94", "🇱🇰 Sri Lanka"],
+];
+
 function Apply({ onDone }) {
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
+  // Rounds this account has played on this device (a hint it may be a child's account).
+  const [playedHere] = useState(() => Object.values(getAllHistory()).reduce((n, runs) => n + (Array.isArray(runs) ? runs.length : 0), 0));
   const [form, setForm] = useState({ name: "", business: "", website: "", phone: "", confirm: false });
+  const [dial, setDial] = useState("+44");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.type === "checkbox" ? e.target.checked : e.target.value }));
@@ -62,7 +112,9 @@ function Apply({ onDone }) {
   async function submit(e) {
     e.preventDefault();
     setBusy(true); setError("");
-    try { await tutorApi("apply", form); await onDone(); }
+    // "+44 7700 900123": a leading 0 is dropped after a country code.
+    const number = form.phone.trim().replace(/^0+/, "");
+    try { await tutorApi("apply", { ...form, phone: number ? `${dial} ${number}` : "" }); await onDone(); }
     catch (err) { setError(err.message); setBusy(false); }
   }
 
@@ -75,7 +127,14 @@ function Apply({ onDone }) {
           <label className="tut-field">Your name<input value={form.name} onChange={set("name")} maxLength={60} required autoComplete="name" /></label>
           <label className="tut-field">Tutoring business or centre <span>(optional)</span><input value={form.business} onChange={set("business")} maxLength={80} autoComplete="organization" /></label>
           <label className="tut-field">Website <span>(optional, helps us approve you faster)</span><input value={form.website} onChange={set("website")} maxLength={120} inputMode="url" /></label>
-          <label className="tut-field">Phone <span>(optional)</span><input value={form.phone} onChange={set("phone")} maxLength={30} inputMode="tel" autoComplete="tel" /></label>
+          <label className="tut-field">Phone <span>(optional)</span>
+            <span className="tut-phone">
+              <select value={dial} onChange={(e) => setDial(e.target.value)} aria-label="Country code">
+                {DIAL_CODES.map(([code, country]) => <option key={country} value={code}>{country} {code}</option>)}
+              </select>
+              <input value={form.phone} onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value.replace(/[^\d ]/g, "").slice(0, 16) }))} inputMode="tel" autoComplete="tel-national" placeholder="7700 900123" aria-label="Phone number" />
+            </span>
+          </label>
           <label className="tut-check">
             <input type="checkbox" checked={form.confirm} onChange={set("confirm")} />
             <span>I'm a tutor or work at a tuition centre, and I'll only use pupils' progress to support their learning.</span>
@@ -84,7 +143,13 @@ function Apply({ onDone }) {
           <button className="tut-btn primary" type="submit" disabled={busy || form.name.trim().length < 2 || !form.confirm}>
             {busy ? "Sending…" : "Apply for a free tutor account"}
           </button>
-          <p className="tut-small">Signed in as {user?.email}. Please use a separate account from any child's account.</p>
+          <p className="tut-small">Signed in as {user?.email}.</p>
+          {playedHere > 0 && (
+            <div className="tut-note-box" data-testid="child-account-note">
+              This account has played {playedHere} {playedHere === 1 ? "round" : "rounds"}. If it's your child's account, it's best to create a separate tutor account with another email, so their progress stays separate.{" "}
+              <button type="button" className="tut-link" onClick={signOut}>Sign out and use another email</button>
+            </div>
+          )}
         </form>
         <div className="tut-card tut-how">
           <h2 className="tut-h2">How it works</h2>
@@ -134,6 +199,7 @@ function Pending({ tutor, refreshTutor }) {
           <p data-testid="pending-count">{pupils === 0 ? "No families have connected yet." : `${pupils} ${pupils === 1 ? "family has" : "families have"} connected. You'll see their progress once you're approved.`}</p>
         )}
       </div>
+      <HomeScreenTip />
       <CodeCard tutor={tutor} onNewCode={newCode} onPoster={() => setPoster(true)} />
       {pupils === 0 ? <FirstPupils tutor={tutor} onPoster={() => setPoster(true)} onDemo={() => setDemo(true)} /> : (
         <div className="tut-card tut-demo-cta">
@@ -497,6 +563,7 @@ function Dashboard({ tutor, refreshTutor }) {
         <PupilDetail p={open} onBack={() => setOpenUid(null)} onRemove={() => remove(open)} />
       ) : (
         <>
+          <HomeScreenTip />
           <CodeCard tutor={tutor} onNewCode={newCode} onPoster={() => setPoster(true)} />
           {rows === null ? (
             <div className="tut-card tut-empty">Loading your pupils…</div>

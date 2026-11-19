@@ -101,7 +101,7 @@ function TutorsAdmin() {
                   {t.email}{t.website ? <> · <a href={/^https?:\/\//.test(t.website) ? t.website : `https://${t.website}`} target="_blank" rel="noopener noreferrer">{t.website}</a></> : ""}{t.phone ? ` · ${t.phone}` : ""}
                 </div>
                 <div className="own-muted">
-                  Applied {new Date(t.appliedAt).toLocaleDateString("en-GB")}{t.autoApproved ? " · pre-approved (on your outreach list)" : ""} · {plural(t.pupils, "pupil")}
+                  Applied {new Date(t.appliedAt).toLocaleDateString("en-GB")}{t.autoApproved ? " · pre-approved (on your outreach list)" : ""}{t.learnerRounds ? ` · played ${t.learnerRounds} rounds as a learner` : ""} · {plural(t.pupils, "pupil")}
                   {t.pupils > 0 ? ` (${t.viaLink} by link, ${t.newFamilies} new ${t.newFamilies === 1 ? "family" : "families"})` : ""}{t.code ? ` · code ${t.code}` : ""}
                 </div>
               </div>
