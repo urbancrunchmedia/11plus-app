@@ -279,7 +279,13 @@ async function grant(db, body) {
   const asChild = await db.collection("tutorLinks").where("childUid", "==", user.uid).limit(1).get();
   if (!asChild.empty) return [400, { error: "That account is connected to a tutor as a pupil." }];
   const ref = db.collection("tutors").doc(user.uid);
-  if (!(await ref.get()).exists) {
+  const existing = await ref.get();
+  // Granting again with a name or business corrects them (e.g. an account
+  // whose name was a child's learner name).
+  if (existing.exists && (body.name || body.business)) {
+    await ref.update({ ...(body.name ? { name: clean(body.name, 60) } : {}), ...(body.business ? { business: clean(body.business, 80) } : {}) });
+  }
+  if (!existing.exists) {
     const history = (await db.collection("users").doc(user.uid).get()).get("history") || {};
     await ref.set({
       status: "pending",
