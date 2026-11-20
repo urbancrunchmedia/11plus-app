@@ -9,6 +9,7 @@
 //  - Win-back: children quiet for more than MAX_DAYS get one "we've missed
 //    you" email, once ever (winBackSentAt), then nothing more.
 import { adminDb } from "../../server/firebaseAdmin.js";
+import { hasBearer } from "../../server/bearer.js";
 import { listAccounts } from "../../server/recipients.js";
 import { inactivityEmail, firstRoundEmail, winBackEmail, sendBatch, unsubscribedUids } from "../../server/email.js";
 
@@ -26,8 +27,7 @@ const WIN_BACK_CAP = 30;
 const WIN_BACK_ENABLED = true;
 
 export default async function handler(req, res) {
-  const expected = `Bearer ${(process.env.CRON_SECRET || "").trim()}`;
-  if (!process.env.CRON_SECRET || req.headers.authorization !== expected) {
+  if (!hasBearer(req, "CRON_SECRET")) {
     return res.status(401).json({ error: "Unauthorized" });
   }
   try {

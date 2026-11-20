@@ -8,7 +8,7 @@
 // Lives here because the project is at Vercel's function limit. Sends our own
 // branded password-reset email (or, for a Google sign-in account, how to sign
 // in). Always answers the same way, so it never reveals whether an account
-// exists, and allows 3 requests per address per hour.
+// exists, and allows 3 requests per address and 10 per network address an hour.
 import { createHash } from "crypto";
 import { verifyToken } from "../../server/verifyToken.js";
 import { adminAuth, adminDb } from "../../server/firebaseAdmin.js";
@@ -17,6 +17,7 @@ import { sendEmail, welcomeEmail, passwordResetEmail, googleSignInEmail, SITE } 
 const DAY = 24 * 60 * 60 * 1000;
 const HOUR = 60 * 60 * 1000;
 const RESETS_PER_HOUR = 3;
+const RESETS_PER_IP_HOUR = 10;
 
 async function handleReset(req, res) {
   const email = String(req.body?.email || "").trim().toLowerCase();
@@ -24,14 +25,21 @@ async function handleReset(req, res) {
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return res.status(400).json({ error: "Please enter a valid email address." });
   try {
     const db = adminDb();
-    const ref = db.collection("resetLimits").doc(createHash("sha256").update(email).digest("hex").slice(0, 32));
+    const hash = (v) => createHash("sha256").update(v).digest("hex").slice(0, 32);
+    const ip = String(req.headers["x-real-ip"] || req.headers["x-forwarded-for"] || "").split(",")[0].trim() || "unknown";
+    // Per address (3 an hour) and per network address (10 an hour), so the
+    // form can't be used to flood one inbox or burn the day's email allowance.
+    const buckets = [[db.collection("resetLimits").doc(hash(email)), RESETS_PER_HOUR], [db.collection("resetLimits").doc(`ip-${hash(ip)}`), RESETS_PER_IP_HOUR]];
     const allowed = await db.runTransaction(async (tx) => {
-      const snap = await tx.get(ref);
+      const snaps = await Promise.all(buckets.map(([ref]) => tx.get(ref)));
       const now = Date.now();
-      const { windowStart = 0, count = 0 } = snap.exists ? snap.data() : {};
-      const fresh = now - windowStart > HOUR;
-      if (!fresh && count >= RESETS_PER_HOUR) return false;
-      tx.set(ref, fresh ? { windowStart: now, count: 1 } : { windowStart, count: count + 1 });
+      const next = snaps.map((snap, i) => {
+        const { windowStart = 0, count = 0 } = snap.exists ? snap.data() : {};
+        const fresh = now - windowStart > HOUR;
+        return { fresh, over: !fresh && count >= buckets[i][1], value: fresh ? { windowStart: now, count: 1 } : { windowStart, count: count + 1 } };
+      });
+      if (next.some((n) => n.over)) return false;
+      next.forEach((n, i) => tx.set(buckets[i][0], n.value));
       return true;
     });
     if (!allowed) return done(); // same answer: don't reveal anything, just stop sending

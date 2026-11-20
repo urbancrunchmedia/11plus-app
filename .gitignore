@@ -8,6 +8,9 @@ pnpm-debug.log*
 lerna-debug.log*
 
 .env
+.env.*
+!.env.example
+!e2e/.env.e2e
 .env.local
 node_modules
 dist

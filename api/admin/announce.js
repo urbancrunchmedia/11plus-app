@@ -9,13 +9,13 @@
 //   { ...any of the above, testTo: "you@example.com" }   send one test copy only
 //   { id, dryRun: true }                                 just count who would get it
 import { adminDb } from "../../server/firebaseAdmin.js";
+import { hasBearer } from "../../server/bearer.js";
 import { listAccounts } from "../../server/recipients.js";
 import { announcementEmail, sendBatch, sendEmail, unsubscribedUids, DAILY_CAP } from "../../server/email.js";
 
 export default async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
-  const secret = (process.env.ADMIN_SECRET || "").trim();
-  if (!secret || req.headers.authorization !== `Bearer ${secret}`) {
+  if (!hasBearer(req, "ADMIN_SECRET")) {
     return res.status(401).json({ error: "Unauthorized" });
   }
   try {

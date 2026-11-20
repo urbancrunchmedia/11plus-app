@@ -20,6 +20,7 @@
 // GET from Vercel Cron (Authorization: Bearer <CRON_SECRET>): sends the next
 // batch, but only once "start" has been called.
 import { getStripe } from "../../server/stripe.js";
+import { hasBearer } from "../../server/bearer.js";
 import { adminDb } from "../../server/firebaseAdmin.js";
 import { sendEmail, outreachEmail, tutorInviteEmail, outreachKey, OUTREACH_FROM } from "../../server/email.js";
 
@@ -142,9 +143,8 @@ async function sendTutorInvites(db, limit) {
 }
 
 export default async function handler(req, res) {
-  const auth = req.headers.authorization || "";
-  const admin = clean(process.env.ADMIN_SECRET) && auth === `Bearer ${clean(process.env.ADMIN_SECRET)}`;
-  const cron = clean(process.env.CRON_SECRET) && auth === `Bearer ${clean(process.env.CRON_SECRET)}`;
+  const admin = hasBearer(req, "ADMIN_SECRET");
+  const cron = hasBearer(req, "CRON_SECRET");
   if (!admin && !cron) return res.status(401).json({ error: "Unauthorized" });
 
   const db = adminDb();

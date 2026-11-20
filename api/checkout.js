@@ -9,6 +9,10 @@ export default async function handler(req, res) {
     const { uid, email } = await verifyToken(req);
     const { priceId } = req.body || {};
     if (!priceId) return res.status(400).json({ error: "Missing price" });
+    // Only our two plans: never a price ID chosen by the browser (an old or
+    // cheaper price in the same Stripe account would otherwise work too).
+    const allowed = [process.env.VITE_STRIPE_PRICE_MONTHLY, process.env.VITE_STRIPE_PRICE_ANNUAL].map((v) => (v || "").trim()).filter(Boolean);
+    if (!allowed.includes(String(priceId).trim())) return res.status(400).json({ error: "Unknown plan" });
 
     const stripe = getStripe();
     const customer = await findOrCreateCustomer(stripe, uid, email);

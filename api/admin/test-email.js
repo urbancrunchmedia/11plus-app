@@ -7,6 +7,7 @@
 // { to, note: { subject, text, attachments?: [{ filename, content(base64) }], scheduledAt? } }
 // sends a private reminder to one of the owners' own addresses (nothing else).
 import { adminAuth, adminDb } from "../../server/firebaseAdmin.js";
+import { hasBearer } from "../../server/bearer.js";
 import {
   sendEmail, ownerNoteEmail, welcomeEmail, trialEndingEmail, inactivityEmail, announcementEmail, supportRequestEmail, firstRoundEmail, winBackEmail,
 } from "../../server/email.js";
@@ -34,8 +35,7 @@ const SAMPLES = {
 
 export default async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
-  const secret = (process.env.ADMIN_SECRET || "").trim();
-  if (!secret || req.headers.authorization !== `Bearer ${secret}`) {
+  if (!hasBearer(req, "ADMIN_SECRET")) {
     return res.status(401).json({ error: "Unauthorized" });
   }
   const { to, template, real, note } = req.body || {};
