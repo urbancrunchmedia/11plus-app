@@ -13,6 +13,7 @@
 // Owner actions (owner account or ADMIN_SECRET, see server/ownerAuth.js):
 //   { action: "adminList" }             every tutor, with pupil counts
 //   { action: "approve" | "suspend" | "decline", uid }
+//   { action: "grant", email, name?, business? }   make an existing account an approved tutor
 //
 // Approval: a tutor whose email (or business email domain) is on the owner's
 // outreach list is approved straight away. Anyone else is "pending": they get
@@ -269,6 +270,28 @@ async function removeFriendships(db, uid) {
   await Promise.all([...friends.docs, ...sent.docs, ...received.docs].map((d) => d.ref.delete()));
 }
 
+// Owner gives an existing account tutor access directly (no application needed).
+async function grant(db, body) {
+  const email = clean(body.email, 120).toLowerCase();
+  let user;
+  try { user = await adminAuth().getUserByEmail(email); }
+  catch (e) { if (e.code === "auth/user-not-found") return [404, { error: `No account with ${email}. They need to sign up first.` }]; throw e; }
+  const asChild = await db.collection("tutorLinks").where("childUid", "==", user.uid).limit(1).get();
+  if (!asChild.empty) return [400, { error: "That account is connected to a tutor as a pupil." }];
+  const ref = db.collection("tutors").doc(user.uid);
+  if (!(await ref.get()).exists) {
+    const history = (await db.collection("users").doc(user.uid).get()).get("history") || {};
+    await ref.set({
+      status: "pending",
+      name: clean(body.name, 60) || clean((await db.collection("profiles").doc(user.uid).get()).get("displayName"), 60) || clean(user.displayName, 60) || email.split("@")[0],
+      business: clean(body.business, 80), website: "", phone: "", email: user.email,
+      code: await assignCode(db, user.uid), appliedAt: new Date().toISOString(), grantedByOwner: true,
+      learnerRounds: Object.values(history).reduce((n, runs) => n + (Array.isArray(runs) ? runs.length : 0), 0),
+    });
+  }
+  return setStatus(db, "approve", user.uid);
+}
+
 async function setStatus(db, action, uid) {
   if (!uid || typeof uid !== "string") return [400, { error: "Missing uid" }];
   const ref = db.collection("tutors").doc(uid);
@@ -336,9 +359,10 @@ export default async function handler(req, res) {
       const [status, data] = await lookup(db, null, body, req);
       return res.status(status).json(status === 200 ? { tutorName: data.tutorName, business: data.business } : data);
     }
-    if (["adminList", "approve", "suspend", "decline"].includes(body.action)) {
+    if (["adminList", "approve", "suspend", "decline", "grant"].includes(body.action)) {
       const auth = await checkOwner(req);
       if (!auth.ok) return res.status(auth.status).json({ error: auth.error });
+      if (body.action === "grant") return send(await grant(db, body));
       return send(body.action === "adminList" ? await adminList(db) : await setStatus(db, body.action, body.uid));
     }
     let who;

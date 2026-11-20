@@ -111,6 +111,16 @@ describe("owner approval", () => {
     expect((await adminDb().doc("friendships/kid__t").get()).exists).toBe(false);
   });
 
+  it("lets the owner give an existing account tutor access directly", async () => {
+    const u = await makeUser("c1", "charlotte@test.co", "Charlotte");
+    expect((await call(handler, { token: u.token, body: { action: "grant", email: "charlotte@test.co" } })).status).toBe(403);
+    const res = await asAdmin({ action: "grant", email: "Charlotte@Test.co" });
+    expect(res.data).toMatchObject({ status: "active", code: expect.stringMatching(/^TUT-/) });
+    expect((await adminDb().doc("tutors/c1").get()).data()).toMatchObject({ status: "active", name: "Charlotte", grantedByOwner: true });
+    expect(outbox().some((m) => m.to === "charlotte@test.co" && /approved/i.test(m.subject))).toBe(true);
+    expect((await asAdmin({ action: "grant", email: "nobody@test.co" })).status).toBe(404);
+  });
+
   it("declines only pending applications", async () => {
     const t = await approvedTutor();
     expect((await asAdmin({ action: "decline", uid: t.uid })).status).toBe(400);
