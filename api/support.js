@@ -12,6 +12,7 @@ const CATEGORIES = {
   technical: "Something isn't working",
   feedback: "Feedback or a suggestion",
   other: "Something else",
+  report: "Reported name (leaderboard)",
 };
 const MAX_PER_HOUR = 5;
 const HOUR = 60 * 60 * 1000;
@@ -25,7 +26,12 @@ export default async function handler(req, res) {
     return res.status(401).json({ error: "Please sign in again and retry." });
   }
   const category = CATEGORIES[req.body?.category] ? req.body.category : "other";
-  const message = String(req.body?.message || "").trim().slice(0, 2000);
+  // A child's name reported from the leaderboard (Online Safety: a way to report).
+  const reportedUid = category === "report" ? String(req.body?.reportedUid || "").slice(0, 128) : "";
+  if (category === "report" && !/^[A-Za-z0-9_-]{1,128}$/.test(reportedUid)) {
+    return res.status(400).json({ error: "Couldn't tell which name to report." });
+  }
+  const message = String(req.body?.message || (category === "report" ? "A family reported this name from their leaderboard." : "")).trim().slice(0, 2000);
   if (!message) return res.status(400).json({ error: "Please describe what's going on." });
 
   try {
@@ -54,6 +60,10 @@ export default async function handler(req, res) {
       message,
       createdAt: new Date().toISOString(),
     };
+    if (reportedUid) {
+      request.reportedUid = reportedUid;
+      request.reportedName = await adminAuth().getUser(reportedUid).then((u) => u.displayName || "", () => "(account not found)");
+    }
     const ref = await db.collection("supportRequests").add(request);
 
     await sendEmail({

@@ -480,18 +480,19 @@ export function announcementEmail({ uid, subject, heading, text, ctaLabel, ctaUr
 
 // Internal: a support request from the in-app form, delivered to SUPPORT_INBOX.
 // Plain on purpose: it's for us, not a parent.
-export function supportRequestEmail({ uid, email, displayName, categoryLabel, message, createdAt, id }) {
+export function supportRequestEmail({ uid, email, displayName, categoryLabel, message, createdAt, id, reportedUid, reportedName }) {
   const when = new Date(createdAt).toLocaleString("en-GB", { timeZone: "Europe/London", dateStyle: "medium", timeStyle: "short" });
   const row = (k, v) => `<tr><td style="padding:4px 14px 4px 0;color:#5E6C7C;white-space:nowrap;vertical-align:top">${k}</td><td style="padding:4px 0;color:#0E1116">${v}</td></tr>`;
   return {
     marketing: false,
-    subject: `Support: ${categoryLabel}${displayName ? ` (${displayName})` : ""}`,
+    subject: reportedUid ? `Reported name: ${reportedName || reportedUid}` : `Support: ${categoryLabel}${displayName ? ` (${displayName})` : ""}`,
     html: `<!doctype html><html><body style="margin:0;padding:24px;background:#F4F9FF;font-family:Helvetica,Arial,sans-serif;font-size:15px;line-height:1.55">
 <div style="max-width:560px;margin:0 auto;background:#fff;border-radius:16px;padding:24px">
 <div style="font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#12A5FF">In-app support request</div>
 <h1 style="margin:6px 0 16px;font-size:20px;color:#0E1116">${escapeHtml(categoryLabel)}</h1>
 <div style="white-space:pre-wrap;padding:14px 16px;background:#F4F9FF;border-radius:12px;color:#0E1116">${escapeHtml(message)}</div>
 <table role="presentation" style="margin-top:18px;font-size:13px">
+${reportedUid ? row("Reported name", `<strong>${escapeHtml(reportedName || "(not set)")}</strong>`) + row("Reported account", escapeHtml(reportedUid)) : ""}
 ${row("From", escapeHtml(email || "(no email on account)"))}
 ${row("Learner name", escapeHtml(displayName || "(not set)"))}
 ${row("Sent", escapeHtml(when))}

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useAuth } from "../contexts/AuthContext";
+import { reportName } from "../utils/support";
 import { getProfile, getLeaderboard, addFriendByCode, removeFriend, syncProfile, getFriendRequests, acceptFriendRequest, removeFriendRequest } from "../utils/cloudScores";
 import Icon from "./Icon";
 import { msUntilReset, formatResetIn } from "../utils/weekly";
@@ -161,6 +162,20 @@ export default function LeaderboardScreen({ onPlay, onExit }) {
     load();
   }
 
+  async function reportAndRemove() {
+    if (!user || !removeTarget) return;
+    const t = removeTarget;
+    setRemoveTarget(null);
+    try {
+      await reportName(t.uid);
+      await removeFriend(user.uid, t.uid);
+      showToast("Thanks for telling us. We'll check that name, and they've been removed.");
+    } catch (e) {
+      showToast(e.message || "Couldn't send the report. Please try again.");
+    }
+    load();
+  }
+
   async function saveName() {
     const n = nameInput.trim();
     if (!n) return;
@@ -285,7 +300,7 @@ export default function LeaderboardScreen({ onPlay, onExit }) {
               )}
               <span className="board-pts">{(p.weekPoints || 0).toLocaleString()}</span>
               {!p.isMe && managing && (
-                <button className="board-remove" onClick={() => setRemoveTarget(p)} aria-label={`Remove ${p.displayName || "friend"}`} title={`Remove ${p.displayName || "friend"}`}>✕</button>
+                <button className="board-remove" onClick={() => setRemoveTarget(p)} aria-label={`Remove or report ${p.displayName || "friend"}`} title={`Remove or report ${p.displayName || "friend"}`}>✕</button>
               )}
             </div>
             );
@@ -376,9 +391,10 @@ export default function LeaderboardScreen({ onPlay, onExit }) {
       {removeTarget && (
         <div className="set-sheet-overlay" onClick={() => setRemoveTarget(null)}>
           <div className="set-sheet board-sheet" onClick={(e) => e.stopPropagation()}>
-            <div className="set-sheet-title">Remove {removeTarget.displayName || "this friend"}?</div>
-            <div className="set-sheet-sub">They'll disappear from your leaderboard. You can add them back later with their code.</div>
+            <div className="set-sheet-title">Remove or report {removeTarget.displayName || "this friend"}?</div>
+            <div className="set-sheet-sub">They'll disappear from your leaderboard. You can add them back later with their code. If their name is unkind or upsetting, report it and we'll check it.</div>
             <button className="set-sheet-confirm board-danger" onClick={confirmRemove}>Remove friend</button>
+            <button className="set-sheet-cancel" onClick={reportAndRemove}>Report their name and remove</button>
             <button className="set-sheet-cancel" onClick={() => setRemoveTarget(null)}>Keep them</button>
           </div>
         </div>

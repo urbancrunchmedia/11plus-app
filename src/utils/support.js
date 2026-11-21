@@ -1,5 +1,5 @@
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
-import { db } from "../firebase";
+import { db, auth } from "../firebase";
 
 export const SUPPORT_CATEGORIES = [
   { id: "billing",   label: "Billing or subscription" },
@@ -41,4 +41,21 @@ export async function submitSupportRequest(user, { category, message }) {
     message: text,
     createdAt: serverTimestamp(),
   });
+}
+
+// Report a friend's name from the leaderboard. Goes to the same inbox; the
+// server looks up the name itself, so it can't be faked by the reporter.
+export async function reportName(reportedUid) {
+  const user = auth.currentUser;
+  if (!user) throw new Error("Not signed in.");
+  const token = await user.getIdToken();
+  const res = await fetch("/api/support", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+    body: JSON.stringify({ category: "report", reportedUid }),
+  });
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    throw new Error(data.error || "Couldn't send the report. Please try again.");
+  }
 }

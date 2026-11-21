@@ -137,7 +137,7 @@ function Apply({ onDone }) {
           </label>
           <label className="tut-check">
             <input type="checkbox" checked={form.confirm} onChange={set("confirm")} />
-            <span>I'm a tutor or work at a tuition centre, and I'll only use pupils' progress to support their learning.</span>
+            <span>I'm a tutor or work at a tuition centre, and I'll only use pupils' progress to support their learning, keep it private and not share it with anyone else.</span>
           </label>
           {error && <div className="board-msg err" role="alert">{error}</div>}
           <button className="tut-btn primary" type="submit" disabled={busy || form.name.trim().length < 2 || !form.confirm}>

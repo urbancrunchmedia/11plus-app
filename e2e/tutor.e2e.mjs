@@ -323,6 +323,18 @@ async function journey(browsers) {
     await kid.locator(".board-row").filter({ hasText: "Leo" }).waitFor();
     log("Leo sees the request on Home, accepts; both now see each other on the leaderboard");
 
+    // 14b. Leo's grown-up reports Amu's name: we're emailed, and Amu is removed.
+    await leo.getByRole("button", { name: "Manage", exact: true }).click();
+    await leo.locator(".board-row").filter({ hasText: "Amu" }).getByRole("button", { name: "Remove or report Amu" }).click();
+    await leo.getByRole("button", { name: "Report their name and remove" }).click();
+    await leo.getByText(/We'll check that name/).waitFor();
+    await leo.locator(".board-row").filter({ hasText: "Amu" }).waitFor({ state: "detached" });
+    const report = (await outbox()).find((m) => m.subject === "Reported name: Amu");
+    assert.ok(report, "the report reaches the support inbox");
+    assert.match(report.html, /kid1/);
+    assert.equal((await adminDb().doc(`friendships/${pair}`).get()).exists, false, "reporting also removes the friend");
+    log("Leo reports Amu's name from the leaderboard; the report is emailed to us and Amu is removed");
+
     console.log("\nNew families and pre-approved tutors");
     // 15. A brand-new family signs up through the tutor's link.
     const miaCtx = await chrome.newContext(desk);

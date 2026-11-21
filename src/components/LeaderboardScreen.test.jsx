@@ -79,7 +79,7 @@ describe("LeaderboardScreen", () => {
     expect(el.querySelector(".board-remove")).toBeNull();
     await act(async () => { el.querySelector(".board-manage").click(); });
     const remove = el.querySelector(".board-remove");
-    expect(remove.getAttribute("aria-label")).toBe("Remove Sam");
+    expect(remove.getAttribute("aria-label")).toBe("Remove or report Sam");
     // Your own row is renamed, never removed.
     expect(el.querySelectorAll(".board-remove").length).toBe(1);
     // Matches the word Settings already uses for the identical action —
