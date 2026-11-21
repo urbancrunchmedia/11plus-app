@@ -6,6 +6,7 @@ import { makeCompoundBuildQuestions, makeCompoundQuestionsFromTargets } from "..
 import { playCorrect, playWrong } from "../utils/feedback";
 import { recordAttempt } from "../utils/progress";
 import { addMiss, clearMiss, getMisses } from "../utils/misses";
+import NothingToPractise from "./NothingToPractise";
 
 const SKILL = "compoundWords";
 
@@ -96,6 +97,9 @@ export default function CompoundGame({ level, totalQuestions = 20, onHome, pract
     setResults([]); setTotalWrong(0); setElapsed(0); setDone(false);
     locked.current = false;
   }
+
+  // No questions (e.g. "practise my misses" with none left): don't crash on question 1 of 0.
+  if (!questions.length) return <NothingToPractise onHome={onHome} />;
 
   if (done) {
     return (

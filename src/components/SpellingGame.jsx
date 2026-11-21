@@ -7,6 +7,7 @@ import { playCorrect, playWrong } from "../utils/feedback";
 import { recordAttempt } from "../utils/progress";
 import { addMiss, clearMiss, getMisses } from "../utils/misses";
 import SpotSentence from "./SpotSentence";
+import NothingToPractise from "./NothingToPractise";
 
 const SKILL = "spelling";
 
@@ -117,6 +118,9 @@ export default function SpellingGame({ level, totalQuestions = 20, onHome, muted
     setElapsed(0);
     setGameComplete(false);
   }
+
+  // No questions (e.g. "practise my misses" with none left): don't crash on question 1 of 0.
+  if (!questions.length) return <NothingToPractise onHome={onHome} />;
 
   if (gameComplete) {
     return (

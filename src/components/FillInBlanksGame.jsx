@@ -7,6 +7,7 @@ import { playCorrect, playWrong } from "../utils/feedback";
 import { recordAttempt, selectWithReview } from "../utils/progress";
 import { getSetting } from "../utils/leaderboard";
 import { addMiss, clearMiss, getMisses } from "../utils/misses";
+import NothingToPractise from "./NothingToPractise";
 
 const SKILL = "fillInBlanks";
 
@@ -130,6 +131,9 @@ export default function FillInBlanksGame({ level, totalQuestions = 20, onHome, m
     setElapsed(0);
     setGameComplete(false);
   }
+
+  // No questions (e.g. "practise my misses" with none left): don't crash on question 1 of 0.
+  if (!questions.length) return <NothingToPractise onHome={onHome} />;
 
   if (gameComplete) {
     return (

@@ -16,6 +16,7 @@ import WorksheetGame from "./WorksheetGame";
 import FillInBlanksGame from "./FillInBlanksGame";
 import PunctuationGame from "./PunctuationGame";
 import SpellingGame from "./SpellingGame";
+import WordClassGame from "./WordClassGame";
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -88,4 +89,28 @@ describe("game screens", () => {
     expect(el.querySelectorAll(".ig-pip.done").length).toBe(0);
     expect(onHome).not.toHaveBeenCalled();
   });
+});
+
+// Regression (Sentry, Safari): "Practise my misses" with no misses left built
+// a round of zero questions, and the game crashed reading question 1
+// ("undefined is not an object (evaluating 'P.first')").
+describe("practice with nothing left to practise", () => {
+  beforeEach(() => { document.body.innerHTML = ""; localStorage.clear(); });
+  const PRACTICE = [
+    ["Compound Words", (onHome) => <CompoundGame level="A" practice onHome={onHome} />],
+    ["Word Detective", (onHome) => <FillInBlanksGame level="A" practice onHome={onHome} />],
+    ["Punctuation", (onHome) => <PunctuationGame level="A" practice onHome={onHome} />],
+    ["Spelling", (onHome) => <SpellingGame level="A" practice onHome={onHome} />],
+    ["Parts of Speech", (onHome) => <WordClassGame level="A" practice onHome={onHome} />],
+  ];
+  for (const [name, make] of PRACTICE) {
+    it(`${name} shows a friendly screen instead of crashing`, async () => {
+      const onHome = vi.fn();
+      const el = await mount(make(onHome));
+      const empty = el.querySelector("[data-testid=nothing-to-practise]");
+      expect(empty).toBeTruthy();
+      await act(async () => { empty.querySelector("button").click(); });
+      expect(onHome).toHaveBeenCalled();
+    });
+  }
 });

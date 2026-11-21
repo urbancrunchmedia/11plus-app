@@ -3559,3 +3559,6 @@ a.set-ghost { display: inline-flex; align-items: center; justify-content: center
 .own-h3 { margin: 0 0 6px; font-size: 0.95rem; font-weight: 800; }
 .own-trial { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; padding: 8px 0; border-bottom: 1px solid var(--line, #dde7f0); }
 .own-trial:last-child { border-bottom: none; }
+.game-empty { text-align: center; padding: 36px 24px; max-width: 420px; margin: 40px auto; }
+.game-empty-icon { font-size: 2.4rem; margin-bottom: 8px; }
+.game-empty-sub { color: var(--muted); font-weight: 600; font-size: 0.92rem; line-height: 1.5; margin: 8px 0 18px; }
