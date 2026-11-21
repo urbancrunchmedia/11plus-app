@@ -26,7 +26,6 @@ const LEARN_TOGGLES = [
   { key: "revisitMisses", label: "Bring back missed words", sub: "Words you slip on return in a later round" },
 ];
 const PARENT_TOGGLES = [
-  { key: "parentPinLock", label: "PIN-protect grown-up settings", sub: "Ask for the Child PIN before opening Settings", needsPin: true },
   { key: "allowFriends", label: "Allow friends", sub: "Add friends and share invite links for the weekly leaderboard" },
 ];
 
@@ -46,6 +45,7 @@ export default function SettingsScreen({ onOpenReport, onOpenBadges }) {
     catch { setPortalBusy(false); }
   }
   const [s, setS] = useState(getSettings);
+  const pinOn = !!s.childPin && !!s.parentPinLock;
   const [sheet, setSheet] = useState(false);
   const [editingPin, setEditingPin] = useState(false);
   const [pinInput, setPinInput] = useState("");
@@ -269,6 +269,38 @@ export default function SettingsScreen({ onOpenReport, onOpenBadges }) {
       {/* Grown-ups */}
       <div className="set-card">
         <div className="set-card-title">Grown-ups</div>
+        {/* One PIN for the whole grown-up area: setting it turns the lock on. */}
+        <div className="set-row" data-testid="grownup-pin">
+          <div className="set-row-txt">
+            <div className="set-row-label">Grown-up PIN {pinOn && <span className="set-pin-on">On</span>}</div>
+            <div className="set-row-sub">{pinOn
+              ? "A PIN is needed to open Settings, the progress report and to connect a tutor"
+              : "Lock Settings, the progress report and tutor connections with a 4-digit PIN"}</div>
+          </div>
+          {!editingPin ? (
+            <div className="set-pin-actions">
+              {pinOn ? (
+                <>
+                  <button className="set-ghost" onClick={() => { setPinInput(""); setEditingPin(true); }}>Change PIN</button>
+                  <button className="set-ghost" onClick={() => setConfirmPinOff(true)}>Turn off</button>
+                </>
+              ) : (
+                <button className="set-ghost" onClick={() => { setPinInput(""); setEditingPin(true); }}>Set PIN</button>
+              )}
+            </div>
+          ) : (
+            <div className="set-pin-actions">
+              <input className="set-pin-input" inputMode="numeric" maxLength={4} value={pinInput} aria-label="New 4-digit PIN"
+                onChange={(e) => setPinInput(e.target.value.replace(/\D/g, "").slice(0, 4))} placeholder="0000" autoFocus />
+              <button className="set-ghost" disabled={pinInput.length !== 4} onClick={() => {
+                update("childPin", pinInput); update("parentPinLock", true); setEditingPin(false);
+                setToast(pinOn ? "PIN changed" : "Grown-up PIN is on"); setTimeout(() => setToast(null), 2200);
+              }}>Save</button>
+              <button className="set-ghost" onClick={() => setEditingPin(false)}>Cancel</button>
+            </div>
+          )}
+        </div>
+        <div className="set-divider" />
         <div className="set-row">
           <div className="set-row-txt"><div className="set-row-label">Progress report</div><div className="set-row-sub">See accuracy by skill and the words to revise next</div></div>
           <button className="set-ghost" onClick={onOpenReport}>View {!isPremium && <Icon className="inline-ico" name="lock" size={12} stroke="currentColor" strokeWidth={2.2} />}</button>
@@ -283,11 +315,10 @@ export default function SettingsScreen({ onOpenReport, onOpenBadges }) {
           <React.Fragment key={t.key}>
             {i > 0 && <div className="set-divider" />}
             <div className="set-row">
-              <div className="set-row-txt"><div className="set-row-label">{t.label}</div><div className="set-row-sub">{t.needsPin && !s.childPin ? "Set a Child PIN below to use this" : t.sub}</div></div>
+              <div className="set-row-txt"><div className="set-row-label">{t.label}</div><div className="set-row-sub">{t.sub}</div></div>
               <button
                 className={`set-switch ${s[t.key] ? "on" : ""}`}
                 onClick={() => toggle(t.key)}
-                disabled={t.needsPin && !s.childPin}
                 aria-pressed={!!s[t.key]}
               ><span className="set-knob" /></button>
             </div>
@@ -307,29 +338,6 @@ export default function SettingsScreen({ onOpenReport, onOpenBadges }) {
         <div className="set-row">
           <div className="set-row-txt"><div className="set-row-label">Delete your account</div><div className="set-row-sub">Permanently removes your progress, friends and login</div></div>
           <button className="set-ghost set-danger-text" onClick={() => { setDeleteConfirmText(""); setDeleteError(""); setDeleteSheet(true); }}>Delete</button>
-        </div>
-        <div className="set-divider" />
-        <div className="set-row">
-          <div className="set-row-txt"><div className="set-row-label">Child PIN</div><div className="set-row-sub">A 4-digit PIN that protects grown-up settings</div></div>
-          {!editingPin ? (
-            <div className="set-pin-actions">
-              {s.childPin ? (
-                <>
-                  <button className="set-ghost" onClick={() => { setPinInput(""); setEditingPin(true); }}>Change</button>
-                  <button className="set-ghost" onClick={() => setConfirmPinOff(true)}>Turn off</button>
-                </>
-              ) : (
-                <button className="set-ghost" onClick={() => { setPinInput(""); setEditingPin(true); }}>Set PIN</button>
-              )}
-            </div>
-          ) : (
-            <div className="set-pin-actions">
-              <input className="set-pin-input" inputMode="numeric" maxLength={4} value={pinInput}
-                onChange={(e) => setPinInput(e.target.value.replace(/\D/g, "").slice(0, 4))} placeholder="0000" autoFocus />
-              <button className="set-ghost" disabled={pinInput.length !== 4} onClick={() => { update("childPin", pinInput); setEditingPin(false); }}>Save</button>
-              <button className="set-ghost" onClick={() => setEditingPin(false)}>Cancel</button>
-            </div>
-          )}
         </div>
 
         {!isTutor && (
@@ -445,11 +453,11 @@ export default function SettingsScreen({ onOpenReport, onOpenBadges }) {
       {confirmPinOff && (
         <div className="set-sheet-overlay" onClick={() => setConfirmPinOff(false)}>
           <div className="set-sheet" onClick={(e) => e.stopPropagation()}>
-            <div className="set-sheet-title">Turn off the Child PIN?</div>
+            <div className="set-sheet-title">Turn off the grown-up PIN?</div>
             <div className="set-sheet-sub">
-              The app will open without a PIN, and any lock that relies on it will switch off too.
+              Anyone using this device will be able to open Settings, the progress report and connect a tutor without a PIN.
             </div>
-            <button className="set-sheet-confirm" onClick={() => { update("childPin", ""); update("parentPinLock", false); setConfirmPinOff(false); setToast("Child PIN turned off"); setTimeout(() => setToast(null), 2200); }}>Turn it off</button>
+            <button className="set-sheet-confirm" onClick={() => { update("childPin", ""); update("parentPinLock", false); setConfirmPinOff(false); setToast("Grown-up PIN turned off"); setTimeout(() => setToast(null), 2200); }}>Turn it off</button>
             <button className="set-sheet-cancel" onClick={() => setConfirmPinOff(false)}>Keep the PIN</button>
           </div>
         </div>

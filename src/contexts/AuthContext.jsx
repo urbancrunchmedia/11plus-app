@@ -11,6 +11,9 @@ import {
   createUserWithEmailAndPassword,
   updateProfile,
   sendPasswordResetEmail,
+  reauthenticateWithCredential,
+  reauthenticateWithPopup,
+  EmailAuthProvider,
 } from "firebase/auth";
 import { auth } from "../firebase";
 import { mergeFromCloud, syncProfile, prepareLocalForUser } from "../utils/cloudScores";
@@ -167,6 +170,26 @@ export function AuthProvider({ children }) {
     }
   }
 
+  // Prove the person at the device is the account holder (the grown-up):
+  // their password, or Google sign-in again. Used before removing the PIN lock.
+  const usesPassword = () => (auth.currentUser?.providerData || []).some((p) => p.providerId === "password");
+  async function confirmGrownUp(password) {
+    const u = auth.currentUser;
+    if (!u) throw new Error("Please sign in again.");
+    if (usesPassword()) {
+      if (!password) throw new Error("Please enter your password.");
+      try {
+        await reauthenticateWithCredential(u, EmailAuthProvider.credential(u.email, password));
+      } catch (e) {
+        if (["auth/wrong-password", "auth/invalid-credential", "auth/invalid-login-credentials"].includes(e.code)) throw new Error("That password isn't right.");
+        if (e.code === "auth/too-many-requests") throw new Error("Too many tries. Please wait a few minutes.");
+        throw new Error("Couldn't check that. Please try again.");
+      }
+    } else {
+      await reauthenticateWithPopup(u, new GoogleAuthProvider());
+    }
+  }
+
   async function handleSignOut() {
     await signOut(auth);
   }
@@ -199,6 +222,8 @@ export function AuthProvider({ children }) {
       signUpWithEmail,
       resetPassword,
       signOut: handleSignOut,
+      confirmGrownUp,
+      usesPassword,
     }}>
       {children}
     </AuthContext.Provider>

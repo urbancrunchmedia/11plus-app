@@ -291,9 +291,8 @@ function AppInner() {
                 pin={childPin}
                 title="Grown-ups only"
                 prompt={isMe ? "Enter the PIN to open Settings" : "Enter the PIN to open the progress report"}
-                resetLabel="Forgot the PIN? Turn the lock off"
                 onUnlock={() => setParentUnlocked(true)}
-                onReset={() => { setSetting("parentPinLock", false); setParentUnlocked(true); }}
+                onReset={() => { setSetting("parentPinLock", false); setSetting("childPin", ""); setParentUnlocked(true); }}
                 onCancel={() => handleSelectGame("home")}
               />
             ) : isMe ? (
@@ -305,6 +304,7 @@ function AppInner() {
             ) : (
               <ProgressReport
                 onBack={() => handleSelectGame("me")}
+                onChooseGame={() => handleSelectGame("home")}
                 onPractise={() => handleSelectGame("fillInBlanks")}
                 onPracticeSkill={(skill) => handleSelectGame(skill)}
               />

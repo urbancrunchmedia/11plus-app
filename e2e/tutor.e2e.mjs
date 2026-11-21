@@ -332,6 +332,36 @@ async function journey(browsers) {
     await owner.getByTestId("tutor-admin-row").filter({ hasText: "Ms Patel" }).getByText(/1 by link/).waitFor();
     log("A new family signs up through the link and connects; the owner sees it counted as 'by link'");
 
+    // Progress report before any rounds, and the grown-up PIN (Mia: free plan, no rounds yet).
+    await mia.getByRole("button", { name: "Start practising" }).click().catch(() => {});
+    await mia.getByRole("button", { name: "Me", exact: true }).click();
+    await mia.locator(".set-row").filter({ has: mia.getByText("Progress report", { exact: true }) }).getByRole("button").click();
+    const empty = mia.getByTestId("report-empty");
+    await empty.getByText("Example", { exact: true }).waitFor();
+    await empty.getByText(/The full report is part of Full Access/).waitFor(); // (no Stripe locally, so no trial is offered)
+    await mia.screenshot({ path: path.join(SHOTS, "report-empty.png"), fullPage: true });
+    await empty.getByRole("button", { name: "Choose a game" }).click();
+    await mia.getByText("Choose a game").first().waitFor();
+    // Set a grown-up PIN: Settings now needs it.
+    await mia.getByRole("button", { name: "Me", exact: true }).click();
+    const pinRow = mia.getByTestId("grownup-pin");
+    await pinRow.getByRole("button", { name: "Set PIN" }).click();
+    await pinRow.getByLabel("New 4-digit PIN").fill("2468");
+    await pinRow.getByRole("button", { name: "Save" }).click();
+    await pinRow.getByText("On", { exact: true }).waitFor();
+    await mia.getByRole("button", { name: "Home", exact: true }).first().click();
+    await mia.getByRole("button", { name: "Me", exact: true }).click();
+    await mia.getByText("Grown-ups only").waitFor();
+    // "Forgot the PIN?" needs the account password; a wrong one keeps the lock.
+    await mia.getByRole("button", { name: "Forgot the PIN?" }).click();
+    await mia.getByLabel("Account password").fill("not-the-password");
+    await mia.getByRole("button", { name: "Confirm and turn the lock off" }).click();
+    await mia.getByText("That password isn't right.").waitFor();
+    await mia.getByLabel("Account password").fill(PASSWORD);
+    await mia.getByRole("button", { name: "Confirm and turn the lock off" }).click();
+    await mia.getByTestId("grownup-pin").getByRole("button", { name: "Set PIN" }).waitFor();
+    log("Report before any rounds shows an example and 'Choose a game'; the grown-up PIN locks Settings; 'Forgot the PIN?' needs the account password");
+
     // 16. A tutor on the outreach list is approved instantly, with link and poster ready.
     await adminDb().doc("outreach/bright").set({ email: "hello@brightminds.test", business: "Bright Minds Tuition" });
     await makeUser("tutor2", "head@brightminds.test", "Mr Khan");

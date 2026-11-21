@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { getWeakWords, getSkillAccuracy, getProgressSummary, SKILL_LABEL } from "../utils/progress";
 import { usePremium } from "../contexts/PremiumContext";
+import { useAuth } from "../contexts/AuthContext";
 import Icon from "./Icon";
 
 // Skills with a live game a "Practice" button can jump straight into.
@@ -25,8 +26,21 @@ function groupBySkill(words) {
 
 // A parent-facing snapshot: where the child is strong, and exactly which words
 // to revise next. Premium — free users see a blurred teaser + upgrade.
-export default function ProgressReport({ onBack, onPractise, onPracticeSkill }) {
-  const { isPremium, openPaywall } = usePremium();
+// What the report looks like once a child has played: shown faded, before any rounds.
+const EXAMPLE = {
+  tiles: [["86", "questions answered"], ["5", "words to review"], ["3", "words turned around"]],
+  skills: [["Spelling", 58], ["Antonyms", 74], ["Synonyms", 88], ["Compound Words", 92]],
+  words: [["Meticulous", "Very careful about details"], ["Reluctant", "Not willing"], ["necessary", ""]],
+};
+const barColour = (pct) => (pct >= 80 ? "#1b8f3a" : pct >= 55 ? "var(--brand)" : "#e8a33d");
+
+export default function ProgressReport({ onBack, onChooseGame, onPractise, onPracticeSkill }) {
+  const { isPremium, openPaywall, subscription } = usePremium();
+  const { user } = useAuth() || {};
+  const childName = user?.displayName && user.displayName !== "Player" ? user.displayName : "your child";
+  // A trial is once per customer: don't promise one to someone who's had it.
+  const trialEligible = subscription?.trialEligible !== false;
+  const unlockLabel = trialEligible ? "Start your 7-day free trial" : "Upgrade to Full Access";
   const [summary]  = useState(getProgressSummary);
   const [skills]   = useState(getSkillAccuracy);
   const [weak]     = useState(() => getWeakWords(30));
@@ -46,14 +60,45 @@ export default function ProgressReport({ onBack, onPractise, onPracticeSkill }) 
       </div>
 
       {empty ? (
-        <div className="report-empty">
-          <div className="report-empty-emoji"><Icon name="chart" size={40} stroke="var(--muted)" strokeWidth={1.8} /></div>
+        <div className="report-empty" data-testid="report-empty">
           <div className="report-empty-title">No rounds played yet</div>
-          <div className="report-empty-sub">Play a few rounds and this report will fill up with the words to revise.</div>
-          {onPractise && <button className="report-cta" onClick={onPractise}>Play a round</button>}
+          <div className="report-empty-sub">Once {childName} plays a few rounds, this report shows their accuracy in each game and the exact words to revise. Here's an example:</div>
+          <div className="report-example" aria-hidden="true">
+            <span className="report-example-tag">Example</span>
+            <div className="report-tiles">
+              {EXAMPLE.tiles.map(([v, l]) => <div key={l} className="report-tile"><div className="report-tile-val">{v}</div><div className="report-tile-lbl">{l}</div></div>)}
+            </div>
+            <div className="report-card">
+              <div className="report-card-title">Accuracy by skill</div>
+              {EXAMPLE.skills.map(([label, pct]) => (
+                <div key={label} className="report-bar-row">
+                  <div className="report-bar-lbl">{label}</div>
+                  <div className="report-bar-track"><div className="report-bar-fill" style={{ width: `${pct}%`, background: barColour(pct) }} /></div>
+                  <div className="report-bar-pct">{pct}%</div>
+                </div>
+              ))}
+            </div>
+            <div className="report-card">
+              <div className="report-card-title">Words to review</div>
+              <ul className="report-words">
+                {EXAMPLE.words.map(([w, m]) => <li key={w} className="report-word"><div className="report-word-main"><span className="report-word-txt">{w}</span></div>{m && <div className="report-word-meaning">{m}</div>}</li>)}
+              </ul>
+            </div>
+          </div>
+          {(onChooseGame || onPractise) && <button className="report-cta" onClick={onChooseGame || onPractise}>Choose a game</button>}
+          {!isPremium && <div className="report-empty-note">The full report is part of Full Access{trialEligible ? ", with a 7-day free trial" : ""}.</div>}
         </div>
       ) : (
         <>
+          {!isPremium && (
+            <div className="report-preview-banner" data-testid="report-preview-banner">
+              <div>
+                <b>You're seeing a preview.</b> Full Access shows every word {childName} needs to revise, with Practice buttons to work on them.
+              </div>
+              <button className="report-cta" onClick={() => openPaywall("report")}>{unlockLabel}</button>
+            </div>
+          )}
+
           {/* Summary tiles */}
           <div className="report-tiles">
             <div className="report-tile">
@@ -79,7 +124,7 @@ export default function ProgressReport({ onBack, onPractise, onPracticeSkill }) 
                 <div className="report-bar-track">
                   <div
                     className="report-bar-fill"
-                    style={{ width: `${s.pct}%`, background: s.pct >= 80 ? "#1b8f3a" : s.pct >= 55 ? "var(--brand)" : "#e8a33d" }}
+                    style={{ width: `${s.pct}%`, background: barColour(s.pct) }}
                   />
                 </div>
                 <div className="report-bar-pct">{s.pct}%</div>
@@ -134,7 +179,7 @@ export default function ProgressReport({ onBack, onPractise, onPracticeSkill }) 
             {!isPremium && weak.length > 0 && (
               <div className="report-unlock">
                 <div className="report-unlock-txt">See every word to revise and track it over time.</div>
-                <button className="report-cta" onClick={() => openPaywall("report")}>Unlock Full Access</button>
+                <button className="report-cta" onClick={() => openPaywall("report")}>{unlockLabel}</button>
               </div>
             )}
           </div>

@@ -3562,3 +3562,9 @@ a.set-ghost { display: inline-flex; align-items: center; justify-content: center
 .game-empty { text-align: center; padding: 36px 24px; max-width: 420px; margin: 40px auto; }
 .game-empty-icon { font-size: 2.4rem; margin-bottom: 8px; }
 .game-empty-sub { color: var(--muted); font-weight: 600; font-size: 0.92rem; line-height: 1.5; margin: 8px 0 18px; }
+.set-pin-on { display: inline-block; margin-left: 6px; background: var(--correct-bg); color: var(--correct); font-size: 0.7rem; font-weight: 800; padding: 2px 8px; border-radius: 999px; vertical-align: middle; }
+.report-example { position: relative; text-align: left; opacity: 0.55; filter: grayscale(0.2); margin: 6px auto 20px; max-width: 520px; pointer-events: none; user-select: none; }
+.report-example-tag { position: absolute; top: -10px; right: 6px; z-index: 1; background: var(--ink); color: var(--accent, #d4f520); font-size: 0.68rem; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; padding: 4px 10px; border-radius: 999px; }
+.report-empty-note { margin-top: 10px; font-size: 0.82rem; color: var(--muted); font-weight: 600; }
+.report-preview-banner { display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap; background: #f3fbd4; border: 1px solid #dfef9a; border-radius: 18px; padding: 14px 16px; margin-bottom: 16px; font-size: 0.9rem; color: var(--ink); line-height: 1.45; }
+.report-preview-banner .report-cta { margin: 0; }

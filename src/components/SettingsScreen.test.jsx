@@ -81,21 +81,33 @@ describe("SettingsScreen", () => {
     expect(premium.openPaywall).not.toHaveBeenCalled();
   });
 
-  // Turning the PIN off is destructive — it should ask, not just do it.
-  it("confirms before switching the child PIN off", async () => {
+  // One grown-up PIN: setting it turns the lock on; turning it off asks first.
+  it("setting a grown-up PIN turns the lock on, and turning it off asks first", async () => {
     localStorage.clear();
     const el = await mount();
-    const setPin = [...el.querySelectorAll("button")].find((b) => b.textContent === "Set PIN");
-    await act(async () => { setPin.click(); });
-    const input = el.querySelector(".set-pin-input");
+    const row = () => el.querySelector("[data-testid=grownup-pin]");
+    expect(row().textContent).not.toContain("On");
+    await act(async () => { [...row().querySelectorAll("button")].find((b) => b.textContent === "Set PIN").click(); });
+    const input = row().querySelector(".set-pin-input");
     await act(async () => {
       Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value").set.call(input, "1234");
       input.dispatchEvent(new Event("input", { bubbles: true }));
     });
-    await act(async () => { [...el.querySelectorAll("button")].find((b) => b.textContent === "Save").click(); });
+    await act(async () => { [...row().querySelectorAll("button")].find((b) => b.textContent === "Save").click(); });
+    const saved = JSON.parse(localStorage.getItem("11plus_settings"));
+    expect(saved).toMatchObject({ childPin: "1234", parentPinLock: true });
+    expect(row().querySelector(".set-pin-on")).toBeTruthy();
 
-    await act(async () => { [...el.querySelectorAll("button")].find((b) => b.textContent === "Turn off").click(); });
-    expect(document.querySelector(".set-sheet-title").textContent).toContain("Turn off the Child PIN");
+    await act(async () => { [...row().querySelectorAll("button")].find((b) => b.textContent === "Turn off").click(); });
+    expect(document.querySelector(".set-sheet-title").textContent).toContain("Turn off the grown-up PIN");
+    await act(async () => { [...document.querySelectorAll(".set-sheet-confirm")].find((b) => b.textContent === "Turn it off").click(); });
+    expect(JSON.parse(localStorage.getItem("11plus_settings"))).toMatchObject({ childPin: "", parentPinLock: false });
+  });
+
+  it("no longer has a separate PIN-lock switch or a 'Child PIN' row", async () => {
+    const el = await mount();
+    expect(el.textContent).not.toContain("PIN-protect grown-up settings");
+    expect(el.textContent).not.toContain("Child PIN");
   });
 
   it("shows a neutral loading state instead of flashing the free plan", async () => {

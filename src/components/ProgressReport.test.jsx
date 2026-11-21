@@ -100,3 +100,52 @@ describe("ProgressReport", () => {
     expect(onPracticeSkill).not.toHaveBeenCalled();
   });
 });
+
+describe("ProgressReport: before any rounds, and the free-plan preview", () => {
+  beforeEach(() => { document.body.innerHTML = ""; localStorage.clear(); });
+  async function mountWith(props) {
+    const el = document.createElement("div");
+    document.body.appendChild(el);
+    await act(async () => { createRoot(el).render(<ProgressReport onBack={() => {}} {...props} />); });
+    return el;
+  }
+
+  it("with no rounds, shows a faded example and 'Choose a game' goes home", async () => {
+    premium = { isPremium: true, openPaywall: vi.fn() };
+    const onChooseGame = vi.fn(), onPractise = vi.fn();
+    const el = await mountWith({ onChooseGame, onPractise });
+    const empty = el.querySelector("[data-testid=report-empty]");
+    expect(empty.textContent).toContain("No rounds played yet");
+    expect(empty.querySelector(".report-example").textContent).toContain("Example");
+    await act(async () => { [...empty.querySelectorAll("button")].find((b) => b.textContent === "Choose a game").click(); });
+    expect(onChooseGame).toHaveBeenCalled();
+    expect(onPractise).not.toHaveBeenCalled();
+    expect(el.textContent).not.toContain("part of Full Access");
+  });
+
+  it("free plan with rounds: a preview banner offering the free trial", async () => {
+    premium = { isPremium: false, openPaywall: vi.fn(), subscription: { trialEligible: true } };
+    recordAttempt({ skill: "spelling", word: "necessary", correct: false });
+    const el = await mountWith({});
+    const banner = el.querySelector("[data-testid=report-preview-banner]");
+    expect(banner.textContent).toContain("You're seeing a preview");
+    const cta = banner.querySelector("button");
+    expect(cta.textContent).toBe("Start your 7-day free trial");
+    await act(async () => { cta.click(); });
+    expect(premium.openPaywall).toHaveBeenCalledWith("report");
+  });
+
+  it("offers 'Upgrade' instead once the free trial has been used", async () => {
+    premium = { isPremium: false, openPaywall: vi.fn(), subscription: { trialEligible: false } };
+    recordAttempt({ skill: "spelling", word: "necessary", correct: false });
+    const el = await mountWith({});
+    expect(el.querySelector("[data-testid=report-preview-banner] button").textContent).toBe("Upgrade to Full Access");
+  });
+
+  it("no banner for Full Access", async () => {
+    premium = { isPremium: true, openPaywall: vi.fn() };
+    recordAttempt({ skill: "spelling", word: "necessary", correct: false });
+    const el = await mountWith({});
+    expect(el.querySelector("[data-testid=report-preview-banner]")).toBeNull();
+  });
+});
