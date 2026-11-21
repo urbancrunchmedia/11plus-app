@@ -20,7 +20,7 @@ const PRIVACY = [
   ["Emails we send", "We email the account address about the account itself: a welcome email when you sign up, and a reminder before a free trial ends. We may also send occasional updates about the app and a reminder if your child hasn't practised for a while. Every update or reminder has an unsubscribe link, and you can also reply to ask us to stop."],
   ["Who processes data for us", "• Google Firebase: sign-in and data storage.\n• Stripe: subscription payments.\n• Vercel: website hosting.\n• Resend: sending our emails.\nEach only processes what's needed to provide their part of the service."],
   ["Storage & security", "Progress is kept in your browser and in Firebase. Data is sent over encrypted connections (HTTPS). No system is perfectly secure, but we take reasonable steps to protect your information."],
-  ["Your choices", `You can edit or clear the learner's name in Settings, remove friends or tutors at any time, and log out. To delete your account and associated data, email ${CONTACT} and we'll remove it.`],
+  ["Your choices", `You can edit or clear the learner's name in Settings, remove friends or tutors at any time, and log out. You can download a copy of your data from Settings → Download your data, and delete your account and its data at any time from Settings → Delete your account. If you can't sign in, email ${CONTACT} and we'll do it for you once we've checked it's you.`],
   ["Children's privacy", "We aim to collect the minimum needed to run the app. If you believe a child has provided us more information than intended, contact us and we'll delete it."],
   ["Changes", `We may update this policy; we'll change the date below when we do. Last updated: ${UPDATED}.`],
 ];

@@ -3,6 +3,7 @@ import { useAuth } from "../contexts/AuthContext";
 import Icon, { SKILL_ICON } from "./Icon";
 import { getPendingInvite } from "../utils/invite";
 import { getPendingTutorJoin, publicTutorLookup } from "../utils/tutorJoin";
+import LegalModal from "./LegalModal";
 
 // What the app actually contains, shown before anyone signs in. Same order
 // and labels as the SKILLS list in gamify.js (the dashboard's source of
@@ -92,10 +93,18 @@ export default function LoginScreen() {
   const [emailHelp, setEmailHelp] = useState(false);
   const [showPw, setShowPw]     = useState(false);
   const [credFail, setCredFail] = useState(false);
+  // New accounts are made by a grown-up: they confirm it before signing up.
+  const [adult, setAdult]       = useState(false);
+  const [legal, setLegal]       = useState(null); // "privacy" | "terms" | null
+  const ADULT_MSG = isTutorPage
+    ? "Please tick the box to confirm you're 18 or over."
+    : "Please tick the box to confirm you're a parent or guardian, aged 18 or over.";
 
   async function handleSubmit(e) {
     e.preventDefault();
-    setError(""); setNotice(""); setCredFail(false); setLoading(true);
+    setError(""); setNotice(""); setCredFail(false);
+    if (mode === "signup" && !adult) { setError(ADULT_MSG); return; }
+    setLoading(true);
     try {
       if (mode === "signup") await signUpWithEmail(email, password, name);
       else await signInWithEmail(email, password);
@@ -122,6 +131,7 @@ export default function LoginScreen() {
 
   async function handleGoogle() {
     setError(""); setCredFail(false);
+    if (mode === "signup" && !adult) { setError(ADULT_MSG); return; }
     try { await signInWithGoogle(); }
     catch (err) { const msg = friendlyError(err.code, err.message); if (msg) setError(msg); }
   }
@@ -198,6 +208,17 @@ export default function LoginScreen() {
             </div>
           )}
           {notice && <div className="login2-notice">{notice}</div>}
+
+          {mode === "signup" && (
+            <label className="login2-consent" data-testid="adult-consent">
+              <input type="checkbox" checked={adult} onChange={(e) => { setAdult(e.target.checked); setError(""); }} />
+              <span>
+                {isTutorPage ? "I'm 18 or over" : "I'm a parent or guardian, aged 18 or over"}, and I agree to the{" "}
+                <a href="#" onClick={(e) => { e.preventDefault(); setLegal("terms"); }}>Terms</a> and{" "}
+                <a href="#" onClick={(e) => { e.preventDefault(); setLegal("privacy"); }}>Privacy Policy</a>.
+              </span>
+            </label>
+          )}
 
           {!showEmailForm ? (
             <div className="login2-choice">
@@ -284,6 +305,7 @@ export default function LoginScreen() {
           )}
         </div>
       </div>
+      {legal && <LegalModal doc={legal} onClose={() => setLegal(null)} />}
     </div>
   );
 }

@@ -320,6 +320,10 @@ async function journey(browsers) {
     await mia.getByPlaceholder("Your child's name").fill("Mia");
     await mia.getByPlaceholder("you@email.com").fill("parent.mia@family.test");
     await mia.getByPlaceholder("••••••••").fill(PASSWORD);
+    // A grown-up must confirm they're 18+ before the account is made.
+    await mia.getByRole("button", { name: "Create account" }).click();
+    await mia.getByText("Please tick the box to confirm you're a parent or guardian, aged 18 or over.").waitFor();
+    await mia.getByTestId("adult-consent").getByRole("checkbox").check();
     await mia.getByRole("button", { name: "Create account" }).click();
     const miaConfirm = mia.getByRole("dialog", { name: "Connect Mia to Ms Patel?" });
     await miaConfirm.getByRole("button", { name: "Connect" }).click();
@@ -330,7 +334,7 @@ async function journey(browsers) {
     assert.equal(miaLink.newFamily, true);
     await owner.reload();
     await owner.getByTestId("tutor-admin-row").filter({ hasText: "Ms Patel" }).getByText(/1 by link/).waitFor();
-    log("A new family signs up through the link and connects; the owner sees it counted as 'by link'");
+    log("A new family signs up through the link (after ticking the 18+ box) and connects; the owner sees it counted as 'by link'");
 
     // Progress report before any rounds, and the grown-up PIN (Mia: free plan, no rounds yet).
     await mia.getByRole("button", { name: "Start practising" }).click().catch(() => {});
@@ -373,6 +377,7 @@ async function journey(browsers) {
     await t2.getByRole("button", { name: "Sign up with email" }).click();
     await t2.getByText("Create your tutor account").waitFor();
     await t2.getByText("YOUR NAME").waitFor();
+    await t2.getByTestId("adult-consent").getByText(/I'm 18 or over/).waitFor();
     assert.equal(await t2.getByPlaceholder("Your child's name").count(), 0, "tutors aren't asked for a child's name");
     await signIn(t2, "/tutor", "head@brightminds.test");
     await t2.getByLabel("Your name").fill("Mr Khan");

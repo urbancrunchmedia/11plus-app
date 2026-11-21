@@ -11,6 +11,9 @@ export function initMonitoring() {
     dsn: DSN,
     environment: import.meta.env.MODE,
     sendDefaultPii: false,
+    // Only errors from our own site: ignores browser extensions, translation
+    // tools and copies of the app hosted elsewhere using our key.
+    allowUrls: [/https?:\/\/(www\.)?11pluslab\.com/, /https?:\/\/11plus-app[^/]*\.vercel\.app/],
     tracesSampleRate: 0.1,
     // Ignore noise we can't act on.
     ignoreErrors: ["ResizeObserver loop", "Non-Error promise rejection captured"],

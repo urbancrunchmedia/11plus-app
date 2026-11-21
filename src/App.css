@@ -3372,6 +3372,9 @@ a.set-ghost { display: inline-flex; align-items: center; justify-content: center
 
 /* "Can't remember which email?" help on the login card */
 .login2-help { margin-top: 14px; text-align: center; }
+.login2-consent { display: flex; gap: 10px; align-items: flex-start; text-align: left; margin: 0 0 14px; padding: 12px 14px; background: var(--bg, #f4f9ff); border-radius: 14px; font-size: 0.84rem; line-height: 1.45; color: var(--ink); cursor: pointer; }
+.login2-consent input { width: 20px; height: 20px; flex: none; margin: 1px 0 0; accent-color: var(--brand, #12A5FF); }
+.login2-consent a { color: var(--brand-ink); font-weight: 700; }
 .login2-help-link { border: none; background: none; color: var(--muted, #6b7a8c); font-weight: 700; font-size: 0.85rem; text-decoration: underline; padding: 4px; }
 .login2-help-list { text-align: left; margin: 10px 0 0; padding: 14px 16px 14px 34px; background: var(--bg, #f4f9ff); border-radius: 16px; display: grid; gap: 8px; font-size: 0.86rem; line-height: 1.5; color: var(--ink); }
 
