@@ -10,6 +10,17 @@ const REGISTERED_IN = "England and Wales";
 const REGISTERED_OFFICE = "16 Hoylake Road, Sale, England, M33 2XH";
 const UPDATED = "November 2026";
 
+// Children's Code: a short version a 7–11-year-old can read, before the full policy.
+const FOR_KIDS = [
+  "This is a word-games app to help you get ready for the 11+.",
+  "We only keep your first name (or a nickname), your scores, and which words you find tricky. That's so the app can remember your progress.",
+  "Your grown-up made your account and can see how you're doing.",
+  "Friends only see your name and your points. Nobody can message you.",
+  "If your grown-up connects a tutor, that tutor can see your scores too.",
+  "We never sell your information and there are no adverts.",
+  "If anything worries you, tell your grown-up. They can delete everything at any time.",
+];
+
 const PRIVACY = [
   ["Who we are", `${APP} is an educational word-game app to help children practise for the 11+, operated by ${ENTITY}. This policy explains what we collect and why. Questions: ${CONTACT}.`],
   ["Company details", `${ENTITY} is registered in ${REGISTERED_IN}, company number ${COMPANY_NUMBER}. Registered office: ${REGISTERED_OFFICE}.`],
@@ -18,7 +29,7 @@ const PRIVACY = [
   ["How we use it", "To run the app, save and sync progress across your devices, show a friends leaderboard (only with friends who have accepted a friend request), and manage subscriptions. We do not sell your data or use it for advertising."],
   ["Tutors", "A parent can choose to connect their child's account to a tutor or tuition centre by entering the tutor's join code in Settings → Tutors, for up to 3 tutors. Before connecting, we show exactly what will be shared, and we email the account address each time a tutor is connected.\n• A connected tutor can see the learner's display name and their practice: games played, scores, accuracy, the words they find tricky, and when and how long they practise.\n• Tutors never see the parent's email address or name, billing details, or anything else on the account, and can't change anything.\n• Either the parent or the tutor can end the connection at any time in the app, and the tutor's access stops immediately.\n• We check every tutor before they can be connected, and we can suspend a tutor's access at any time."],
   ["Emails we send", "We email the account address about the account itself: a welcome email when you sign up, and a reminder before a free trial ends. We may also send occasional updates about the app and a reminder if your child hasn't practised for a while. Every update or reminder has an unsubscribe link, and you can also reply to ask us to stop."],
-  ["Who processes data for us", "• Google Firebase: sign-in and data storage.\n• Stripe: subscription payments.\n• Vercel: website hosting.\n• Resend: sending our emails.\nEach only processes what's needed to provide their part of the service."],
+  ["Who processes data for us", "• Google Firebase: sign-in and data storage.\n• Stripe: subscription payments.\n• Vercel: website hosting.\n• Resend: sending our emails.\n• Sentry: error reports, so we can fix crashes. These don't include names or email addresses.\nEach only processes what's needed to provide their part of the service."],
   ["Storage & security", "Progress is kept in your browser and in Firebase. Data is sent over encrypted connections (HTTPS). No system is perfectly secure, but we take reasonable steps to protect your information."],
   ["Your choices", `You can edit or clear the learner's name in Settings, remove friends or tutors at any time, and log out. You can download a copy of your data from Settings → Download your data, and delete your account and its data at any time from Settings → Delete your account. If you can't sign in, email ${CONTACT} and we'll do it for you once we've checked it's you.`],
   ["Children's privacy", "We aim to collect the minimum needed to run the app. If you believe a child has provided us more information than intended, contact us and we'll delete it."],
@@ -50,6 +61,13 @@ export default function LegalModal({ doc, onClose }) {
           <button className="legal-close" onClick={onClose} aria-label="Close">✕</button>
         </div>
         <div className="legal-body">
+          {isPrivacy && (
+            <div className="legal-kids" data-testid="privacy-for-kids">
+              <h3 className="legal-h">For kids: the short version</h3>
+              <ul>{FOR_KIDS.map((line) => <li key={line}>{line}</li>)}</ul>
+              <p className="legal-p">The full policy for grown-ups is below.</p>
+            </div>
+          )}
           {sections.map(([h, body]) => (
             <div key={h} className="legal-sec">
               <h3 className="legal-h">{h}</h3>

@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-vi.mock("../firebase", () => ({ db: {} }));
+vi.mock("../firebase", () => ({ db: {}, auth: {} }));
 vi.mock("firebase/firestore", () => ({
   doc: (_db, ...parts) => ({ path: parts.join("/") }),
   collection: (_db, name) => ({ path: name }),

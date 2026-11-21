@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { getSetting } from "../utils/leaderboard";
 import { useAuth } from "../contexts/AuthContext";
 import { PRICES, stripeConfigured, startCheckout } from "../utils/subscription";
 import { usePremium } from "../contexts/PremiumContext";
@@ -41,6 +42,25 @@ export default function Paywall({ reason = "feature", onClose }) {
   const [busy, setBusy] = useState(false);
   const [err, setErr]   = useState(null);
   const r = REASONS[reason] || REASONS.feature;
+  // Advertising rules: prices and the card step are for the bill-payer, so a
+  // short grown-up check comes first. The grown-up PIN if one is set,
+  // otherwise a sum most children can't do in their head.
+  const pin = getSetting("childPin", "");
+  const [sum] = useState(() => {
+    const a = 13 + Math.floor(Math.random() * 7), b = 13 + Math.floor(Math.random() * 7);
+    return { a, b, answer: a * b };
+  });
+  const [grownUp, setGrownUp] = useState(false);
+  const [gateOpen, setGateOpen] = useState(false);
+  const [entry, setEntry] = useState("");
+  const [gateErr, setGateErr] = useState("");
+  function checkGate(e) {
+    e.preventDefault();
+    const ok = pin ? entry === pin : Number(entry) === sum.answer;
+    if (ok) { setGrownUp(true); setGateErr(""); }
+    else { setGateErr(pin ? "That's not the grown-up PIN." : "That's not right. Please try again."); setEntry(""); }
+  }
+  const price = plan === "annual" ? "£34.99 a year" : "£4.99 a month";
 
   async function unlock() {
     setErr(null);
@@ -64,12 +84,35 @@ export default function Paywall({ reason = "feature", onClose }) {
         <div className="pw-badge">FULL ACCESS</div>
         <h2 className="pw-title">{r.title}</h2>
         <p className="pw-sub">{r.sub}</p>
-        <p className="pw-ask-grownup">Ask a grown-up to unlock this with you. It needs their card.</p>
-
-        <ul className="pw-benefits">
-          {BENEFITS.map((b) => <li key={b}><span className="pw-tick">✓</span>{b}</li>)}
-        </ul>
-
+        {!grownUp ? (
+          <div className="pw-gate" data-testid="paywall-gate">
+            <ul className="pw-benefits">
+              {BENEFITS.map((b) => <li key={b}><span className="pw-tick">✓</span>{b}</li>)}
+            </ul>
+            {!gateOpen ? (
+              <>
+                <p className="pw-gate-note">Full Access is a subscription, so the next screen is for grown-ups.</p>
+                <button className="pw-cta" onClick={() => setGateOpen(true)}>I'm a grown-up</button>
+                <button className="pw-later" onClick={onClose}>Back to the free games</button>
+              </>
+            ) : (
+              <form className="pw-gate-form" onSubmit={checkGate}>
+                <label className="pw-gate-q" htmlFor="pw-gate-input">
+                  {pin ? "Enter the grown-up PIN" : <>Grown-ups: what is {sum.a} × {sum.b}?</>}
+                </label>
+                <input
+                  id="pw-gate-input" className="pw-gate-input" inputMode="numeric" autoComplete="off" autoFocus
+                  type={pin ? "password" : "text"} value={entry}
+                  onChange={(e) => setEntry(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                />
+                {gateErr && <div className="pw-err">{gateErr}</div>}
+                <button className="pw-cta" type="submit" disabled={!entry}>Continue</button>
+                <button type="button" className="pw-later" onClick={onClose}>Back to the free games</button>
+              </form>
+            )}
+          </div>
+        ) : (
+        <>
         <div className="pw-plans">
           <button className={`pw-plan ${plan === "annual" ? "active" : ""}`} onClick={() => setPlan("annual")}>
             <span className="pw-plan-tag">BEST VALUE · SAVE 40%</span>
@@ -84,6 +127,13 @@ export default function Paywall({ reason = "feature", onClose }) {
 
         {err && <div className="pw-err">{err}</div>}
 
+        <p className="pw-terms" data-testid="paywall-terms">
+          {trialEligible
+            ? <>Free for 7 days, then <strong>{price}</strong>.</>
+            : <><strong>{price}</strong>, starting today.</>}
+          {" "}Renews automatically until you cancel. Cancel any time in Settings → Manage billing.
+        </p>
+
         <button className="pw-cta" onClick={unlock} disabled={busy}>
           {busy ? "Opening secure checkout…" : trialEligible ? "Start 7-day free trial" : "Subscribe"}
         </button>
@@ -92,6 +142,8 @@ export default function Paywall({ reason = "feature", onClose }) {
           A grown-up will need a card. {trialEligible ? "You won't be charged during the 7-day free trial." : "You've already used your free trial, so billing starts today."}
           {!stripeConfigured && " (Billing setup pending.)"}
         </div>
+        </>
+        )}
       </div>
     </div>
   );

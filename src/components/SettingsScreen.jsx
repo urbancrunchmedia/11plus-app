@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { getSettings, setSetting } from "../utils/leaderboard";
+import { getSettings, setSetting, saveFriendsChoice } from "../utils/leaderboard";
 import { getStats } from "../utils/gamify";
 import { useAuth } from "../contexts/AuthContext";
 import { usePremium } from "../contexts/PremiumContext";
@@ -120,7 +120,8 @@ export default function SettingsScreen({ onOpenReport, onOpenBadges }) {
   }
 
   function update(key, value) {
-    setSetting(key, value);
+    if (key === "allowFriends") saveFriendsChoice(value);
+    else setSetting(key, value);
     setS((prev) => ({ ...prev, [key]: value }));
   }
   const toggle = (key) => update(key, !s[key]);

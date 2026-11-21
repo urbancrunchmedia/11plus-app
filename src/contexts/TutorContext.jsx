@@ -10,9 +10,13 @@ export function TutorProvider({ children }) {
   const { user } = useAuth();
   const [tutor, setTutor] = useState(null);
   const [loading, setLoading] = useState(true);
+  // Which account the tutor record was last read for. Until it matches the
+  // signed-in account we're still loading (avoids a render where a tutor who
+  // just signed in briefly looks like a family).
+  const [checkedUid, setCheckedUid] = useState(undefined);
 
   const refresh = useCallback(async () => {
-    if (!user) { setTutor(null); setLoading(false); return null; }
+    if (!user) { setTutor(null); setLoading(false); setCheckedUid(null); return null; }
     try {
       const t = await getTutorRecord(user.uid);
       setTutor(t);
@@ -22,6 +26,7 @@ export function TutorProvider({ children }) {
       return null;
     } finally {
       setLoading(false);
+      setCheckedUid(user.uid);
     }
   }, [user]);
 
@@ -31,7 +36,7 @@ export function TutorProvider({ children }) {
     refresh();
   }, [refresh]);
 
-  const value = { tutor, isTutor: !!tutor, isActiveTutor: tutor?.status === "active", loading, refresh };
+  const value = { tutor, isTutor: !!tutor, isActiveTutor: tutor?.status === "active", loading: loading || checkedUid !== (user?.uid ?? null), refresh };
   return <TutorContext.Provider value={value}>{children}</TutorContext.Provider>;
 }
 

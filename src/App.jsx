@@ -19,6 +19,8 @@ import OwnerDashboard from "./components/OwnerDashboard";
 import TutorScreen from "./components/TutorScreen";
 import InvitePrompt from "./components/InvitePrompt";
 import TutorJoinPrompt from "./components/TutorJoinPrompt";
+import FriendsQuestion from "./components/FriendsQuestion";
+import { getPendingInvite } from "./utils/invite";
 import ComingSoon from "./components/ComingSoon";
 import WordListScreen from "./components/WordListScreen";
 import LeaderboardScreen from "./components/LeaderboardScreen";
@@ -28,7 +30,7 @@ import SubscriptionSuccess, { formatDate } from "./components/SubscriptionSucces
 import LoginScreen from "./components/LoginScreen";
 import ChildGate from "./components/ChildGate";
 import OnboardingScreen from "./components/OnboardingScreen";
-import { getSetting, setSetting } from "./utils/leaderboard";
+import { getSetting, setSetting, needsFriendsChoice } from "./utils/leaderboard";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { TutorProvider, useTutor } from "./contexts/TutorContext";
 import { shouldOpenTutorDashboard, goToTutorDashboard } from "./utils/tutorNav";
@@ -163,12 +165,16 @@ function AppInner() {
     return () => clearTimeout(t);
   }, [billingNote]);
   const [onboarded, setOnboarded] = useState(() => getSetting("onboarded", false));
+  // New accounts: friends start off until a grown-up answers the friends question.
+  const [friendsAsked, setFriendsAsked] = useState(false);
+  const askFriends = !!user && !isTutor && !tutorLoading && !friendsAsked && needsFriendsChoice();
   // Re-read on every account change (not just first mount) — a shared-device
   // account switch clears the previous kid's "onboarded" flag, and this
   // state needs to pick that up without a full page reload.
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- reacting to a real external source of truth (localStorage, cleared by prepareLocalForUser on account switch), not derived from props.
     setOnboarded(getSetting("onboarded", false));
+    setFriendsAsked(false);
   }, [user?.uid]);
 
   if (user === undefined) {
@@ -268,8 +274,12 @@ function AppInner() {
   return (
     <div className="app-layout">
       <AppNav active={selectedGame} onNavigate={handleSelectGame} />
-      <InvitePrompt onOpenBoard={() => handleSelectGame("leaderboard")} />
-      <TutorJoinPrompt onOpenSettings={() => handleSelectGame("me")} />
+      {askFriends
+        ? <FriendsQuestion name={user.displayName} invited={!!getPendingInvite()} onDone={() => setFriendsAsked(true)} />
+        : <>
+            <InvitePrompt onOpenBoard={() => handleSelectGame("leaderboard")} />
+            <TutorJoinPrompt onOpenSettings={() => handleSelectGame("me")} />
+          </>}
 
       <div className="main-area">
         <div className="main-content">

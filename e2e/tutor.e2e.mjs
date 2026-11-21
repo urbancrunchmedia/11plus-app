@@ -43,6 +43,14 @@ async function signIn(page, url, email) {
   await page.getByRole("button", { name: "Log in" }).click();
 }
 
+// New accounts are asked once whether the child may add friends. These test
+// families say yes whenever it pops up (step 15 answers it explicitly).
+async function autoAllowFriends(page) {
+  await page.addLocatorHandler(page.getByTestId("friends-question"), async () => {
+    await page.getByTestId("friends-question").getByRole("button", { name: "Yes, allow friends" }).click();
+  });
+}
+
 async function noSideScroll(page, where) {
   const { sw, iw } = await page.evaluate(() => ({ sw: document.documentElement.scrollWidth, iw: window.innerWidth }));
   assert.ok(sw <= iw + 1, `${where}: page scrolls sideways (${sw}px wide in a ${iw}px window)`);
@@ -104,6 +112,7 @@ async function journey(browsers) {
     // 1. Tutor signs in at /tutor, applies, and can share a link straight away.
     const tutorCtx = await chrome.newContext(desk);
     const tutor = await tutorCtx.newPage();
+    await autoAllowFriends(tutor);
     await tutor.goto(`${APP}/tutor`);
     await tutor.getByTestId("tutor-signin-banner").waitFor();
     await signIn(tutor, "/tutor", "ms.patel@tutors.test");
@@ -131,6 +140,7 @@ async function journey(browsers) {
     // 2. A parent taps the link (signed out) before approval, signs in and confirms.
     const kidCtx = await chrome.newContext(desk);
     const kid = await kidCtx.newPage();
+    await autoAllowFriends(kid);
     await kid.goto(`${APP}/join/${code}`);
     await kid.getByTestId("tutor-join-banner").getByText("Ms Patel (Patel Tuition) uses 11 PlusLab").waitFor();
     assert.equal(new URL(kid.url()).pathname, "/", "join link leaves the address bar on the home page");
@@ -161,6 +171,7 @@ async function journey(browsers) {
     const approveUrl = ownerMail.html.replace(/&amp;/g, "&").match(/https:\/\/11pluslab\.com\/api\/tutor\?approve=[^"]+/)[0].replace("https://11pluslab.com", APP);
     const ownerCtx = await chrome.newContext(desk);
     const owner = await ownerCtx.newPage();
+    await autoAllowFriends(owner);
     owner.on("dialog", (d) => d.accept());
     await owner.goto(approveUrl);
     await owner.getByRole("heading", { name: "Approve Ms Patel?" }).waitFor();
@@ -248,6 +259,7 @@ async function journey(browsers) {
     // 11. Parent on a phone connects Leo.
     const leoCtx = await safari.newContext(phone);
     const leo = await leoCtx.newPage();
+    await autoAllowFriends(leo);
     leo.on("console", (m) => { if (m.type() === "error" || m.type() === "warning") console.log(`    [phone console] ${m.text().slice(0, 200)}`); });
     await signIn(leo, "/", "parent.leo@family.test");
     await leo.getByRole("button", { name: "Me", exact: true }).click();
@@ -269,6 +281,7 @@ async function journey(browsers) {
     // 12. Tutor's dashboard on a phone.
     const tPhoneCtx = await safari.newContext(phone);
     const tPhone = await tPhoneCtx.newPage();
+    await autoAllowFriends(tPhone);
     await signIn(tPhone, "/tutor", "ms.patel@tutors.test");
     const leoRow = tPhone.getByTestId("pupil-row").filter({ hasText: "Leo" });
     await leoRow.waitFor();
@@ -325,6 +338,10 @@ async function journey(browsers) {
     await mia.getByText("Please tick the box to confirm you're a parent or guardian, aged 18 or over.").waitFor();
     await mia.getByTestId("adult-consent").getByRole("checkbox").check();
     await mia.getByRole("button", { name: "Create account" }).click();
+    // Friends start off for a new account: the grown-up is asked first.
+    const friendsQ = mia.getByTestId("friends-question");
+    await friendsQ.getByText("Can Mia add friends?").waitFor();
+    await friendsQ.getByRole("button", { name: "Not now" }).click();
     const miaConfirm = mia.getByRole("dialog", { name: "Connect Mia to Ms Patel?" });
     await miaConfirm.getByRole("button", { name: "Connect" }).click();
     await mia.getByRole("dialog", { name: /Connected to Ms Patel/ }).getByText(/can now follow Mia's practice/).waitFor();
@@ -334,7 +351,7 @@ async function journey(browsers) {
     assert.equal(miaLink.newFamily, true);
     await owner.reload();
     await owner.getByTestId("tutor-admin-row").filter({ hasText: "Ms Patel" }).getByText(/1 by link/).waitFor();
-    log("A new family signs up through the link (after ticking the 18+ box) and connects; the owner sees it counted as 'by link'");
+    log("A new family signs up through the link (ticks the 18+ box, is asked about friends) and connects; the owner sees it counted as 'by link'");
 
     // Progress report before any rounds, and the grown-up PIN (Mia: free plan, no rounds yet).
     await mia.getByRole("button", { name: "Start practising" }).click().catch(() => {});
@@ -371,6 +388,7 @@ async function journey(browsers) {
     await makeUser("tutor2", "head@brightminds.test", "Mr Khan");
     const t2Ctx = await chrome.newContext(desk);
     const t2 = await t2Ctx.newPage();
+    await autoAllowFriends(t2);
     // The sign-up form on /tutor asks for the tutor's own name, not a child's.
     await t2.goto(`${APP}/tutor`);
     await t2.locator(".login2-toggle button").click();
@@ -412,6 +430,7 @@ async function journey(browsers) {
     // And on a phone.
     const t2PhoneCtx = await safari.newContext(phone);
     const t2Phone = await t2PhoneCtx.newPage();
+    await autoAllowFriends(t2Phone);
     await signIn(t2Phone, "/tutor", "head@brightminds.test");
     await t2Phone.getByTestId("see-example").click();
     await t2Phone.getByTestId("pupil-row").nth(11).waitFor();

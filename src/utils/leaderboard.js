@@ -1,3 +1,5 @@
+import { auth } from "../firebase";
+
 const BEST_KEY    = "11plus_personal_bests";
 const HISTORY_KEY = "11plus_history";
 const PREFS_KEY   = "11plus_prefs";
@@ -13,9 +15,34 @@ const SETTING_DEFAULTS = {
   parentPinLock: false,
   allowFriends: true,   // grown-up switch: adding friends and invite links
 };
+function storedSettings() {
+  try { return JSON.parse(localStorage.getItem(SETTINGS_KEY)) || {}; }
+  catch { return {}; }
+}
+
+// Children's Code: settings that share anything start OFF. Accounts created
+// from this date have friends switched off until a grown-up chooses (the
+// friends question shown once after sign-up). Older accounts keep what they had.
+export const FRIENDS_OFF_CUTOFF = Date.parse("2026-11-21T00:00:00Z");
+function friendsOffAccount() {
+  const created = Date.parse(auth.currentUser?.metadata?.creationTime || "");
+  return Number.isFinite(created) && created >= FRIENDS_OFF_CUTOFF;
+}
+// Settings are device-wide, so remember WHICH account's grown-up chose: a new
+// sibling account on the same device is asked again rather than inheriting.
+export function needsFriendsChoice() {
+  const uid = auth.currentUser?.uid;
+  return !!uid && friendsOffAccount() && storedSettings().friendsChoiceUid !== uid;
+}
+export function saveFriendsChoice(allow) {
+  setSetting("allowFriends", !!allow);
+  setSetting("friendsChoiceUid", auth.currentUser?.uid || null);
+}
+
 export function getSettings() {
-  try { return { ...SETTING_DEFAULTS, ...(JSON.parse(localStorage.getItem(SETTINGS_KEY)) || {}) }; }
-  catch { return { ...SETTING_DEFAULTS }; }
+  const all = { ...SETTING_DEFAULTS, ...storedSettings() };
+  if (needsFriendsChoice()) all.allowFriends = false;
+  return all;
 }
 export function getSetting(key, fallback) {
   const v = getSettings()[key];
@@ -23,7 +50,7 @@ export function getSetting(key, fallback) {
 }
 export function setSetting(key, value) {
   try {
-    const all = getSettings();
+    const all = storedSettings();
     all[key] = value;
     localStorage.setItem(SETTINGS_KEY, JSON.stringify(all));
   } catch { /* storage unavailable */ }
