@@ -3501,6 +3501,8 @@ a.set-ghost { display: inline-flex; align-items: center; justify-content: center
 }
 .own-tutors { display: flex; flex-direction: column; }
 .own-tutor { display: flex; justify-content: space-between; gap: 12px; align-items: center; padding: 12px 0; border-top: 1px solid var(--line, #dde7f0); flex-wrap: wrap; }
+.own-tutor-pupils { margin-top: 8px; font-size: 0.85rem; }
+.own-tutor-pupils ul { margin: 0; padding-left: 18px; display: grid; gap: 3px; }
 .own-tutor-main { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
 .own-tutor-actions { display: flex; gap: 8px; }
 

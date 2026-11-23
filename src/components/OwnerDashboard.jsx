@@ -90,6 +90,11 @@ function TutorsAdmin() {
   return (
     <section className="own-card" data-testid="tutors-admin">
       <h2>Tutors {pending > 0 && <span className="own-pill own-pill-warn">{pending} waiting</span>}</h2>
+      {tutors?.length > 0 && (
+        <p className="own-muted" data-testid="tutor-codes-summary">
+          {tutors.filter((t) => t.pupils > 0).length} of {plural(tutors.length, "tutor code")} connected to pupils · {plural(tutors.reduce((n, t) => n + t.pupils, 0), "pupil")} in total
+        </p>
+      )}
       {error && <p className="own-muted">Couldn't load tutors ({error}). <button className="own-btn" onClick={load}>Retry</button></p>}
       {!tutors ? <p className="own-muted">Loading…</p> : tutors.length === 0 ? <p className="own-muted">No tutor applications yet.</p> : (
         <div className="own-tutors">
@@ -103,6 +108,17 @@ function TutorsAdmin() {
                 <div className="own-muted">
                   Applied {new Date(t.appliedAt).toLocaleDateString("en-GB")}{t.autoApproved ? " · pre-approved (on your outreach list)" : ""}{t.learnerRounds ? ` · played ${t.learnerRounds} rounds as a learner` : ""} · {plural(t.pupils, "pupil")}
                   {t.pupils > 0 ? ` (${t.viaLink} by link, ${t.newFamilies} new ${t.newFamilies === 1 ? "family" : "families"})` : ""}{t.code ? ` · code ${t.code}` : ""}
+                </div>
+                <div className="own-tutor-pupils" data-testid="tutor-pupils">
+                  {t.pupilList?.length ? (
+                    <ul>
+                      {t.pupilList.map((p, i) => (
+                        <li key={i}>
+                          <strong>{p.name}</strong> · connected {p.connectedAt ? new Date(p.connectedAt).toLocaleDateString("en-GB") : "date unknown"} · {p.via === "link" ? "by link" : "by code"}{p.newFamily ? " · new family" : ""}
+                        </li>
+                      ))}
+                    </ul>
+                  ) : <span className="own-muted">No pupils connected to this code yet</span>}
                 </div>
               </div>
               <div className="own-tutor-actions">

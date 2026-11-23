@@ -248,14 +248,20 @@ async function adminList(db) {
   const [tutors, links] = await Promise.all([db.collection("tutors").get(), db.collection("tutorLinks").get()]);
   const stats = {};
   links.forEach((d) => {
-    const s = (stats[d.get("tutorUid")] ||= { pupils: 0, viaLink: 0, newFamilies: 0 });
+    const s = (stats[d.get("tutorUid")] ||= { pupils: 0, viaLink: 0, newFamilies: 0, pupilList: [] });
     s.pupils++;
+    // Which pupils each code has connected: the name the family gave and when.
+    s.pupilList.push({ name: d.get("childName") || "(no name)", connectedAt: d.get("createdAt") || null, via: d.get("via") || "code", newFamily: !!d.get("newFamily") });
     if (d.get("via") === "link") s.viaLink++;
     if (d.get("newFamily")) s.newFamilies++;
   });
   return [200, {
     tutors: tutors.docs
-      .map((d) => ({ uid: d.id, ...d.data(), pupils: 0, viaLink: 0, newFamilies: 0, ...stats[d.id] }))
+      .map((d) => {
+        const t = { uid: d.id, ...d.data(), pupils: 0, viaLink: 0, newFamilies: 0, pupilList: [], ...stats[d.id] };
+        t.pupilList.sort((a, b) => String(b.connectedAt).localeCompare(String(a.connectedAt)));
+        return t;
+      })
       .sort((a, b) => String(b.appliedAt).localeCompare(String(a.appliedAt))),
   }];
 }

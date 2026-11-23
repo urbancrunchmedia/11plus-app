@@ -363,7 +363,10 @@ async function journey(browsers) {
     assert.equal(miaLink.newFamily, true);
     await owner.reload();
     await owner.getByTestId("tutor-admin-row").filter({ hasText: "Ms Patel" }).getByText(/1 by link/).waitFor();
-    log("A new family signs up through the link (ticks the 18+ box, is asked about friends) and connects; the owner sees it counted as 'by link'");
+    // The owner sees exactly which pupils each code has connected.
+    await owner.getByTestId("tutor-admin-row").filter({ hasText: "Ms Patel" }).getByTestId("tutor-pupils").getByText(/Mia.*by link · new family/).waitFor();
+    await owner.getByTestId("tutor-codes-summary").getByText(/connected to pupils/).waitFor();
+    log("A new family signs up through the link (ticks the 18+ box, is asked about friends) and connects; the owner sees Mia listed under the tutor's code, 'by link'");
 
     // Progress report before any rounds, and the grown-up PIN (Mia: free plan, no rounds yet).
     await mia.getByRole("button", { name: "Start practising" }).click().catch(() => {});
