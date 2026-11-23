@@ -222,6 +222,9 @@ export default function SettingsScreen({ onOpenReport, onOpenBadges }) {
       </div>
       )}
 
+      {/* Tutors near the top: parents arriving with a tutor's code shouldn't have to scroll past Delete account to find it. */}
+      <TutorsCard childName={name} onToast={(t) => { setToast(t); setTimeout(() => setToast(null), 2600); }} />
+
       {/* Your learning */}
       <div className="set-card">
         <div className="set-card-title">Your learning</div>
@@ -352,7 +355,6 @@ export default function SettingsScreen({ onOpenReport, onOpenBadges }) {
         )}
       </div>
 
-      <TutorsCard childName={name} onToast={(t) => { setToast(t); setTimeout(() => setToast(null), 2600); }} />
 
       {/* Account */}
       <div className="set-card set-account">
