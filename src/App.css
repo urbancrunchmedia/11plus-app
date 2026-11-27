@@ -3366,6 +3366,17 @@ a.set-ghost { display: inline-flex; align-items: center; justify-content: center
 .own-list li:first-child { border-top: none; }
 .own-player-name { font-weight: 800; font-size: 0.95rem; }
 .own-player-right { display: flex; align-items: center; gap: 8px; flex: none; }
+.own-search { width: 100%; box-sizing: border-box; margin-top: 10px; padding: 10px 14px; border: 1px solid var(--line, #dde7f0); border-radius: 12px; font: inherit; font-size: 0.9rem; background: var(--bg, #f4f9ff); color: var(--ink); }
+.own-search:focus { outline: none; border-color: var(--brand, #12A5FF); background: #fff; }
+.own-players { max-height: 520px; overflow-y: auto; overscroll-behavior: contain; margin-top: 8px; padding-right: 4px; }
+.own-players li { flex-wrap: wrap; padding: 7px 0; }
+.own-players .own-player-name { font-size: 0.9rem; }
+.own-players .own-muted { font-size: 0.78rem; }
+.own-players .own-dots { padding: 5px 11px; font-size: 1rem; }
+.own-player-main { min-width: 0; flex: 1; }
+.own-player-actions { flex-basis: 100%; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; background: var(--bg, #f4f9ff); border-radius: 12px; padding: 8px 10px; }
+.own-player-email { overflow-wrap: anywhere; }
+.own-danger-btn { color: #c0392b; }
 
 /* Invite banner on the login page (opened from a ?friend= link) */
 .login2-invite { display: flex; gap: 10px; align-items: flex-start; background: #f3fbd4; border: 1px solid #dfef9a; color: var(--ink); border-radius: 16px; padding: 12px 14px; margin-bottom: 18px; font-size: 0.9rem; line-height: 1.45; }

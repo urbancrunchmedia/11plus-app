@@ -126,6 +126,7 @@ export async function ownerStats() {
     players.push({
       uid: u.uid,
       name: nameOf.get(u.uid) || u.displayName || "(no name yet)",
+      email: u.email || "",
       plan,
       // Where complimentary access comes from: the dashboard (can be removed
       // there) or the built-in list in code (the owner's own accounts).

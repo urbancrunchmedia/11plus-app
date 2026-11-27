@@ -164,33 +164,30 @@ async function setComplimentary(uid, on) {
   if (!res.ok) throw new Error(data.error || "Couldn't save that.");
 }
 
-// ⋯ on a player: give or remove complimentary Full Access.
-function PlayerMenu({ player, open, onToggle, onChanged }) {
+// The actions panel under a player whose ⋯ is open: give or remove
+// complimentary Full Access. Inline (not a floating menu) so it can't be
+// clipped by the scrolling list.
+function PlayerActions({ player, onDone, onChanged }) {
   const [busy, setBusy] = useState(false);
-  const isComp = player.comp === "dashboard";
   async function change(on) {
     const ask = on
       ? `Give ${player.name} complimentary Full Access? They won't be charged, and you can remove it any time.`
       : `Remove ${player.name}'s complimentary access? They'll go back to the free plan (or their paid plan, if they have one).`;
     if (!window.confirm(ask)) return;
     setBusy(true);
-    try { await setComplimentary(player.uid, on); onToggle(); await onChanged(); }
+    try { await setComplimentary(player.uid, on); onDone(); await onChanged(); }
     catch (e) { window.alert(e.message); }
     finally { setBusy(false); }
   }
   return (
-    <div className="own-more">
-      <button className="own-btn own-dots" aria-label={`More actions for ${player.name}`} aria-expanded={open} onClick={onToggle}>⋯</button>
-      {open && (
-        <div className="own-menu" role="menu">
-          {player.comp === "builtin" ? (
-            <div className="own-menu-details">Complimentary is built in for this account (owner).</div>
-          ) : isComp ? (
-            <button role="menuitem" className="own-menu-item own-danger" disabled={busy} onClick={() => change(false)}>Remove complimentary access</button>
-          ) : (
-            <button role="menuitem" className="own-menu-item" disabled={busy} onClick={() => change(true)}>Give complimentary access</button>
-          )}
-        </div>
+    <div className="own-player-actions" role="menu">
+      {player.email && <span className="own-muted own-player-email">{player.email}</span>}
+      {player.comp === "builtin" ? (
+        <span className="own-muted">Complimentary is built in for this account (owner).</span>
+      ) : player.comp === "dashboard" ? (
+        <button role="menuitem" className="own-btn own-danger-btn" disabled={busy} onClick={() => change(false)}>Remove complimentary access</button>
+      ) : (
+        <button role="menuitem" className="own-btn own-btn-primary" disabled={busy} onClick={() => change(true)}>Give complimentary access</button>
       )}
     </div>
   );
@@ -212,6 +209,7 @@ export default function OwnerDashboard() {
   const [busy, setBusy] = useState(false);
   const [sent, setSent] = useState(false);
   const [playerMenu, setPlayerMenu] = useState(null); // uid whose ⋯ menu is open
+  const [playerQuery, setPlayerQuery] = useState("");
 
   // Called from button taps; the first load is the effect below.
   const load = useCallback(async (forceRefreshToken = false) => {
@@ -336,21 +334,33 @@ export default function OwnerDashboard() {
 
       <section className="own-card">
         <h2>Players</h2>
-        <p className="own-muted">Most recently active first · {emails.unsubscribed} unsubscribed from reminders</p>
-        <ul className="own-list own-players">
-          {players.slice(0, 40).map((p, i) => (
-            <li key={p.uid || i} data-testid="player-row">
-              <div>
-                <div className="own-player-name">{p.name}</div>
-                <div className="own-muted">{ago(p.lastPlayed)} · {plural(p.roundsWeek, "round")} this week</div>
-              </div>
-              <div className="own-player-right">
-                <span className={`own-pill own-pill-${PLAN_TONE[p.plan]}`}>{p.plan}</span>
-                {p.uid && <PlayerMenu player={p} open={playerMenu === p.uid} onToggle={() => setPlayerMenu(playerMenu === p.uid ? null : p.uid)} onChanged={() => load()} />}
-              </div>
-            </li>
-          ))}
-        </ul>
+        <p className="own-muted">Most recently active first · {plural(players.length, "account")} · {emails.unsubscribed} unsubscribed from reminders</p>
+        <input
+          className="own-search" type="search" placeholder="Search by name or email" aria-label="Search players"
+          value={playerQuery} onChange={(e) => setPlayerQuery(e.target.value)}
+        />
+        {(() => {
+          const q = playerQuery.trim().toLowerCase();
+          const shown = q ? players.filter((p) => p.name.toLowerCase().includes(q) || (p.email || "").toLowerCase().includes(q)) : players;
+          if (!shown.length) return <p className="own-muted" style={{ marginTop: 10 }}>No players match “{playerQuery.trim()}”.</p>;
+          return (
+            <ul className="own-list own-players" data-testid="players-list">
+              {shown.map((p, i) => (
+                <li key={p.uid || i} data-testid="player-row">
+                  <div className="own-player-main">
+                    <div className="own-player-name">{p.name}</div>
+                    <div className="own-muted">{ago(p.lastPlayed)} · {plural(p.roundsWeek, "round")} this week</div>
+                  </div>
+                  <div className="own-player-right">
+                    <span className={`own-pill own-pill-${PLAN_TONE[p.plan]}`}>{p.plan}</span>
+                    {p.uid && <button className="own-btn own-dots" aria-label={`More actions for ${p.name}`} aria-expanded={playerMenu === p.uid} onClick={() => setPlayerMenu(playerMenu === p.uid ? null : p.uid)}>⋯</button>}
+                  </div>
+                  {playerMenu === p.uid && <PlayerActions player={p} onDone={() => setPlayerMenu(null)} onChanged={() => load()} />}
+                </li>
+              ))}
+            </ul>
+          );
+        })()}
       </section>
 
       <section className="own-card">
