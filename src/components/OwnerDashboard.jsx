@@ -47,7 +47,6 @@ function Bars({ rows, max }) {
   );
 }
 
-
 const TUTOR_TONE = { pending: "warn", active: "good", suspended: "bad" };
 
 // Tutor applications and accounts: approve, suspend, decline (api/tutor.js).
@@ -272,22 +271,6 @@ export default function OwnerDashboard() {
       </section>
 
       <section className="own-card">
-        <h2>Games played</h2>
-        <p className="own-muted">Rounds in the last 30 days ({activity.rounds.month} in total)</p>
-        {games.length ? <Bars rows={games.map((g) => ({ label: g.game, value: g.month }))} /> : <p className="own-muted">No rounds yet.</p>}
-      </section>
-
-      <section className="own-card">
-        <h2>Gone quiet</h2>
-        <p className="own-muted">{activity.quietCount} haven't played for 5–30 days (these get the reminder email) · {activity.neverPlayed} signed up but never played</p>
-        {quiet.length > 0 && (
-          <ul className="own-list">
-            {quiet.map((p, i) => <li key={i}><span>{p.name}</span><span className="own-muted">{ago(p.lastPlayed)}</span></li>)}
-          </ul>
-        )}
-      </section>
-
-      <section className="own-card">
         <h2>Players</h2>
         <p className="own-muted">Most recently active first · {emails.unsubscribed} unsubscribed from reminders</p>
         <ul className="own-list own-players">
@@ -301,6 +284,22 @@ export default function OwnerDashboard() {
             </li>
           ))}
         </ul>
+      </section>
+
+      <section className="own-card">
+        <h2>Games played</h2>
+        <p className="own-muted">Rounds in the last 30 days ({activity.rounds.month} in total)</p>
+        {games.length ? <Bars rows={games.map((g) => ({ label: g.game, value: g.month }))} /> : <p className="own-muted">No rounds yet.</p>}
+      </section>
+
+      <section className="own-card">
+        <h2>Gone quiet</h2>
+        <p className="own-muted">{activity.quietCount} haven't played for 5–30 days (these get the reminder email) · {activity.neverPlayed} signed up but never played</p>
+        {quiet.length > 0 && (
+          <ul className="own-list">
+            {quiet.map((p, i) => <li key={i}><span>{p.name}</span><span className="own-muted">{ago(p.lastPlayed)}</span></li>)}
+          </ul>
+        )}
       </section>
 
       <section className="own-card">
