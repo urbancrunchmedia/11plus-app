@@ -18,9 +18,24 @@ export default async function handler(req, res) {
     const customer = await findOrCreateCustomer(stripe, uid, email);
     const origin = req.headers.origin || `https://${req.headers.host}`;
 
+    // One subscription per family. A second checkout while one is running
+    // would charge them twice (it happened once, Nov 2026, during a trial).
+    const prior = await stripe.subscriptions.list({ customer: customer.id, status: "all", limit: 20 });
+    const live = prior.data.filter((x) => ["active", "trialing", "past_due", "unpaid", "incomplete"].includes(x.status));
+    const running = live.find((x) => !x.cancel_at_period_end);
+    if (running) {
+      return res.status(409).json({ error: "already_subscribed", message: "You already have Full Access on this account, so there's nothing more to pay. Manage it in Settings → Manage billing." });
+    }
+    // Cancelled but still in the paid-up period: switch the renewal back on
+    // instead of starting (and charging for) a second subscription.
+    const ending = live.find((x) => x.cancel_at_period_end);
+    if (ending) {
+      await stripe.subscriptions.update(ending.id, { cancel_at_period_end: false });
+      return res.status(200).json({ resumed: true });
+    }
+
     // The free trial is ONCE per customer. Without this, someone could cancel
     // before day 7 and resubscribe forever without ever paying.
-    const prior = await stripe.subscriptions.list({ customer: customer.id, status: "all", limit: 1 });
     const trialEligible = prior.data.length === 0;
 
     const session = await stripe.checkout.sessions.create({

@@ -24,6 +24,7 @@ const BENEFITS = [
 
 function friendlyError(message) {
   const m = (message || "").toLowerCase();
+  if (m.includes("already_subscribed")) return "You already have Full Access on this account, so there's nothing more to pay. You can manage it in Settings → Manage billing.";
   if (m.includes("failed to fetch") || m.includes("networkerror") || m.includes("load failed"))
     return "We couldn't reach the payment page. Check your connection and try again.";
   if (m.includes("sign") || m.includes("token") || m.includes("unauthor") || m.includes("401"))
@@ -35,7 +36,7 @@ function friendlyError(message) {
 
 export default function Paywall({ reason = "feature", onClose }) {
   const { user } = useAuth();
-  const { subscription } = usePremium();
+  const { subscription, refreshUntilPremium } = usePremium();
   // The free trial is once per customer — don't promise it to a returning one.
   const trialEligible = subscription?.trialEligible !== false;
   const [plan, setPlan] = useState("annual");
@@ -69,8 +70,10 @@ export default function Paywall({ reason = "feature", onClose }) {
     if (!priceId) { setErr("Billing isn't switched on yet. Please check back soon."); return; }
     setBusy(true);
     try {
-      await startCheckout(priceId);
-      // On success the browser redirects to Stripe; keep the spinner until then.
+      const result = await startCheckout(priceId);
+      // Renewal switched back on for a cancelled plan: nothing to pay today.
+      if (result?.resumed) { await refreshUntilPremium?.(); onClose(); return; }
+      // Otherwise the browser redirects to Stripe; keep the spinner until then.
     } catch (e) {
       setErr(friendlyError(e.message));
       setBusy(false);

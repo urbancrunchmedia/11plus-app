@@ -46,11 +46,13 @@ describe("PremiumContext paywall gating", () => {
     expect(document.querySelector(".pw")).toBeTruthy();
   });
 
-  it("opens the paywall for a trial account too", async () => {
+  // A family in their free trial is already subscribed: a second checkout
+  // charged one family twice (Nov 2026), so the paywall must stay shut.
+  it("never opens the paywall for an account in its free trial", async () => {
     mockSub = { isPremium: true, status: "trialing" };
     const el = await mount();
     await act(async () => { el.querySelector(".probe-open").click(); });
-    expect(document.querySelector(".pw")).toBeTruthy();
+    expect(document.querySelector(".pw")).toBeNull();
   });
 
   it("still suppresses it for a fully paid, non-cancelling account", async () => {

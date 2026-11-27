@@ -94,10 +94,11 @@ export function PremiumProvider({ children }) {
   return (
     <PremiumContext.Provider value={value}>
       {children}
-      {/* Suppress only when there is truly nothing to sell — fully premium and
-          not on a cancelled/trial track. Resubscribing during the paid-out
-          tail of a cancelled plan is exactly the case this must NOT block. */}
-      {paywall && (!sub.isPremium || sub.cancelAtPeriodEnd || sub.status === "trialing") &&
+      {/* Never for someone already subscribed, including during the free
+          trial (a second checkout would charge them twice). A cancelled plan
+          still in its paid-up period can resubscribe: the server switches the
+          renewal back on rather than starting a second subscription. */}
+      {paywall && (!sub.isPremium || sub.cancelAtPeriodEnd) &&
         <Paywall reason={paywall} onClose={closePaywall} />}
     </PremiumContext.Provider>
   );

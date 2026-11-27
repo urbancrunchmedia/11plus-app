@@ -41,9 +41,9 @@ export async function fetchSubscription() {
 // Start Stripe Checkout, then redirect to the hosted page.
 export async function startCheckout(priceId) {
   if (!priceId) throw new Error("No Stripe price configured");
-  const { url } = await authedFetch("/api/checkout", { priceId });
-  if (url) window.location.assign(url);
-  return url;
+  const data = await authedFetch("/api/checkout", { priceId });
+  if (data.url) window.location.assign(data.url);
+  return data; // { url } normally, or { resumed: true } when a cancelled plan was switched back on
 }
 
 // Open the Stripe Customer Portal (update card / cancel).
