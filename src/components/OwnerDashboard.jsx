@@ -54,6 +54,7 @@ function TutorsAdmin() {
   const [tutors, setTutors] = useState(null);
   const [error, setError] = useState("");
   const [working, setWorking] = useState(null);
+  const [menu, setMenu] = useState(null); // tutor uid whose ⋯ menu is open
 
   const call = useCallback(async (action, uid) => {
     const token = await auth.currentUser.getIdToken();
@@ -123,7 +124,16 @@ function TutorsAdmin() {
               <div className="own-tutor-actions">
                 {t.status !== "active" && <button className="own-btn own-btn-primary" disabled={working === t.uid} onClick={() => act("approve", t)}>{t.status === "suspended" ? "Reactivate" : "Approve"}</button>}
                 {t.status === "pending" && <button className="own-btn" disabled={working === t.uid} onClick={() => act("decline", t)}>Decline</button>}
-                {t.status === "active" && <button className="own-btn" disabled={working === t.uid} onClick={() => act("suspend", t)}>Suspend</button>}
+                {t.status === "active" && (
+                  <div className="own-more">
+                    <button className="own-btn own-dots" aria-label={`More actions for ${t.name}`} aria-expanded={menu === t.uid} onClick={() => setMenu(menu === t.uid ? null : t.uid)}>⋯</button>
+                    {menu === t.uid && (
+                      <div className="own-menu" role="menu">
+                        <button role="menuitem" className="own-menu-item own-danger" disabled={working === t.uid} onClick={() => { setMenu(null); act("suspend", t); }}>Suspend</button>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           ))}
@@ -212,8 +222,6 @@ export default function OwnerDashboard() {
     <div className="own">
       {header}
 
-      <TutorsAdmin />
-
       <section>
         <h2>Today and this week</h2>
         <div className="own-tiles">
@@ -223,6 +231,8 @@ export default function OwnerDashboard() {
           <Tile label="Paying" value={paying} sub={`${plans["Free trial"] || 0} in free trial`} />
         </div>
       </section>
+
+      <TutorsAdmin />
 
       <section className="own-card">
         <h2>Sign-ups, last 14 days</h2>

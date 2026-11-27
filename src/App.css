@@ -3505,6 +3505,12 @@ a.set-ghost { display: inline-flex; align-items: center; justify-content: center
 .own-tutor-pupils ul { margin: 0; padding-left: 18px; display: grid; gap: 3px; }
 .own-tutor-main { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
 .own-tutor-actions { display: flex; gap: 8px; }
+.own-more { position: relative; }
+.own-dots { font-size: 1.1rem; line-height: 1; padding: 8px 14px; }
+.own-menu { position: absolute; right: 0; top: calc(100% + 6px); background: #fff; border: 1px solid var(--line, #dde7f0); border-radius: 14px; box-shadow: 0 12px 30px rgba(14,17,22,.14); padding: 6px; z-index: 5; min-width: 140px; }
+.own-menu-item { display: block; width: 100%; text-align: left; border: none; background: none; padding: 10px 12px; border-radius: 10px; font-weight: 800; font-size: 0.9rem; color: var(--ink); cursor: pointer; }
+.own-menu-item:hover { background: var(--bg, #f4f9ff); }
+.own-menu-item.own-danger { color: #c0392b; }
 
 /* Friend requests (leaderboard) */
 .board-requests { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }

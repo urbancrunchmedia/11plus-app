@@ -241,7 +241,8 @@ async function journey(browsers) {
 
     // 9. Owner suspends the tutor; the dashboard closes.
     await owner.reload();
-    await owner.getByTestId("tutor-admin-row").filter({ hasText: "Ms Patel" }).getByRole("button", { name: "Suspend" }).click();
+    await owner.getByTestId("tutor-admin-row").filter({ hasText: "Ms Patel" }).getByRole("button", { name: "More actions for Ms Patel" }).click();
+    await owner.getByRole("menuitem", { name: "Suspend" }).click();
     await owner.getByTestId("tutor-admin-row").filter({ hasText: "Ms Patel" }).getByText("suspended").waitFor();
     await tutor.reload();
     await tutor.getByRole("heading", { name: "Your tutor account is paused" }).waitFor();
