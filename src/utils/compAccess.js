@@ -2,10 +2,10 @@
 // app (PremiumContext) and the owner dashboard (server/ownerStats.js).
 // `until` is the last day of access (UK date, inclusive); null = no end date.
 // Client-side grant only: real paid access always comes from Stripe.
+// Everyone else's complimentary access is managed from the owner dashboard
+// (Players → ⋯), stored server-side in compAccess/{uid}.
 const COMP_ACCESS = {
   "reuben.dongre@gmail.com": { until: null, note: "owner" },
-  "charlotte_dcunha@hotmail.com": { until: null, note: "testing" },
-  "raphaeljoseph96@gmail.com": { until: null, note: "Raphael Joseph, complimentary" },
 };
 
 export function hasCompAccess(email, now = Date.now(), list = COMP_ACCESS) {
