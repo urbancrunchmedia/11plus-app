@@ -153,6 +153,49 @@ function TutorsAdmin() {
   );
 }
 
+async function setComplimentary(uid, on) {
+  const token = await auth.currentUser.getIdToken();
+  const res = await fetch("/api/admin/owner", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+    body: JSON.stringify({ action: "setComp", uid, on }),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error || "Couldn't save that.");
+}
+
+// ⋯ on a player: give or remove complimentary Full Access.
+function PlayerMenu({ player, open, onToggle, onChanged }) {
+  const [busy, setBusy] = useState(false);
+  const isComp = player.comp === "dashboard";
+  async function change(on) {
+    const ask = on
+      ? `Give ${player.name} complimentary Full Access? They won't be charged, and you can remove it any time.`
+      : `Remove ${player.name}'s complimentary access? They'll go back to the free plan (or their paid plan, if they have one).`;
+    if (!window.confirm(ask)) return;
+    setBusy(true);
+    try { await setComplimentary(player.uid, on); onToggle(); await onChanged(); }
+    catch (e) { window.alert(e.message); }
+    finally { setBusy(false); }
+  }
+  return (
+    <div className="own-more">
+      <button className="own-btn own-dots" aria-label={`More actions for ${player.name}`} aria-expanded={open} onClick={onToggle}>⋯</button>
+      {open && (
+        <div className="own-menu" role="menu">
+          {player.comp === "builtin" ? (
+            <div className="own-menu-details">Complimentary is built in for this account (owner).</div>
+          ) : isComp ? (
+            <button role="menuitem" className="own-menu-item own-danger" disabled={busy} onClick={() => change(false)}>Remove complimentary access</button>
+          ) : (
+            <button role="menuitem" className="own-menu-item" disabled={busy} onClick={() => change(true)}>Give complimentary access</button>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 async function fetchStats(forceRefreshToken) {
   const user = auth.currentUser;
   if (forceRefreshToken) await user.reload(); // picks up a just-verified email
@@ -168,6 +211,7 @@ export default function OwnerDashboard() {
   const [error, setError] = useState(null);
   const [busy, setBusy] = useState(false);
   const [sent, setSent] = useState(false);
+  const [playerMenu, setPlayerMenu] = useState(null); // uid whose ⋯ menu is open
 
   // Called from button taps; the first load is the effect below.
   const load = useCallback(async (forceRefreshToken = false) => {
@@ -295,12 +339,15 @@ export default function OwnerDashboard() {
         <p className="own-muted">Most recently active first · {emails.unsubscribed} unsubscribed from reminders</p>
         <ul className="own-list own-players">
           {players.slice(0, 40).map((p, i) => (
-            <li key={i}>
+            <li key={p.uid || i} data-testid="player-row">
               <div>
                 <div className="own-player-name">{p.name}</div>
                 <div className="own-muted">{ago(p.lastPlayed)} · {plural(p.roundsWeek, "round")} this week</div>
               </div>
-              <span className={`own-pill own-pill-${PLAN_TONE[p.plan]}`}>{p.plan}</span>
+              <div className="own-player-right">
+                <span className={`own-pill own-pill-${PLAN_TONE[p.plan]}`}>{p.plan}</span>
+                {p.uid && <PlayerMenu player={p} open={playerMenu === p.uid} onToggle={() => setPlayerMenu(playerMenu === p.uid ? null : p.uid)} onChanged={() => load()} />}
+              </div>
             </li>
           ))}
         </ul>

@@ -11,6 +11,7 @@ const DAY = 24 * 60 * 60 * 1000;
 // client Firebase SDK, so it can't be loaded here).
 const STARTER_CUTOFF = Date.parse("2026-10-23T09:21:00Z");
 import { hasCompAccess } from "../src/utils/compAccess.js";
+import { dashboardCompUids } from "./compAccess.js";
 
 const GAME_NAMES = {
   synonyms: "Synonyms", antonyms: "Antonyms", compoundWords: "Compound Words", fillInBlanks: "Word Detective",
@@ -45,8 +46,8 @@ async function subscriptionsByUid(stripe) {
   return map;
 }
 
-function planOf(user, subs) {
-  if (hasCompAccess(user.email)) return "Complimentary";
+function planOf(user, subs, compSet) {
+  if (hasCompAccess(user.email) || compSet.has(user.uid)) return "Complimentary";
   const live = subs.find((s) => ["active", "trialing", "past_due"].includes(s.status));
   if (live) {
     if (live.status === "trialing") return "Free trial";
@@ -63,7 +64,7 @@ export async function ownerStats() {
   const now = Date.now();
   const today = Date.parse(new Date(ukDay(now).split("/").reverse().join("-") + "T12:00:00Z"));
 
-  const [users, histories, profiles, subsMap, emailStates, outreach, codes] = await Promise.all([
+  const [users, histories, profiles, subsMap, emailStates, outreach, codes, compSet] = await Promise.all([
     allAuthUsers(),
     db.collection("users").get(),
     db.collection("profiles").get(),
@@ -71,6 +72,7 @@ export async function ownerStats() {
     db.collection("emailState").get(),
     db.collection("outreach").get(),
     stripe.promotionCodes.list({ coupon: "tuition-centre-first-month", limit: 100 }),
+    dashboardCompUids(),
   ]);
 
   const historyOf = new Map(histories.docs.map((d) => [d.id, d.data()]));
@@ -89,7 +91,7 @@ export async function ownerStats() {
     if (u.disabled) continue;
     const created = Date.parse(u.metadata.creationTime);
     if (ukDay(created) in signupsByDay) signupsByDay[ukDay(created)]++;
-    const plan = planOf(u, subsMap.get(u.uid) || []);
+    const plan = planOf(u, subsMap.get(u.uid) || [], compSet);
     plans[plan] = (plans[plan] || 0) + 1;
 
     const h = historyOf.get(u.uid)?.history || {};
@@ -113,7 +115,7 @@ export async function ownerStats() {
     }
     // In a free trial: which plan they chose and how long until the first payment.
     const trialSub = (subsMap.get(u.uid) || []).find((x) => x.status === "trialing");
-    if (trialSub && !hasCompAccess(u.email)) {
+    if (trialSub && !hasCompAccess(u.email) && !compSet.has(u.uid)) {
       const ends = (trialSub.trial_end || 0) * 1000;
       trialsActive.push({
         name: nameOf.get(u.uid) || u.displayName || "(no name yet)",
@@ -125,8 +127,12 @@ export async function ownerStats() {
       });
     }
     players.push({
+      uid: u.uid,
       name: nameOf.get(u.uid) || u.displayName || "(no name yet)",
       plan,
+      // Where complimentary access comes from: the dashboard (can be removed
+      // there) or the built-in list in code (the owner's own accounts).
+      comp: compSet.has(u.uid) ? "dashboard" : hasCompAccess(u.email) ? "builtin" : null,
       signedUp: created,
       lastPlayed: last || null,
       roundsWeek: counts.week,

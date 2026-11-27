@@ -3,6 +3,7 @@
 // POST /api/status -> { url }  (also reached as /api/portal, see vercel.json)
 //   Opens the Stripe Customer Portal (manage/cancel) for the signed-in user.
 //   Shares this function because the project is at Vercel's function limit.
+import { hasDashboardComp } from "../server/compAccess.js";
 import { getStripe, findCustomer, summarise } from "../server/stripe.js";
 import { verifyToken } from "../server/verifyToken.js";
 
@@ -27,6 +28,10 @@ export default async function handler(req, res) {
   if (req.method === "POST") return portal(req, res);
   try {
     const { uid, email } = await verifyToken(req);
+    // Complimentary access given from the owner dashboard.
+    if (await hasDashboardComp(uid).catch(() => false)) {
+      return res.status(200).json({ isPremium: true, status: "comp", trialEligible: false });
+    }
     const stripe = getStripe();
     const customer = await findCustomer(stripe, uid, email);
     if (!customer) return res.status(200).json({ isPremium: false, status: "none", trialEligible: true });
