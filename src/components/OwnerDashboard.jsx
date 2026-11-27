@@ -11,6 +11,7 @@ const ago = (ms) => {
   return days <= 0 ? "Today" : days === 1 ? "Yesterday" : `${days} days ago`;
 };
 const plural = (n, word) => `${n} ${word}${n === 1 ? "" : "s"}`;
+const fmtDay = (iso) => (iso ? new Date(iso).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }) : "");
 const pct = (a, b) => (b ? `${Math.round((a / b) * 100)}%` : "–");
 
 const PLAN_ORDER = ["Paying", "Paying (cancelling)", "Free trial", "Payment failed", "Complimentary", "Free (starter set)", "Free (original plan)", "Cancelled"];
@@ -100,40 +101,56 @@ function TutorsAdmin() {
         <div className="own-tutors">
           {tutors.map((t) => (
             <div className="own-tutor" key={t.uid} data-testid="tutor-admin-row">
-              <div className="own-tutor-main">
-                <div><strong>{t.name}</strong>{t.business ? ` · ${t.business}` : ""} <span className={`own-pill own-pill-${TUTOR_TONE[t.status] || "muted"}`}>{t.status}</span></div>
-                <div className="own-muted">
-                  {t.email}{t.website ? <> · <a href={/^https?:\/\//.test(t.website) ? t.website : `https://${t.website}`} target="_blank" rel="noopener noreferrer">{t.website}</a></> : ""}{t.phone ? ` · ${t.phone}` : ""}
+              <div className="own-tutor-head">
+                <span className="own-tutor-avatar" aria-hidden="true">{(t.name || "?").trim().charAt(0).toUpperCase()}</span>
+                <div className="own-tutor-id">
+                  <div className="own-tutor-name">{t.name} <span className={`own-pill own-pill-${TUTOR_TONE[t.status] || "muted"}`}>{t.status}</span></div>
+                  {t.business && <div className="own-muted">{t.business}</div>}
                 </div>
-                <div className="own-muted">
-                  Applied {new Date(t.appliedAt).toLocaleDateString("en-GB")}{t.autoApproved ? " · pre-approved (on your outreach list)" : ""}{t.learnerRounds ? ` · played ${t.learnerRounds} rounds as a learner` : ""} · {plural(t.pupils, "pupil")}
-                  {t.pupils > 0 ? ` (${t.viaLink} by link, ${t.newFamilies} new ${t.newFamilies === 1 ? "family" : "families"})` : ""}{t.code ? ` · code ${t.code}` : ""}
-                </div>
-                <div className="own-tutor-pupils" data-testid="tutor-pupils">
-                  {t.pupilList?.length ? (
-                    <ul>
-                      {t.pupilList.map((p, i) => (
-                        <li key={i}>
-                          <strong>{p.name}</strong> · connected {p.connectedAt ? new Date(p.connectedAt).toLocaleDateString("en-GB") : "date unknown"} · {p.via === "link" ? "by link" : "by code"}{p.newFamily ? " · new family" : ""}
-                        </li>
-                      ))}
-                    </ul>
-                  ) : <span className="own-muted">No pupils connected to this code yet</span>}
+                <div className="own-tutor-actions">
+                  {t.status !== "active" && <button className="own-btn own-btn-primary" disabled={working === t.uid} onClick={() => act("approve", t)}>{t.status === "suspended" ? "Reactivate" : "Approve"}</button>}
+                  {t.status === "pending" && <button className="own-btn" disabled={working === t.uid} onClick={() => act("decline", t)}>Decline</button>}
+                  {t.status === "active" && (
+                    <div className="own-more">
+                      <button className="own-btn own-dots" aria-label={`More actions for ${t.name}`} aria-expanded={menu === t.uid} onClick={() => setMenu(menu === t.uid ? null : t.uid)}>⋯</button>
+                      {menu === t.uid && (
+                        <div className="own-menu" role="menu">
+                          <button role="menuitem" className="own-menu-item own-danger" disabled={working === t.uid} onClick={() => { setMenu(null); act("suspend", t); }}>Suspend</button>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
-              <div className="own-tutor-actions">
-                {t.status !== "active" && <button className="own-btn own-btn-primary" disabled={working === t.uid} onClick={() => act("approve", t)}>{t.status === "suspended" ? "Reactivate" : "Approve"}</button>}
-                {t.status === "pending" && <button className="own-btn" disabled={working === t.uid} onClick={() => act("decline", t)}>Decline</button>}
-                {t.status === "active" && (
-                  <div className="own-more">
-                    <button className="own-btn own-dots" aria-label={`More actions for ${t.name}`} aria-expanded={menu === t.uid} onClick={() => setMenu(menu === t.uid ? null : t.uid)}>⋯</button>
-                    {menu === t.uid && (
-                      <div className="own-menu" role="menu">
-                        <button role="menuitem" className="own-menu-item own-danger" disabled={working === t.uid} onClick={() => { setMenu(null); act("suspend", t); }}>Suspend</button>
-                      </div>
-                    )}
+
+              <div className="own-tutor-contact">
+                {t.email && <a href={`mailto:${t.email}`}>{t.email}</a>}
+                {t.phone && <a href={`tel:${t.phone.replace(/\s+/g, "")}`}>{t.phone}</a>}
+                {t.website && <a href={/^https?:\/\//.test(t.website) ? t.website : `https://${t.website}`} target="_blank" rel="noopener noreferrer">{t.website.replace(/^https?:\/\//, "")}</a>}
+              </div>
+
+              <div className="own-tutor-stats">
+                <span className="own-stat"><b>{t.pupils}</b> {t.pupils === 1 ? "pupil" : "pupils"}</span>
+                {t.pupils > 0 && <span className="own-stat"><b>{t.viaLink}</b> by link</span>}
+                {t.pupils > 0 && <span className="own-stat"><b>{t.newFamilies}</b> new {t.newFamilies === 1 ? "family" : "families"}</span>}
+                {t.code && <span className="own-stat own-stat-code">{t.code}</span>}
+                <span className="own-stat">Joined {fmtDay(t.appliedAt)}</span>
+              </div>
+
+              {(t.autoApproved || t.learnerRounds > 0) && (
+                <div className="own-tutor-notes">
+                  {t.autoApproved && <span>Pre-approved (on your outreach list)</span>}
+                  {t.learnerRounds > 0 && <span>Played {t.learnerRounds} rounds as a learner</span>}
+                </div>
+              )}
+
+              <div className="own-tutor-pupils" data-testid="tutor-pupils">
+                {t.pupilList?.length ? t.pupilList.map((p, i) => (
+                  <div className="own-tutor-pupil" key={i}>
+                    <strong>{p.name}</strong>
+                    <span className="own-muted">{p.connectedAt ? fmtDay(p.connectedAt) : "date unknown"} · {p.via === "link" ? "by link" : "by code"}{p.newFamily ? " · new family" : ""}</span>
                   </div>
-                )}
+                )) : <span className="own-muted">No pupils connected to this code yet</span>}
               </div>
             </div>
           ))}

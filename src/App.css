@@ -3500,10 +3500,22 @@ a.set-ghost { display: inline-flex; align-items: center; justify-content: center
   .tut-card, .tut-tile { break-inside: avoid; border-color: #ccc; }
 }
 .own-tutors { display: flex; flex-direction: column; }
-.own-tutor { display: flex; justify-content: space-between; gap: 12px; align-items: center; padding: 12px 0; border-top: 1px solid var(--line, #dde7f0); flex-wrap: wrap; }
-.own-tutor-pupils { margin-top: 8px; font-size: 0.85rem; }
-.own-tutor-pupils ul { margin: 0; padding-left: 18px; display: grid; gap: 3px; }
-.own-tutor-main { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.own-tutor { padding: 16px 0; border-top: 1px solid var(--line, #dde7f0); display: grid; gap: 10px; }
+.own-tutor-head { display: flex; align-items: center; gap: 12px; }
+.own-tutor-avatar { flex: none; width: 40px; height: 40px; border-radius: 50%; background: var(--brand, #12A5FF); color: #fff; font-weight: 800; display: grid; place-items: center; }
+.own-tutor-id { flex: 1; min-width: 0; }
+.own-tutor-name { font-weight: 800; font-size: 1rem; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.own-tutor-contact { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 0.85rem; font-weight: 600; padding-left: 52px; }
+.own-tutor-contact a { color: var(--brand-ink, #0b6aa8); text-decoration: none; overflow-wrap: anywhere; }
+.own-tutor-contact a:hover { text-decoration: underline; }
+.own-tutor-stats { display: flex; flex-wrap: wrap; gap: 6px; padding-left: 52px; }
+.own-stat { background: var(--bg, #f4f9ff); border-radius: 999px; padding: 5px 11px; font-size: 0.8rem; font-weight: 600; color: var(--muted, #6b7a8c); }
+.own-stat b { color: var(--ink); font-weight: 800; }
+.own-stat-code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; color: var(--ink); font-weight: 700; letter-spacing: .04em; }
+.own-tutor-notes { display: flex; flex-wrap: wrap; gap: 6px 14px; padding-left: 52px; font-size: 0.8rem; font-weight: 700; color: #8a5a00; }
+.own-tutor-pupils { margin-left: 52px; background: var(--bg, #f4f9ff); border-radius: 14px; padding: 10px 14px; display: grid; gap: 6px; font-size: 0.85rem; }
+.own-tutor-pupil { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+@media (max-width: 520px) { .own-tutor-contact, .own-tutor-stats, .own-tutor-notes { padding-left: 0; } .own-tutor-pupils { margin-left: 0; } }
 .own-tutor-actions { display: flex; gap: 8px; }
 .own-more { position: relative; }
 .own-dots { font-size: 1.1rem; line-height: 1; padding: 8px 14px; }
