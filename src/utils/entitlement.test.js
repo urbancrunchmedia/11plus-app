@@ -1,8 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from "vitest";
-
-// Stand-in for the signed-in account: only its creation time matters here.
-const fakeAuth = vi.hoisted(() => ({ currentUser: null }));
-vi.mock("../firebase", () => ({ auth: fakeAuth }));
+import { describe, it, expect, beforeEach } from "vitest";
 
 import {
   isLevelFree,
@@ -11,24 +7,17 @@ import {
   roundsLeftToday,
   dailyRoundLimit,
   starterLimit,
-  isLegacyFree,
   tasterLeftToday,
   spendTasterRound,
   canPickLevel,
-  STARTER_CUTOFF,
   STARTER_WORDS,
   STARTER_SENTENCES,
   FREE_DAILY_ROUNDS,
-  LEGACY_DAILY_ROUNDS,
 } from "./entitlement";
 
 // Seam: the free-tier rules. These decide what the paywall gates, so the
 // behaviour here is the spec.
-const signedUp = (ms) => { fakeAuth.currentUser = { metadata: { creationTime: new Date(ms).toUTCString() } }; };
-const newAccount = () => signedUp(STARTER_CUTOFF + 60_000);
-const existingAccount = () => signedUp(STARTER_CUTOFF - 24 * 60 * 60 * 1000);
-
-beforeEach(() => { localStorage.clear(); newAccount(); });
+beforeEach(() => { localStorage.clear(); });
 
 describe("isLevelFree", () => {
   it("treats only Level A as free", () => {
@@ -40,24 +29,12 @@ describe("isLevelFree", () => {
 });
 
 describe("starter set", () => {
-  it("limits new accounts to a starter set: words for word games, fewer questions for sentence games", () => {
-    expect(isLegacyFree()).toBe(false);
+  it("limits every free account to a starter set: words for word games, fewer questions for sentence games", () => {
     expect(starterLimit("synonyms")).toBe(STARTER_WORDS);
     expect(starterLimit("fillInBlanks")).toBe(STARTER_WORDS);
     expect(starterLimit("punctuation")).toBe(STARTER_SENTENCES);
     expect(starterLimit("wordClass")).toBe(STARTER_SENTENCES);
-  });
-
-  it("keeps the old free tier for accounts created before the cut-off", () => {
-    existingAccount();
-    expect(isLegacyFree()).toBe(true);
-    expect(starterLimit("synonyms")).toBe(null);
-    expect(dailyRoundLimit()).toBe(LEGACY_DAILY_ROUNDS);
-  });
-
-  it("treats an unknown account as new, never as legacy", () => {
-    fakeAuth.currentUser = null;
-    expect(isLegacyFree()).toBe(false);
+    expect(dailyRoundLimit()).toBe(FREE_DAILY_ROUNDS);
   });
 });
 

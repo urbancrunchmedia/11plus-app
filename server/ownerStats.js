@@ -7,9 +7,6 @@ import { adminAuth, adminDb } from "./firebaseAdmin.js";
 import { getStripe } from "./stripe.js";
 
 const DAY = 24 * 60 * 60 * 1000;
-// Same as STARTER_CUTOFF in src/utils/entitlement.js (that file imports the
-// client Firebase SDK, so it can't be loaded here).
-const STARTER_CUTOFF = Date.parse("2026-10-23T09:21:00Z");
 import { hasCompAccess } from "../src/utils/compAccess.js";
 import { dashboardCompUids } from "./compAccess.js";
 
@@ -55,7 +52,7 @@ function planOf(user, subs, compSet) {
     return live.cancel_at_period_end ? "Paying (cancelling)" : "Paying";
   }
   if (subs.length) return "Cancelled";
-  return Date.parse(user.metadata.creationTime) < STARTER_CUTOFF ? "Free (original plan)" : "Free (starter set)";
+  return "Free";
 }
 
 export async function ownerStats() {

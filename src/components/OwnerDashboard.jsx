@@ -14,10 +14,10 @@ const plural = (n, word) => `${n} ${word}${n === 1 ? "" : "s"}`;
 const fmtDay = (iso) => (iso ? new Date(iso).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }) : "");
 const pct = (a, b) => (b ? `${Math.round((a / b) * 100)}%` : "–");
 
-const PLAN_ORDER = ["Paying", "Paying (cancelling)", "Free trial", "Payment failed", "Complimentary", "Free (starter set)", "Free (original plan)", "Cancelled"];
+const PLAN_ORDER = ["Paying", "Paying (cancelling)", "Free trial", "Payment failed", "Complimentary", "Free", "Cancelled"];
 const PLAN_TONE = {
   Paying: "good", "Paying (cancelling)": "warn", "Free trial": "brand", "Payment failed": "bad",
-  Complimentary: "muted", Cancelled: "muted", "Free (starter set)": "muted", "Free (original plan)": "muted",
+  Complimentary: "muted", Cancelled: "muted", Free: "muted",
 };
 
 function Tile({ label, value, sub }) {
